@@ -1,9 +1,10 @@
 let express = require('express');
 let app = express();
 let mysql = require('mysql');
+let host = process.env.HOST || 'localhost';
 let pool = mysql.createPool({
     connectionLimit: 100,
-    host: '91.240.87.153',
+    host: host,
     user: 'birthhelper',
     password: 'q1w2e3r4t5y',
     database: 'birthhelper'
