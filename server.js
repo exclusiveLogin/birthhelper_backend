@@ -9,21 +9,34 @@ let pool = mysql.createPool({
     password: 'q1w2e3r4t5y',
     database: 'birthhelper'
 })
-let test = express.Router();
-test.get('/', function(req, res){
-    console.log('test root');
-    res.send('WELCOME to TEST');
+
+const dicts = {
+    dict_category_service: 'category_service',
+    dict_trimester_service: 'trimester',
+    dict_clinics: 'clinics',
+    dict_district: 'district'
+};
+
+let admin = express.Router();
+admin.get('/', function(req, res){
+    res.send('HELLO DICT ROOT');
 });
 
-test.get('/:id', function(req, res){
-    console.log('test root');
-    res.send('WELCOME to TEST id ' + req.params.id);
+let dict = express.Router();
+dict.get('/:id', function(req, res){
+    if(!!dicts[req.params.id]){
+        pool.query(`SELECT * FROM \`${ dicts[req.params.id] }\``, (err, result)=> {
+            res.send(result);
+        });
+    } else {
+        res.send([]);
+    }
 });
 
-test.get('/:id/:x/:y/:z/start', function(req, res){
-    console.log('test/start root id:', req.params.id);
-    res.json( req.params );
-});
+admin.use('/dict', dict);
+
+app.use('/admin', admin);
+
 
 app.get('/', function(req, res){
     res.send('hello world');
@@ -34,8 +47,6 @@ app.get('/districts', function(req, res){
         res.send(result);
     })
 });
-
-app.use('/test', test);
 
 app.listen(3000, function () {
     console.log('Example app listening on port 3000!');
