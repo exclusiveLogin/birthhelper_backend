@@ -1,4 +1,5 @@
 let express = require('express');
+const cors = require('cors');
 let app = express();
 let mysql = require('mysql');
 let host = process.env.HOST || 'localhost';
@@ -23,7 +24,7 @@ admin.get('/', function(req, res){
 });
 
 let dict = express.Router();
-dict.get('/:id', function(req, res){
+dict.get('/:id', cors(), function(req, res){
     if(!!dicts[req.params.id]){
         pool.query(`SELECT * FROM \`${ dicts[req.params.id] }\``, (err, result)=> {
             res.send(result);
