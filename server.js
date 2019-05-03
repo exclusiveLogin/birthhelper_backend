@@ -80,6 +80,21 @@ entity.get('/:id/filters', cors(), function(req, res){
     }
 });
 
+entity.get('/:id/set', cors(), function(req, res){
+    if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
+        //res.send( JSON.stringify( entities[req.params.id].filters ) )
+        pool.query(`SELECT * FROM \`${ entities[req.params.id].db_name }\``, (err, result)=> {
+            //console.log('result: ', result, typeof result, result.length, err);
+            const lenSet = result && result.length;
+            res.send(JSON.stringify({
+                total: lenSet
+            }));
+        });
+    } else {
+        res.send([]);
+    }
+});
+
 entity.get('/:id', cors(), function(req, res){
     if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
         pool.query(`SELECT * FROM \`${ entities[req.params.id].db_name }\``, (err, result)=> {
