@@ -19,9 +19,29 @@ const dicts = {
 };
 
 const entities = {
-    ent_services: 'services',
-    ent_clinics: 'clinics',
-    ent_districts: 'districts',
+    ent_services: {
+        db_name: 'services',
+        filters: [
+            {
+                name: 'category',
+                title: 'Категория услуги',
+                type: 'id',
+            },
+            {
+                name: 'title',
+                title: 'Название услуги',
+                type: 'string',
+            },
+        ]
+    },
+    ent_clinics: {
+        db_name: 'clinics',
+        filters: []
+    },
+    ent_districts: { 
+        db_name: 'districts',
+        filters: []
+    },
 };
 
 let admin = express.Router();
@@ -52,9 +72,17 @@ entity.get('/', cors(), function(req, res){
 
 });
 
+entity.get('/:id/filters', cors(), function(req, res){
+    if( !!entities[req.params.id] && !!entities[req.params.id].filters ){
+        res.send( JSON.stringify( entities[req.params.id].filters ) )
+    } else {
+        res.send([]);
+    }
+});
+
 entity.get('/:id', cors(), function(req, res){
-    if(!!entities[req.params.id]){
-        pool.query(`SELECT * FROM \`${ entities[req.params.id] }\``, (err, result)=> {
+    if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
+        pool.query(`SELECT * FROM \`${ entities[req.params.id].db_name }\``, (err, result)=> {
             res.send(result);
         });
     } else {
