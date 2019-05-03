@@ -41,7 +41,7 @@ dict.get('/:id', cors(), function(req, res){
 });
 
 let entity = express.Router();
-entity.get('/', function(req, res){
+entity.get('/', cors(), function(req, res){
     res.set('Content-Type', 'text/html'); 
     res.write('Эндпоинт для сущностей доступны следующие: <br>');
     Object.keys(entities).forEach( key => res.write(key + '<br>') );
@@ -52,7 +52,7 @@ entity.get('/', function(req, res){
 
 });
 
-entity.get('/:id', function(req, res){
+entity.get('/:id', cors(), function(req, res){
     if(!!entities[req.params.id]){
         pool.query(`SELECT * FROM \`${ entities[req.params.id] }\``, (err, result)=> {
             res.send(result);
