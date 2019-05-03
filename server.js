@@ -17,6 +17,12 @@ const dicts = {
     dict_district: 'district'
 };
 
+const entities = {
+    ent_services: 'services',
+    ent_clinics: 'clinics',
+    ent_districts: 'districts',
+};
+
 let admin = express.Router();
 admin.get('/', function(req, res){
     res.send('HELLO DICT ROOT');
@@ -33,7 +39,30 @@ dict.get('/:id', function(req, res){
     }
 });
 
+let entity = express.Router();
+entity.get('/', function(req, res){
+    res.set('Content-Type', 'text/html'); 
+    res.write('Эндпоинт для сущностей доступны следующие: <br>');
+    Object.keys(entities).forEach( key => res.write(key + '<br>') );
+
+    res.write('<p> Формат запроса GET /entity/{key} </p> <br>');
+    res.write('<p> ex: GET 91.240.87.153/admin/entity/ent_services </p> <br>');
+    res.end();
+
+});
+
+entity.get('/:id', function(req, res){
+    if(!!entities[req.params.id]){
+        pool.query(`SELECT * FROM \`${ entities[req.params.id] }\``, (err, result)=> {
+            res.send(result);
+        });
+    } else {
+        res.send([]);
+    }
+});
+
 admin.use('/dict', dict);
+admin.use('/entity', entity);
 
 app.use('/admin', admin);
 
