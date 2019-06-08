@@ -82,9 +82,7 @@ entity.get('/:id/filters', cors(), function(req, res){
 
 entity.get('/:id/set', cors(), function(req, res){
     if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
-        //res.send( JSON.stringify( entities[req.params.id].filters ) )
         pool.query(`SELECT * FROM \`${ entities[req.params.id].db_name }\``, (err, result)=> {
-            //console.log('result: ', result, typeof result, result.length, err);
             const lenSet = result && result.length;
             res.send(JSON.stringify({
                 total: lenSet
@@ -96,8 +94,18 @@ entity.get('/:id/set', cors(), function(req, res){
 });
 
 entity.get('/:id', cors(), function(req, res){
+    //res.send( JSON.stringify( req.query ) );
     if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
-        pool.query(`SELECT * FROM \`${ entities[req.params.id].db_name }\``, (err, result)=> {
+        
+
+        let limit = !!req.query.skip && Number(req.query.skip)  || '20';
+
+        let limstr = `${ !!req.query.skip ? ' LIMIT ' + limit + ' OFFSET ' + req.query.skip  :'' }`;
+        let q = `SELECT * FROM \`${ entities[req.params.id].db_name }\` ${limstr}`;
+
+
+        console.log(limstr, q);
+        pool.query(q, (err, result)=> {
             res.send(result);
         });
     } else {
@@ -106,7 +114,7 @@ entity.get('/:id', cors(), function(req, res){
 });
 
 admin.use('/dict', dict);
-admin.use('/entity', entity);
+admin.use('/entity', cors(), entity);
 
 app.use('/admin', admin);
 
