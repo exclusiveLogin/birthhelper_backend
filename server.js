@@ -23,14 +23,15 @@ const entities = {
         db_name: 'services',
         filters: [
             {
-                name: 'category',
-                title: 'Категория услуги',
-                type: 'id',
-            },
-            {
                 name: 'title',
                 title: 'Название услуги',
                 type: 'string',
+            },
+            {
+                name: 'category',
+                title: 'Категория услуги',
+                type: 'id',
+                db_name: 'dict_category_service'
             },
         ]
     },
@@ -52,10 +53,21 @@ admin.get('/', function(req, res){
 let dict = express.Router();
 dict.get('/:id', cors(), function(req, res){
     if(!!dicts[req.params.id]){
-        pool.query(`SELECT * FROM \`${ dicts[req.params.id] }\``, (err, result)=> {
+
+        let limit = !!req.query.skip && Number(req.query.skip)  || '20';
+
+        let limstr = `${ !!req.query.skip ? ' LIMIT ' + limit + ' OFFSET ' + req.query.skip  :'' }`;
+        let q = `SELECT * FROM \`${ dicts[req.params.id] }\` ${limstr}`;
+
+
+        //console.log('dict:', req.params.id, limstr, q);
+        pool.query(q, (err, result)=> {
+            //console.log("dicts:", result);
             res.send(result);
         });
+
     } else {
+        console.log('error', req.params);
         res.send([]);
     }
 });
@@ -104,7 +116,7 @@ entity.get('/:id', cors(), function(req, res){
         let q = `SELECT * FROM \`${ entities[req.params.id].db_name }\` ${limstr}`;
 
 
-        console.log(limstr, q);
+        //console.log('ent:', limstr, q);
         pool.query(q, (err, result)=> {
             res.send(result);
         });
