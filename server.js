@@ -109,6 +109,18 @@ function concatFn(arrA, arrB){
     return [];
 }
 
+function concatLikeFn(arrA, arrB){
+    console.log('A:', arrA, 'B:', arrB);
+    if( arrA && arrA.length && arrB && arrB.length ){
+        let fine = [];
+        for(let i = 0; i < arrA.length; i++){
+            fine.push(`${arrA[i]} LIKE "%${arrB[i]}%"`);
+        }
+        return fine;
+    }
+    return [];
+}
+
 function createEntity(req, res, next){
     console.log('post middle', req.body);
     if( req.body ){
@@ -218,18 +230,46 @@ entity.get('/:id/set', cors(), function(req, res){
 entity.get('/:id', cors(), function(req, res){
     //res.send( JSON.stringify( req.query ) );
     if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
-        
 
+        const db = entities[req.params.id].db_name;
+        const fields = entities[req.params.id].fields;
+        
         let limit = !!req.query.skip && Number(req.query.skip)  || '20';
+        
+        // проработать логику поиска типа поля запроса
+
+        let searchParamsKeys = Object.keys(req.query).filter(k => !( k === 'skip' || k === 'limit' ) && (fields.find(f => f.key === k).type === 'id') );
+        let searchParamsValue = searchParamsKeys.map(k => {
+            return req.query[k];
+        });
+        let conSearchParams = concatFn( searchParamsKeys, searchParamsValue );
+
+        let searchStringKeys = Object.keys(req.query).filter(k => !( k === 'skip' || k === 'limit' ) && (fields.find(f => f.key === k).type === 'string') );
+        let searchStringValue = searchStringKeys.map(k => {
+            return `${req.query[k]}`;
+        });
+        let conSearchStrings = concatLikeFn( searchStringKeys, searchStringValue );
+
+        console.log('ent q:', req.query, 'ids:', searchParamsKeys, searchParamsValue, 'str:', searchStringKeys, searchStringValue);
+
+        // если спросили что то лишнее
+        if( !searchParamsKeys.every(r => !!fields.find(f => f.key === r ))) {
+            res.end('в запросе поиска присутствуют неизвестные поля');
+            console.warn('в запросе поиска присутствуют неизвестные поля');
+            return;
+        }
+
+        let whereStr = conSearchStrings.length && conSearchStrings.join(' AND ');
+        let likeStr = conSearchParams.length && conSearchParams.join(' AND ');
 
         let limstr = `${ !!req.query.skip ? ' LIMIT ' + limit + ' OFFSET ' + req.query.skip  :'' }`;
-        let q = `SELECT * FROM \`${ entities[req.params.id].db_name }\` ${limstr}`;
+        let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : ''} ${likeStr ? ' AND ' + likeStr : ''} ${limstr}`;
 
+        console.log('q:', q);
 
-        //console.log('ent:', limstr, q);
-        pool.query(q, (err, result)=> {
-            res.send(result);
-        });
+        // pool.query(q, (err, result)=> {
+        //     res.send(result);
+        // });
     } else {
         res.send([]);
     }
