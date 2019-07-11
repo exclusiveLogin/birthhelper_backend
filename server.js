@@ -267,9 +267,9 @@ entity.get('/:id', cors(), function(req, res){
 
         console.log('q:', q);
 
-        // pool.query(q, (err, result)=> {
-        //     res.send(result);
-        // });
+        pool.query(q, (err, result)=> {
+            res.send(result);
+        });
     } else {
         res.send([]);
     }
