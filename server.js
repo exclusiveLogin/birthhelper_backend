@@ -238,22 +238,28 @@ entity.get('/:id', cors(), function(req, res){
         
         // проработать логику поиска типа поля запроса
 
-        let searchParamsKeys = Object.keys(req.query).filter(k => !( k === 'skip' || k === 'limit' ) && (fields.find(f => f.key === k).type === 'id') );
-        let searchParamsValue = searchParamsKeys.map(k => {
-            return req.query[k];
-        });
+        let searchParamsKeys = Object.keys(req.query).filter(k => 
+                !( k === 'skip' || k === 'limit' ) && 
+                ( fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'id' )
+            );
+
+        let searchParamsValue = searchParamsKeys.map( k => req.query[k] );
+
         let conSearchParams = concatFn( searchParamsKeys, searchParamsValue );
 
-        let searchStringKeys = Object.keys(req.query).filter(k => !( k === 'skip' || k === 'limit' ) && (fields.find(f => f.key === k).type === 'string') );
-        let searchStringValue = searchStringKeys.map(k => {
-            return `${req.query[k]}`;
-        });
+        let searchStringKeys = Object.keys(req.query).filter(k => 
+                !( k === 'skip' || k === 'limit' ) && 
+                ( fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'string' ) 
+            );
+
+        let searchStringValue = searchStringKeys.map(k => `${req.query[k]}` );
         let conSearchStrings = concatLikeFn( searchStringKeys, searchStringValue );
 
         console.log('ent q:', req.query, 'ids:', searchParamsKeys, searchParamsValue, 'str:', searchStringKeys, searchStringValue);
 
-        // если спросили что то лишнее
-        if( !searchParamsKeys.every(r => !!fields.find(f => f.key === r ))) {
+        // если спросили что то лишнее хотя с новой логикой сюда не попадуть те запросы которых нет в репозитории доступных
+        if( !Object.keys(req.query).every(r => !!( r === 'skip' || r === 'limit' ) || !!fields.find(f => f.key === r ))) {
+            res.status(500);
             res.end('в запросе поиска присутствуют неизвестные поля');
             console.warn('в запросе поиска присутствуют неизвестные поля');
             return;
