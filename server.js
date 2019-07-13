@@ -160,7 +160,7 @@ function createEntity(req, res, next){
             let valArr = Object.keys(data).map(datakey => {
                 const targetReq = fields.find(r => r.key === datakey);
                 if(!targetReq) return `"${data[datakey]}"`;
-                return targetReq.type === 'string' ? `"${data[datakey]}"` : data[datakey];
+                return targetReq.type === 'string' || targetReq.type === 'text' ? `"${data[datakey]}"` : data[datakey];
             });
 
             let existArr = concatFn( Object.keys(data), valArr );
@@ -168,10 +168,11 @@ function createEntity(req, res, next){
 
             const q = `INSERT INTO \`${ db }\` (\`${ Object.keys(data).join('\`, \`') }\`) VALUES ( ${ valArr.join(',') } )`;
             const qi = existArr.join(', ');
-            //console.log('q: ', q, 'qi:', qi);
+            const qf = q + ' ON DUPLICATE KEY UPDATE ' + qi;
+            console.log('qf: ', qf);
 
 
-            pool.query(q + ' ON DUPLICATE KEY UPDATE ' + qi, (err, result)=> {
+            pool.query(qf, (err, result)=> {
                 if(err) {
                     res.status(500);
                     res.send(err);
