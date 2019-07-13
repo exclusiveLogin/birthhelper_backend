@@ -38,14 +38,30 @@ const entities = {
             },
         ],
         fields:[ 
-            { key: 'id', type: 'id' }, 
-            { key: 'title', type: 'string', required: true }, 
-            { key: 'category', type: 'id', required: true }, 
-            { key: 'description', type: 'string' }, 
-            { key: 'article_id', type: 'id' }, 
-            { key: 'gallery_id', type: 'id' }, 
-            { key: 'trimester', type: 'id' }, 
-            { key: 'type', type: 'id' }, 
+            { key: 'id', title: 'ID услуги', type: 'id', readonly: true }, 
+            { key: 'title', type: 'string', title: 'Название услуги', required: true }, 
+            { 
+                key: 'category', 
+                title: 'Категория услуги', 
+                dctKey: 'dict_category_service', 
+                type: 'id', 
+                useDict: true, 
+                canBeNull: false, 
+                initData: 1, 
+                required: true 
+            }, 
+            { key: 'description', title: 'Описание услуги', type: 'text' }, 
+            { key: 'article_id', type: 'id', hide: true }, 
+            { key: 'gallery_id', type: 'id', hide: true }, 
+            { 
+                key: 'trimester', 
+                type: 'id', 
+                title: 'Триместер услуги', 
+                useDict: true,
+                dctKey: 'dict_trimester_service',
+                canBeNull: true 
+            }, 
+            { key: 'type', type: 'id', hide: true  }, 
         ]
     },
     ent_clinics: {
@@ -219,7 +235,8 @@ entity.get('/:id/set', cors(), function(req, res){
         pool.query(`SELECT * FROM \`${ entities[req.params.id].db_name }\``, (err, result)=> {
             const lenSet = result && result.length;
             res.send(JSON.stringify({
-                total: lenSet
+                total: lenSet,
+                fields: entities[req.params.id].fields
             }));
         });
     } else {
