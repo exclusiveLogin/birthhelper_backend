@@ -15,10 +15,21 @@ let pool = mysql.createPool({
 })
 
 const dicts = {
-    dict_category_service: 'category_service',
-    dict_trimester_service: 'trimester',
-    dict_clinics: 'clinics',
-    dict_district: 'district'
+    dict_category_service: { db: 'category_service' },
+    dict_trimester_service: { db: 'trimester' },
+    dict_clinics: { db: 'clinics' },
+    dict_district: { db: 'district' },
+    dict_address_id: { 
+        db: 'address_container',
+        titleMap: [
+            'address_str'
+        ],
+        titleAddMap: [
+            'position_lat',
+            'position_lon'
+        ]
+    },
+    dict_phone_container: { db: 'phone_container' }
 };
 
 const entities = {
@@ -66,11 +77,36 @@ const entities = {
     },
     ent_clinics: {
         db_name: 'clinics',
-        filters: []
+        filters: [],
+        fields: [
+            { key: 'id', title: 'ID клиники', type: 'id', readonly: true }, 
+            { key: 'title', type: 'string', title: 'Название клиники', required: true }, 
+            // { 
+            //     key: 'phone_container_id', 
+            //     title: 'Телефоны клиники', 
+            //     dctKey: 'dict_phone_container_id', 
+            //     type: 'id', 
+            //     useDict: true, 
+            //     canBeNull: true
+            // }, 
+            { key: 'description', title: 'Описание клиники', type: 'text' },
+            { 
+                key: 'address_id', 
+                title: 'Адресс клиники', 
+                dctKey: 'dict_address_id', 
+                type: 'id', 
+                useDict: true, 
+                canBeNull: false,
+                required: true 
+            }, 
+        ]
     },
     ent_districts: { 
         db_name: 'districts',
-        filters: []
+        filters: [],
+        fields: [
+            
+        ]
     },
 };
 
@@ -83,15 +119,27 @@ let dict = express.Router();
 dict.get('/:id', cors(), function(req, res){
     if(!!dicts[req.params.id]){
 
+        const dict = dicts[req.params.id];
+
         let limit = !!req.query.skip && Number(req.query.skip)  || '20';
 
         let limstr = `${ !!req.query.skip ? ' LIMIT ' + limit + ' OFFSET ' + req.query.skip  :'' }`;
-        let q = `SELECT * FROM \`${ dicts[req.params.id] }\` ${limstr}`;
+        let q = `SELECT * FROM \`${ dict.db }\` ${limstr}`;
 
 
         //console.log('dict:', req.params.id, limstr, q);
         pool.query(q, (err, result)=> {
             //console.log("dicts:", result);
+
+            if( dict.titleMap || dict.titleAddMap ){
+                result.forEach( r => {
+                    r.title = dict.titleMap.map(f => r[f]).join(', ');
+                    r.title = dict.titleAddMap ? r.title + ` ( ${dict.titleAddMap.map(f => r[f]).join(', ')} )` : r.title;
+                })
+                
+
+                console.log('result:', result);
+            }
             res.send(result);
         });
 
@@ -237,7 +285,7 @@ entity.get('/:id/set', cors(), function(req, res){
             const lenSet = result && result.length;
             res.send(JSON.stringify({
                 total: lenSet,
-                fields: entities[req.params.id].fields
+                fields: entities[req.params.id].fields || []
             }));
         });
     } else {
