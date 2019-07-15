@@ -99,6 +99,15 @@ const entities = {
                 canBeNull: false,
                 required: true 
             }, 
+            { 
+                key: 'address_id2', 
+                title: 'Адресс клиники', 
+                dctKey: 'dict_address_id', 
+                type: 'autocomplete', 
+                useDict: true, 
+                canBeNull: false,
+                required: true 
+            }, 
         ]
     },
     ent_districts: { 
@@ -121,7 +130,7 @@ dict.get('/:id', cors(), function(req, res){
 
         const dict = dicts[req.params.id];
 
-        let limit = !!req.query.skip && Number(req.query.skip)  || '20';
+        let limit = (!!req.query.skip && !!Number(req.query.skip))  || '200';
 
         let limstr = `${ !!req.query.skip ? ' LIMIT ' + limit + ' OFFSET ' + req.query.skip  :'' }`;
         let q = `SELECT * FROM \`${ dict.db }\` ${limstr}`;
@@ -138,7 +147,7 @@ dict.get('/:id', cors(), function(req, res){
                 })
                 
 
-                console.log('result:', result);
+                //console.log('result:', result);
             }
             res.send(result);
         });
@@ -300,7 +309,7 @@ entity.get('/:id', cors(), function(req, res){
         const db = entities[req.params.id].db_name;
         const fields = entities[req.params.id].fields;
         
-        let limit = !!req.query.skip && Number(req.query.skip)  || '20';
+        let limit = !!req.query.skip && !!Number(req.query.skip)  || '20';
         
         // проработать логику поиска типа поля запроса
 
