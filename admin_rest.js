@@ -256,7 +256,7 @@ entity.get('/:id', cors(), function(req, res){
         let whereStr = conSearchParams.length && conSearchParams.join(' AND ');
 
         let limstr = `${ !!req.query.skip ? ' LIMIT ' + limit + ' OFFSET ' + req.query.skip  :'' }`;
-        let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : ''} ${likeStr ? ' AND ' + likeStr : ''} ${limstr}`;
+        let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : ''} ${likeStr ? (whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} ${limstr}`;
 
         console.log('q:', q);
 
