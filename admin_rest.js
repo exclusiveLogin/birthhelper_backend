@@ -221,7 +221,7 @@ entity.get('/:id', cors(), function(req, res){
         const db = entities[req.params.id].db_name;
         const fields = entities[req.params.id].fields;
         
-        let limit = !!req.query.skip && !!Number(req.query.skip)  || '20';
+        let limit = !!req.query.skip && Number(req.query.skip)  || '20';
         
         // проработать логику поиска типа поля запроса
 
@@ -252,8 +252,8 @@ entity.get('/:id', cors(), function(req, res){
             return;
         }
 
-        let whereStr = conSearchStrings.length && conSearchStrings.join(' AND ');
-        let likeStr = conSearchParams.length && conSearchParams.join(' AND ');
+        let likeStr = conSearchStrings.length && conSearchStrings.join(' AND ');
+        let whereStr = conSearchParams.length && conSearchParams.join(' AND ');
 
         let limstr = `${ !!req.query.skip ? ' LIMIT ' + limit + ' OFFSET ' + req.query.skip  :'' }`;
         let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : ''} ${likeStr ? ' AND ' + likeStr : ''} ${limstr}`;
