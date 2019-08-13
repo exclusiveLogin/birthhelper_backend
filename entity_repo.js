@@ -39,6 +39,7 @@ module.exports = {
                 canBeNull: true 
             }, 
             { key: 'type', type: 'id', hide: true  }, 
+            { key: 'adv', title: 'Рекламная услуга', type: 'flag'  },
         ]
     },
     ent_clinics: {

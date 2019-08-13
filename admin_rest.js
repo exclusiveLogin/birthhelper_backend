@@ -61,6 +61,10 @@ entity.get('/', cors(), function(req, res){
 
 });
 
+let container = express.Router();
+container.get('/', cors(), getContainersList);
+container.get('/:name', cors(), getContainer);
+
 function concatFn(arrA, arrB){
     console.log('A:', arrA, 'B:', arrB);
     if( arrA && arrA.length && arrB && arrB.length ){
@@ -85,24 +89,136 @@ function concatLikeFn(arrA, arrB){
     return [];
 }
 
-function createContainer(name){
-    //проверка валидности ключа сущности для контейнера
-    if( !!containers[name] && (!!containers[name].db_name && !!containers[name].db_repo_name && !!containers[name].db_container_name) ){
-        
+// функция возвращающая список существующих в системе контейнеров
+function getContainersList(req, res, next){
+    res.send(Object.keys( containers ).map(k => containers[k]));
+}
+
+// функция возвращающая объекты контейнера по имени
+function getContainer(req, res, next){
+    console.log('getContainer', req.params);
+    if(!req.params.name) {
+        res.status(500);
+        res.end(JSON.stringify({error: 'ошибка доступа : не указан контейнер'}));
+        console.warn('ошибка доступа : не указан контейнер');
+            
+        return;
+    }
+    let name = req.params.name;
+    if( !!containers[name] && 
+        (
+            !!containers[name].db_entity    && 
+            !!containers[name].db_links     &&
+            !!containers[name].db_list
+        )){
+
+        let containerParams = containers[name];
+
+        console.log('Запрошенный контейнер существует:', containerParams);
+
+        const q = 'SELECT * FROM `' + containerParams.db_list + '`';
+
+        pool.query(q, (err, result) => {
+            if(err){
+                res.status(500);
+                res.send(err);
+                return;
+            }
+            
+            result.forEach( r => {
+                if(!r.id) return;
+
+                r.q = new Promise((resolve, reject) => {
+                    const id = r.id;
+                    const qi = `SELECT \`${containerParams.db_links}\`.*, 
+                                \`${containerParams.db_entity}\`.\`id\` as \`eid\`, 
+                                ${containerParams.entity_fields.map(f => `\`${containerParams.db_entity}\`.\`${f}\``).join(', ')} 
+                                FROM \`${containerParams.db_links}\`
+                                LEFT JOIN \`${containerParams.db_entity}\` 
+                                ON \`${containerParams.db_links}\`.\`${containerParams.container_id_key}\` = \`${containerParams.db_entity}\`.\`id\`
+                                WHERE \`${containerParams.db_links}\`.\`container_id\`=${id}`;
+
+                    console.log('qi: ', qi);
+                    pool.query(qi, (err_i, result_i) => {
+                        if(err){
+                            reject(err_i);
+                        }
+
+                        resolve(result_i);
+                    });
+
+                });
+
+                r.q.then( (items) => {
+                    
+                    items.forEach( item => {
+                        item.entity = {};
+
+                        containerParams.entity_fields.forEach( field => {
+                            item.entity[field] = item[field];
+                            item.entity['id'] = item['eid'];
+                            delete item[field];
+                        });
+                    });
+
+                    r.items = items;
+                    console.log('entity: ', r);
+                } );
+                
+            });
+
+            Promise.all(result.map(ri => ri.q)).then(() => {
+                res.send(result);
+            });
+        });
+    } else {
+        res.status(500);
+        res.send(JSON.stringify({error: 'ошибка доступа : Запрошенный контейнер не существует'}));
+        console.warn('ошибка доступа : Запрошенный контейнер не существует');
     }
 }
 
 function saveContainer(name, id_container, ids){
     //проверка валидности ключа сущности для контейнера
     if( !!containers[name] && (!!containers[name].db_name && !!containers[name].db_repo_name && !!containers[name].db_container_name) ){
-            
+        let containerParams = containers[name];
+
     }
 } 
 
-function removeContainer(name, id){
+function removeContainerItems(name, id, res){
     //проверка валидности ключа сущности для контейнера
     if( !!containers[name] && (!!containers[name].db_name && !!containers[name].db_repo_name && !!containers[name].db_container_name) ){
-        
+        let containerParams = containers[name];
+        const db_repo = containerParams.db_repo_name;
+        const db_cont = containerParams.db_container_name;
+
+        const qd = `DELETE FROM \`${ db_repo }\` WHERE id=${id}`;
+
+        pool.query(qd, (err, result)=> {
+            if(err) {
+                res.status(500);
+                res.send(err);
+                return;
+            }
+            //  удаляем остатки для очистки мусора
+            let qdd = `DELETE FROM \`${ db_cont }\` WHERE container_id=${id}`;
+
+            pool.query(qdd, (err, result)=>{
+                if(err) {
+                    res.status(500);
+                    res.send(err);
+                    return;
+                }
+
+                res.send(JSON.stringify({
+                    result,
+                    text:`Записи контейнеров с id = ${id} удалены`
+                }));
+
+                next();
+            })
+        });
     }
 }
 
@@ -188,6 +304,18 @@ function deleteEntity(req, res, next){
         } else {
             res.end('не удалось определить сущность');
         }
+    }
+}
+
+function deleteContainerEntity(req, res, next){
+    console.log('delete container middle', req.body);
+    if( req.body ){
+        //проверка наличия сущности в системе
+        const id = req.body.id;
+        const name = req.params.id;
+
+        removeContainerItems( name, id, res );
+
     }
 }
 
@@ -278,5 +406,6 @@ entity.post('/:id', cors(), jsonparser, createEntity, function(req, res){
 
 admin.use('/dict', dict);
 admin.use('/entity', cors(), entity);
+admin.use('/containers', cors(), container);
 
 module.exports = admin;
