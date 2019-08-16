@@ -15,8 +15,8 @@ module.exports = {
             },
         ],
         fields:[ 
-            { key: 'id', title: 'ID услуги', type: 'id', readonly: true }, 
-            { key: 'title', type: 'string', title: 'Название услуги', required: true }, 
+            { key: 'id', title: 'ID услуги', type: 'id', readonly: true, showOnTable: false }, 
+            { key: 'title', type: 'string', title: 'Название услуги', required: true, showOnTable: true }, 
             { 
                 key: 'category', 
                 title: 'Категория услуги', 
@@ -25,21 +25,23 @@ module.exports = {
                 useDict: true, 
                 canBeNull: false, 
                 initData: 1, 
-                required: true 
+                required: true,
+                showOnTable: true
             }, 
-            { key: 'description', title: 'Описание услуги', type: 'text' }, 
-            { key: 'article_id', type: 'id', hide: true }, 
-            { key: 'gallery_id', type: 'id', hide: true }, 
+            { key: 'description', title: 'Описание услуги', type: 'text', showOnTable: true }, 
+            { key: 'article_id', type: 'id', hide: true, showOnTable: false }, 
+            { key: 'gallery_id', type: 'id', hide: true, showOnTable: false }, 
             { 
                 key: 'trimester', 
                 type: 'id', 
                 title: 'Триместер услуги', 
                 useDict: true,
                 dctKey: 'dict_trimester_service',
-                canBeNull: true 
+                canBeNull: true,
+                showOnTable: true
             }, 
             { key: 'type', type: 'id', hide: true  }, 
-            { key: 'adv', title: 'Рекламная услуга', type: 'flag'  },
+            { key: 'adv', title: 'Рекламная услуга', type: 'flag', showOnTable: false  },
         ]
     },
     ent_clinics: {
