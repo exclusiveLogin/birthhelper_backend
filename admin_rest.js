@@ -332,10 +332,12 @@ entity.get('/:id/set', cors(), function(req, res){
     if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
         pool.query(`SELECT * FROM \`${ entities[req.params.id].db_name }\``, (err, result)=> {
             const lenSet = result && result.length;
-            res.send(JSON.stringify({
+            const con = entities[req.params.id].container || null
+            res.send({
                 total: lenSet,
-                fields: entities[req.params.id].fields || []
-            }));
+                fields: entities[req.params.id].fields  || [],
+                container: con ? containers[con] : null,
+            });
         });
     } else {
         res.send([]);
