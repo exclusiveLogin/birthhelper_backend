@@ -64,6 +64,7 @@ entity.get('/', cors(), function(req, res){
 let container = express.Router();
 container.get('/', cors(), getContainersList);
 container.get('/:name', cors(), getContainer);
+container.get('/:name/:cid', cors(), getContainer);
 
 function concatFn(arrA, arrB){
     console.log('A:', arrA, 'B:', arrB);
@@ -113,10 +114,13 @@ function getContainer(req, res, next){
         )){
 
         let containerParams = containers[name];
+        let cid = req.params.cid;
+
+        const whereStr = cid ? `WHERE \`id\`=${ cid }` : '';
 
         console.log('Запрошенный контейнер существует:', containerParams);
 
-        const q = 'SELECT * FROM `' + containerParams.db_list + '`';
+        const q = 'SELECT * FROM `' + containerParams.db_list + '`' + whereStr;
 
         pool.query(q, (err, result) => {
             if(err){
