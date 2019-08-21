@@ -65,6 +65,7 @@ let container = express.Router();
 container.get('/', cors(), getContainersList);
 container.get('/:name', cors(), getContainer);
 container.get('/:name/:cid', cors(), getContainer);
+container.post('/:name/:cid', cors(), jsonparser, saveContainerHandler);
 
 function concatFn(arrA, arrB){
     console.log('A:', arrA, 'B:', arrB);
@@ -182,48 +183,108 @@ function getContainer(req, res, next){
     }
 }
 
-function saveContainer(name, id_container, ids){
+function simpleSaveContainer(containerParams, id_container, ids){
     //проверка валидности ключа сущности для контейнера
-    if( !!containers[name] && (!!containers[name].db_name && !!containers[name].db_repo_name && !!containers[name].db_container_name) ){
-        let containerParams = containers[name];
+    return new Promise(( resolve, reject )=>{
+        if(containerParams && id_container && Array.isArray(ids) ){
 
-    }
+            const id_key = containerParams.container_id_key;
+            const links_db = containerParams.db_links;
+
+            // delete exist container store and write new
+
+            console.log("DEV containerParams:", containerParams);
+            removeContainerItems( containerParams.name, id_container )
+                .then((result)=>{
+                    console.log(result);
+                    let promisesList = ids.map(cur_id => {
+                        return new Promise((rs, rj) => {
+                            let q = `INSERT INTO \`${links_db}\` (\`container_id\`, \`${id_key}\` ) VALUES(${id_container}, ${cur_id})`;
+                            console.log('q:', q);
+                            pool.query(q, function(err, result){
+                                if(err) {
+                                    rj({error: err});
+                                }
+                                rs('запись о контейнере с id ', cur_id, 'добавлена в БД');
+                                console.log('запись о контейнере с id ', cur_id, 'добавлена в БД');
+                            })
+                        });
+                    });
+        
+                    Promise.all(promisesList).then((result)=>{
+                        resolve('все записи по контейнеру сохранены в БД');
+                    }).catch((error)=>{
+                        reject(error);
+                    })
+                }).catch(err => reject(err));
+ 
+        } else reject({error: 'Недостаточно входных данных для работы с контейнером(links_db && id_container && Array.isArray(ids))'});
+    });
+    
 } 
 
-function removeContainerItems(name, id, res){
+function saveContainerHandler(req, res, next){
+    console.log(req.body, req.params);
     //проверка валидности ключа сущности для контейнера
-    if( !!containers[name] && (!!containers[name].db_name && !!containers[name].db_repo_name && !!containers[name].db_container_name) ){
-        let containerParams = containers[name];
-        const db_repo = containerParams.db_repo_name;
-        const db_cont = containerParams.db_container_name;
-
-        const qd = `DELETE FROM \`${ db_repo }\` WHERE id=${id}`;
-
-        pool.query(qd, (err, result)=> {
-            if(err) {
+    if( !!containers[req.params.name] ){
+        let containerParams = containers[req.params.name];
+        const container_id = req.params.cid;
+        const data = req.body;
+        if(data.ids) {
+            simpleSaveContainer(containerParams, container_id, data.ids).then((result) => {
+                console.log(result);
+                res.send({status: result});
+            }).catch((error) => {
+                console.error(error);
                 res.status(500);
-                res.send(err);
-                return;
-            }
-            //  удаляем остатки для очистки мусора
+                res.send({error: JSON.stringify(error)});
+            });
+        }
+    } else{
+        res.status(500);
+        res.send({error: 'Контейнер не найден'});
+    }
+}
+
+function removeContainerFromRepo(name, id){
+    return new Promise((resolve, reject) => {
+
+        if( !!containers[name] ){
+            let containerParams = containers[name];
+            const db_repo = containerParams.db_repo_name;
+            const qd = `DELETE FROM \`${ db_repo }\` WHERE id=${id}`;
+    
+            pool.query(qd, (err, result)=> {
+                if(err) {
+                    reject({error: err});
+                    return;
+                }
+
+                resolve('Контейнер с name: ' + name + ' и id: ' + id + ' удален из репозитория');
+            });
+        } else reject({error: 'Удаляемый контейнер не найден'});
+    });
+}
+function removeContainerItems( name, id ){
+    return new Promise((resolve, reject) => {
+        //проверка валидности ключа сущности для контейнера
+        if( !!containers[name] ){
+
+            let containerParams = containers[name];
+            const db_cont = containerParams.db_links;
+
+            //  удаляем связив блоке контейнеров
             let qdd = `DELETE FROM \`${ db_cont }\` WHERE container_id=${id}`;
 
             pool.query(qdd, (err, result)=>{
                 if(err) {
-                    res.status(500);
-                    res.send(err);
+                    reject({error: err});
                     return;
                 }
-
-                res.send(JSON.stringify({
-                    result,
-                    text:`Записи контейнеров с id = ${id} удалены`
-                }));
-
-                next();
-            })
-        });
-    }
+                resolve({result:`Записи контейнеров с id = ${id} удалены`});
+            });
+        } else reject('Контейнер не найден');
+    });
 }
 
 function createEntity(req, res, next){
@@ -311,14 +372,25 @@ function deleteEntity(req, res, next){
     }
 }
 
-function deleteContainerEntity(req, res, next){
-    console.log('delete container middle', req.body);
+function deleteContainerHandler(req, res){
     if( req.body ){
         //проверка наличия сущности в системе
+        /**
+         * Поправить запрос чтобы работал с эндпоинта DELETE /containername/id без передачи body
+         */
         const id = req.body.id;
         const name = req.params.id;
 
-        removeContainerItems( name, id, res );
+
+        let promiseLinks = removeContainerItems( name, id );
+        let promiseRepo =  removeContainerFromRepo( name, id );
+
+        Promise.all( promiseLinks, promiseRepo )
+            .then(() => res.send({status: 'Данные о контейнере '+ id + ' удалены'}))
+            .catch((err) => {
+                res.status(500);
+                res.send({error: err.error});
+            })
 
     }
 }
@@ -354,6 +426,7 @@ entity.get('/:id', cors(), function(req, res){
 
         const db = entities[req.params.id].db_name;
         const fields = entities[req.params.id].fields;
+        const calc = entities[req.params.id].calculated;
         
         let limit = !!req.query.skip && Number(req.query.skip)  || '20';
         
@@ -390,11 +463,47 @@ entity.get('/:id', cors(), function(req, res){
         let whereStr = conSearchParams.length && conSearchParams.join(' AND ');
 
         let limstr = `${ !!req.query.skip ? ' LIMIT ' + limit + ' OFFSET ' + req.query.skip  :'' }`;
+
         let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : ''} ${likeStr ? (whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} ${limstr}`;
 
         console.log('q:', q);
 
         pool.query(q, (err, result)=> {
+
+            if( calc ){
+                let calcPr = calc.map((c) => {
+                    const id = result
+                    return new Promise((resolve, reject)=>{
+
+                        //{ key: 'items', title: 'Элементов', type: 'count', id_key: 'phone_id', db_name: 'phone_containers' }
+
+                        switch( c.type ){
+                            case 'count':
+                                const aq = `SELECT * FROM \`${ c.db_name }\` 'WHERE \`${ c.id_key }\`=${id} '`;
+
+                                console.log('qa: ', aq);
+
+                                pool.query(aq, function( err, a_result ){
+                                    if(err){
+                                        reject({error:err});
+                                    }
+
+                                    resolve(a_result);
+                                });
+                                break;
+                            default:
+                                resolve([]);
+                        }
+                        
+                    })
+                });
+
+                Promise.all( calcPr ).then((add_results)=>{
+                    console.log('add: ', add_results);
+
+
+                }).catch(er => {});
+            }
             res.send(result);
         });
     } else {

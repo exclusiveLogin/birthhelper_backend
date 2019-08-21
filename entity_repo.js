@@ -95,11 +95,14 @@ module.exports = {
         filters: [],
         container: null,
         fields: [
-            { key: 'id', title: 'ID телефона', type: 'id', readonly: true, showOnTable: false }, 
+            { key: 'id', title: 'ID телефона', type: 'id', readonly: true, showOnTable: true }, 
             { key: 'phone', type: 'string', title: 'Телефон', required: true, showOnTable: true }, 
             { key: 'title', type: 'string', title: 'Название телефона', required: false, showOnTable: true }, 
             { key: 'description', title: 'Описание телефона', type: 'text', showOnTable: true },
             { key: 'comment', title: 'Комментарий', type: 'text', showOnTable: true },
+        ],
+        calculated: [
+            { key: 'items', title: 'Элементов', type: 'count', id_key: 'phone_id', db_name: 'phone_containers' }
         ]
     },
 };
