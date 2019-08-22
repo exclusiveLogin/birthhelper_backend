@@ -84,9 +84,13 @@ module.exports = {
         container: 'container_phones',
         fields: [
             { key: 'id', title: 'ID контейнера', type: 'id', readonly: true, showOnTable: false }, 
-            { key: 'title', type: 'string', title: 'Название клиники', required: true, showOnTable: true }, 
-            { key: 'description', title: 'Описание клиники', type: 'text', showOnTable: true },
+            { key: 'title', type: 'string', title: 'Название', required: true, showOnTable: true }, 
+            { key: 'description', title: 'Описание', type: 'text', showOnTable: true },
             { key: 'comment', title: 'Комментарий', type: 'text', showOnTable: true },
+            { key: 'items', title: 'Элементов', type: 'text', showOnTable: true, readonly: true },
+        ],
+        calculated: [
+            { key: 'items', type: 'count', id_key: 'container_id', db_name: 'phone_containers' },
         ]
     },
 
@@ -100,9 +104,6 @@ module.exports = {
             { key: 'title', type: 'string', title: 'Название телефона', required: false, showOnTable: true }, 
             { key: 'description', title: 'Описание телефона', type: 'text', showOnTable: true },
             { key: 'comment', title: 'Комментарий', type: 'text', showOnTable: true },
-        ],
-        calculated: [
-            { key: 'items', title: 'Элементов', type: 'count', id_key: 'phone_id', db_name: 'phone_containers' }
         ]
     },
 };

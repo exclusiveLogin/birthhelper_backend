@@ -288,7 +288,7 @@ function removeContainerItems( name, id ){
 }
 
 function createEntity(req, res, next){
-    console.log('post middle', req.body);
+    console.log('createEntity body:', req.body);
     if( req.body ){
         //проверка наличия сущности в системе
         if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
@@ -471,40 +471,66 @@ entity.get('/:id', cors(), function(req, res){
         pool.query(q, (err, result)=> {
 
             if( calc ){
-                let calcPr = calc.map((c) => {
-                    const id = result
+                let calcPr = result.map((c) => {
+                    const id = c.id;
                     return new Promise((resolve, reject)=>{
 
-                        //{ key: 'items', title: 'Элементов', type: 'count', id_key: 'phone_id', db_name: 'phone_containers' }
+                        let tmpPr = calc.map(clc => {
 
-                        switch( c.type ){
-                            case 'count':
-                                const aq = `SELECT * FROM \`${ c.db_name }\` 'WHERE \`${ c.id_key }\`=${id} '`;
+                            return new Promise((_resolve, _reject) => {
 
-                                console.log('qa: ', aq);
+                                switch( clc.type ){
+                                    case 'count':
+                                        const aq = `SELECT * FROM \`${ clc.db_name }\` WHERE \`${ clc.id_key }\`='${id}'`;
+        
+                                        console.log('qa: ', aq);
+        
+                                        pool.query(aq, function( err, a_result ){
+                                            if(err){
+                                                _reject(err);
+                                            }
+        
+                                            _resolve({ key: clc.key, value: a_result.length});
+                                        });
+                                        break;
+    
+                                    case 'test':
+                                        _resolve({key: clc.key, value: 'test'});
+                                        break;
 
-                                pool.query(aq, function( err, a_result ){
-                                    if(err){
-                                        reject({error:err});
-                                    }
+                                    default:
+                                        _resolve([]);
+                                        
+                                }
 
-                                    resolve(a_result);
-                                });
-                                break;
-                            default:
-                                resolve([]);
-                        }
+                            });
+                            
+
+                        });
+
+                        Promise.all( tmpPr ).then((_results)=>{
+                            const mergeField = _results.map((r, idx) => {
+                                Object.assign( c, {[r.key]: r.value} );
+                            });
+
+                            resolve(c)
+                        }).catch(err=>reject(err));
+                        
                         
                     })
                 });
 
                 Promise.all( calcPr ).then((add_results)=>{
-                    console.log('add: ', add_results);
-
-
-                }).catch(er => {});
+                    res.send(add_results);
+                }).catch(er => { 
+                    console.error('error: ', er);
+                    res.status(500);
+                    res.send({error: er});
+                });
+            } else{
+                res.send(result);
             }
-            res.send(result);
+            
         });
     } else {
         res.send([]);
