@@ -66,6 +66,7 @@ container.get('/', cors(), getContainersList);
 container.get('/:name', cors(), getContainer);
 container.get('/:name/:cid', cors(), getContainer);
 container.post('/:name/:cid', cors(), jsonparser, saveContainerHandler);
+container.delete('/:name/:cid', cors(), deleteContainerHandler);
 
 function concatFn(arrA, arrB){
     console.log('A:', arrA, 'B:', arrB);
@@ -251,7 +252,7 @@ function removeContainerFromRepo(name, id){
 
         if( !!containers[name] ){
             let containerParams = containers[name];
-            const db_repo = containerParams.db_repo_name;
+            const db_repo = containerParams.db_list;
             const qd = `DELETE FROM \`${ db_repo }\` WHERE id=${id}`;
     
             pool.query(qd, (err, result)=> {
@@ -377,20 +378,22 @@ function deleteEntity(req, res, next){
 }
 
 function deleteContainerHandler(req, res){
-    if( req.body ){
+    if( req.params.cid && req.params.name ){
+
+        console.log('delete params:', req.params);
         //проверка наличия сущности в системе
         /**
          * Поправить запрос чтобы работал с эндпоинта DELETE /containername/id без передачи body
          */
-        const id = req.body.id;
-        const name = req.params.id;
+        const id = req.params.cid;
+        const name = req.params.name;
 
 
         let promiseLinks = removeContainerItems( name, id );
         let promiseRepo =  removeContainerFromRepo( name, id );
 
-        Promise.all( promiseLinks, promiseRepo )
-            .then(() => res.send({status: 'Данные о контейнере '+ id + ' удалены'}))
+        Promise.all( [promiseLinks, promiseRepo] )
+            .then((result) => res.send({status: 'Данные о контейнере '+ id + ' удалены'}))
             .catch((err) => {
                 res.status(500);
                 res.send({error: err.error});
