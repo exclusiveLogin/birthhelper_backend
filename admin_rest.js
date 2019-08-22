@@ -295,7 +295,11 @@ function createEntity(req, res, next){
             const db = entities[req.params.id].db_name;
             const reqKeys = entities[req.params.id].fields.filter(f => !!f.required);
             const fields = entities[req.params.id].fields;
+            const calc = entities[req.params.id].calculated;
             const data = req.body;
+
+            //убираем пересечения
+            calc.forEach(c => delete data[c.key]);
 
             if( !reqKeys.every(r => !!data[r.key]) ) {
                 res.end('не полные данные в запросе');
