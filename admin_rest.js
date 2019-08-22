@@ -300,7 +300,7 @@ function createEntity(req, res, next){
             const data = req.body;
 
             //убираем пересечения
-            calc.forEach(c => delete data[c.key]);
+            calc && calc.forEach(c => delete data[c.key]);
 
             if( !reqKeys.every(r => !!data[r.key]) ) {
                 res.end('не полные данные в запросе');
