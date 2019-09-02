@@ -2,7 +2,7 @@ module.exports = {
     dict_category_service: { db: 'category_service' },
     dict_trimester_service: { db: 'trimester' },
     dict_clinics: { db: 'clinics' },
-    dict_district: { db: 'district' },
+    dict_district: { db: 'districts' },
     dict_address_id: { 
         db: 'address_container',
         titleMap: [

@@ -46,18 +46,16 @@ module.exports = {
     },
     ent_clinics: {
         db_name: 'clinics',
-        filters: [],
+        filters: [
+            {
+                name: 'title',
+                title: 'По названию',
+                type: 'string',
+            },
+        ],
         fields: [
             { key: 'id', title: 'ID клиники', type: 'id', readonly: true, showOnTable: false }, 
             { key: 'title', type: 'string', title: 'Название клиники', required: true, showOnTable: true }, 
-            // { 
-            //     key: 'phone_container_id', 
-            //     title: 'Телефоны клиники', 
-            //     dctKey: 'dict_phone_container_id', 
-            //     type: 'id', 
-            //     useDict: true, 
-            //     canBeNull: true
-            // }, 
             { key: 'description', title: 'Описание клиники', type: 'text', showOnTable: true },
             { 
                 key: 'address_id', 
@@ -68,6 +66,16 @@ module.exports = {
                 canBeNull: false,
                 required: true,
                 showOnTable: true,
+            },
+            {
+                key: 'district',
+                title: 'Регион москвы',
+                required: true,
+                type: 'id',
+                useDict: true,
+                canBeNull: false,
+                showOnTable: true,
+                dctKey: 'dict_district'
             }
         ]
     },
