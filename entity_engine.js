@@ -150,6 +150,7 @@ entity.get('/:id/set', cors(), function(req, res){
                 total: lenSet,
                 fields: entities[req.params.id].fields  || [],
                 container: con ? containers[con] : null,
+                links: entities[req.params.id].links  || [],
             });
         });
     } else {

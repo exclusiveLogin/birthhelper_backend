@@ -93,9 +93,12 @@ module.exports = {
         fields: [
             { key: 'id', title: 'ID контейнера', type: 'id', readonly: true, showOnTable: false }, 
             { key: 'title', type: 'string', title: 'Название', required: true, showOnTable: true }, 
-            { key: 'description', title: 'Описание', type: 'text', showOnTable: true },
+            { key: 'description', title: 'Описание', type: 'text', required: true, showOnTable: true },
             { key: 'comment', title: 'Комментарий', type: 'text', showOnTable: true },
             { key: 'items', title: 'Элементов', type: 'text', showOnTable: true, readonly: true },
+        ],
+        links: [
+            { type: 'repo', title: 'Таблица телефонов системы', entKey: 'phones', multiselect: true, dummyTitle: 'Таблица выбранных телефонов контейнера'},
         ],
         calculated: [
             { key: 'items', type: 'count', id_key: 'container_id', db_name: 'phone_containers' },
