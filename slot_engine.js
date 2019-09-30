@@ -11,8 +11,67 @@ function getSlotList(req, res, next){
 }
 
 // получение entity или контейнера слота
-function getSlotItem(){
+function getSlotItems(slotParams, r){
+    return new Promise((resolve, reject) => {
+        const id = r.id;
+        let qi = null;
+        switch(r.type){
+            case 'entity':
+                qi = `SELECT 'id',
+                    ${slotParams.entity_fields.map(f => `\`${slotParams.db_entity}\`.\`${f}\``).join(', ')} 
+                    FROM \`${slotParams.db_entity}\`
+                    WHERE \`id\`= ${r[slotParams.entity_id_key]}`;
+                    break;
+            case 'container':
+                qi = `SELECT 
+                    \`${slotParams.db_entity}\`.\`id\`,
+                    ${slotParams.entity_fields.map(f => `\`${slotParams.db_entity}\`.\`${f}\``).join(', ')} 
+                    FROM \`${slotParams.db_container}\`
+                    LEFT JOIN \`${slotParams.db_entity}\`
+                    ON \`${slotParams.db_container}\`.\`${slotParams.entity_id_key}\` = \`${slotParams.db_entity}\`.\`id\`
+                    WHERE \`${slotParams.db_container}\`.\`container_id\`=${r[slotParams.entity_id_key]}`;
+                    break;
+        }
 
+        console.log('qi: ', qi);
+        if(qi){
+            pool.query(qi, (err_i, result_i) => {
+                if(err_i){
+                    reject(err_i);
+                }
+
+                resolve(result_i);
+            });
+        } else resolve(null);
+        
+
+    });
+}
+
+function getSlotContainer( slotParams, r ){
+    return new Promise((resolve, reject) => {
+        let qr;
+        if(r.type === 'container'){
+            qr = `SELECT 
+            \`${slotParams.db_repo}\`.\`id\`,
+            ${slotParams.container_fields.map(f => `\`${slotParams.db_repo}\`.\`${f}\``).join(', ')} 
+            FROM \`${slotParams.db_repo}\`
+            WHERE \`${slotParams.db_repo}\`.\`id\`=${r[slotParams.entity_id_key]}`;
+        } 
+
+        console.log('query getSlotContainer: ', qr);
+
+        if(qr) {
+            pool.query(qr, (err_i, result_i) => {
+            if(err_i){
+                reject(err_i);
+            }
+
+            resolve(result_i);
+            });
+        } else resolve(null);
+        
+    });
 }
 
 // функция возвращающая слот по id
@@ -48,73 +107,13 @@ function getSlot(req, res, next){
             result.forEach( r => {
                 if(!r.id) return;
 
-                
-                r.queryContainerRepo = new Promise((resolve, reject) => {
-                    let qr;
-                    if(r.type === 'container'){
-                        qr = `SELECT 
-                        \`${slotParams.db_repo}\`.\`id\`,
-                        ${slotParams.container_fields.map(f => `\`${slotParams.db_repo}\`.\`${f}\``).join(', ')} 
-                        FROM \`${slotParams.db_repo}\`
-                        WHERE \`${slotParams.db_repo}\`.\`id\`=${r[slotParams.entity_id_key]}`;
-                    }
-                    
-    
-                    console.log('query repo: ', qr);
-
-                    if(qr) {
-                        pool.query(qr, (err_i, result_i) => {
-                        if(err){
-                            reject(err_i);
-                        }
-
-                        resolve(result_i);
-                        });
-                    } else resolve(null);
-                    
-
-                });
+                r.queryContainerRepo = getSlotContainer(slotParams, r);
 
                 r.queryContainerRepo.then(resultRepo => {
                     r.container = resultRepo;
                 })
-
-              
                 
-                r.q = new Promise((resolve, reject) => {
-                    const id = r.id;
-                    let qi = null;
-                    switch(r.type){
-                        case 'entity':
-                            qi = `SELECT 'id',
-                                ${slotParams.entity_fields.map(f => `\`${slotParams.db_entity}\`.\`${f}\``).join(', ')} 
-                                FROM \`${slotParams.db_entity}\`
-                                WHERE \`id\`= ${r[slotParams.entity_id_key]}`;
-                                break;
-                        case 'container':
-                            qi = `SELECT 
-                                \`${slotParams.db_entity}\`.\`id\`,
-                                ${slotParams.entity_fields.map(f => `\`${slotParams.db_entity}\`.\`${f}\``).join(', ')} 
-                                FROM \`${slotParams.db_container}\`
-                                LEFT JOIN \`${slotParams.db_entity}\`
-                                ON \`${slotParams.db_container}\`.\`${slotParams.entity_id_key}\` = \`${slotParams.db_entity}\`.\`id\`
-                                WHERE \`${slotParams.db_container}\`.\`container_id\`=${r[slotParams.entity_id_key]}`;
-                                break;
-                    }
-
-                    console.log('qi: ', qi);
-                    if(qi){
-                        pool.query(qi, (err_i, result_i) => {
-                            if(err){
-                                reject(err_i);
-                            }
-
-                            resolve(result_i);
-                        });
-                    } else resolve(null);
-                    
-
-                });
+                r.q = getSlotItems(slotParams, r);
 
                 r.q.then( (ent) => {
                     r.entities = [...ent];
