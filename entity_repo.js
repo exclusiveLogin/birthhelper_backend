@@ -44,6 +44,26 @@ module.exports = {
             { key: 'adv', title: 'Рекламная услуга', type: 'flag', showOnTable: false  },
         ]
     },
+
+    ent_service_containers: { 
+        db_name: 'services_containers_repo',
+        filters: [],
+        container: 'container_services',
+        fields: [
+            { key: 'id', title: 'ID контейнера', type: 'id', readonly: true, showOnTable: false }, 
+            { key: 'title', type: 'string', title: 'Название', required: true, showOnTable: true }, 
+            { key: 'description', title: 'Описание', type: 'text', required: true, showOnTable: true },
+            { key: 'comment', title: 'Комментарий', type: 'text', showOnTable: true },
+            { key: 'items', title: 'Элементов', type: 'text', showOnTable: true, readonly: true },
+        ],
+        links: [
+            { type: 'repo', title: 'Таблица услуг системы', entKey: 'services', multiselect: true, dummyTitle: 'Услуги в контейнере'},
+        ],
+        calculated: [
+            { key: 'items', type: 'count', id_key: 'container_id', db_name: 'service_containers' },
+        ]
+    },
+
     ent_clinics: {
         db_name: 'clinics',
         filters: [

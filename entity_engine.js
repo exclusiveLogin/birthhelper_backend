@@ -144,7 +144,7 @@ entity.get('/:id/filters', cors(), function(req, res){
 entity.get('/:id/set', cors(), function(req, res){
     if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
         pool.query(`SELECT * FROM \`${ entities[req.params.id].db_name }\``, (err, result)=> {
-            const lenSet = result && result.length;
+            const lenSet = result && result.length || 0;
             const con = entities[req.params.id].container || null
             res.send({
                 total: lenSet,
@@ -208,7 +208,7 @@ entity.get('/:id', cors(), function(req, res){
 
         pool.query(q, (err, result)=> {
 
-            if( calc ){
+            if( calc && result ){
                 let calcPr = result.map((c) => {
                     const id = c.id;
                     return new Promise((resolve, reject)=>{

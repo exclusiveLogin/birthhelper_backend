@@ -9,5 +9,16 @@ module.exports = {
         db_list: 'phones_containers_repo', // БД списка существующих контейнеров данного типа
         db_links: 'phone_containers', // БД связей контейнеров
         entity_key: 'ent_phones', // ключ сущности
+    },
+    container_services: {
+        name: 'container_services',
+        title: 'Контейнеры услуг в системе',
+        db_entity: 'services', // БД сущностей
+        entity_fields: ['title', 'description', 'category', 'trimester'], // поля для 
+        overrided_fields: ['title', 'description'], // поля доступные для перекрытия 
+        container_id_key: 'service_id', // ключ связи контейнера и таблицы сущностей
+        db_list: 'services_containers_repo', // БД списка существующих контейнеров данного типа
+        db_links: 'service_containers', // БД связей контейнеров
+        entity_key: 'ent_services', // ключ сущности
     }
 }
