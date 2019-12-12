@@ -5,6 +5,7 @@ const jsonparser = bodyparser.json();
 const entities = require('./entity_repo');
 const pool = require('./sql');
 const containers = require('./container_repo');
+const slots = require('./slot_repo');
 
 const entity = express.Router();
 entity.get('/', cors(), function(req, res){
@@ -59,11 +60,13 @@ function createEntity(req, res, next){
 
             if( !reqKeys.every(r => !!data[r.key]) ) {
                 res.end('не полные данные в запросе');
+                console.log('не полные данные в запросе');
                 return;
             }
 
             if( !Object.keys(data).every(r => !!fields.find(f => f.key === r ))) {
                 res.end('в запросе присутствут неизвестные поля');
+                console.log('в запросе присутствут неизвестные поля');
                 return;
             }
 
@@ -97,6 +100,7 @@ function createEntity(req, res, next){
 
         } else {
             res.end('не удалось определить сущность');
+            console.log('не удалось определить сущность');
         }
     }
 }
@@ -145,11 +149,13 @@ entity.get('/:id/set', cors(), function(req, res){
     if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
         pool.query(`SELECT * FROM \`${ entities[req.params.id].db_name }\``, (err, result)=> {
             const lenSet = result && result.length || 0;
-            const con = entities[req.params.id].container || null
+            const con = entities[req.params.id].container || null;
+            const slot = entities[req.params.id].slot || null;
             res.send({
                 total: lenSet,
                 fields: entities[req.params.id].fields  || [],
                 container: con ? containers[con] : null,
+                slot: slot ? slots[slot] : null,
                 links: entities[req.params.id].links  || [],
             });
         });

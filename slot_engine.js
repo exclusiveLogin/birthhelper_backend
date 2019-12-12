@@ -76,7 +76,7 @@ function getSlotContainer( slotParams, r ){
 
 // функция возвращающая слот по id
 function getSlot(req, res, next){
-    console.log('getContainer', req.params);
+    console.log('getSlot', req.params);
     if(!req.params.name) {
         res.status(500);
         res.end(JSON.stringify({error: 'ошибка доступа : не указан slot'}));
@@ -137,15 +137,66 @@ function getSlot(req, res, next){
     }
 }
 
+function concatFn(arrA, arrB){
+    console.log('A:', arrA, 'B:', arrB);
+    if( arrA && arrA.length && arrB && arrB.length ){
+        let fine = [];
+        for(let i = 0; i < arrA.length; i++){
+            fine.push(`${arrA[i]} = ${arrB[i]}`);
+        }
+        return fine;
+    }
+    return [];
+}
+
+function saveSlot(params, slot_id, data){
+
+    console.log('save slot:', params, slot_id, data);
+
+    const db = params.db_links;
+    let valArr = !slot_id ?
+        Object.keys(data).map( datakey => {
+            const targetType = params.required_fields_type && params.required_fields_type[datakey];
+            if(!targetType) return `"${data[datakey]}"`;
+            return targetType === 'string' ? `"${data[datakey]}"` : data[datakey];
+    }) :
+        Object.keys(data).map( datakey => {
+            const targetType = params.required_fields_type && params.required_fields_type[datakey];
+            if(!targetType) return `"${data[datakey]}"`;
+            return targetType === 'string' ? `\`${ datakey }\` = "${data[datakey]}"` : `\`${ datakey }\` = ${ data[ datakey ] }`;
+    });
+
+    console.log('valArr: ', valArr, 'slot_id: ', slot_id);
+
+    let q = !slot_id ?
+        `INSERT INTO \`${ db }\` (\`${ Object.keys(data).join('\`, \`') }\`) VALUES ( ${ valArr.join(',') } )` :
+        `UPDATE \`${ db }\` SET ${ valArr.join(', ') } WHERE \`id\` = ${slot_id}` ;
+
+    console.log('q: ', q);
+
+    return new Promise((rs, rj) => {
+        pool.query(q, function(err, result){
+            if(err) {
+                rj({error: err});
+            }
+            rs(`${slot_id ? 'слот с id ' + slot_id + ' изменен' : 'добавлен новый слот'}`);
+            console.log(`${slot_id ? 'слот с id ' + slot_id + ' изменен' : 'добавлен новый слот'}`);
+        })
+    });
+}
+
 function saveSlotHandler(req, res, next){
     console.log(req.body, req.params);
     //проверка валидности ключа сущности для контейнера
-    if( !!containers[req.params.name] ){
-        let containerParams = containers[req.params.name];
-        const container_id = req.params.cid;
+    if( !!slots[req.params.name] ){
+        let slotParams = slots[req.params.name];
+        const slot_id = req.params.sid;
         const data = req.body;
-        if(data.ids) {
-            simpleSaveContainer(containerParams, container_id, data.ids).then((result) => {
+
+        if(data &&
+            validator(data, slotParams)
+        ) {
+            saveSlot(slotParams, slot_id, data).then((result) => {
                 console.log(result);
                 res.send({status: result});
             }).catch((error) => {
@@ -153,6 +204,9 @@ function saveSlotHandler(req, res, next){
                 res.status(500);
                 res.send({error: JSON.stringify(error)});
             });
+        } else {
+            res.status(500);
+            res.send({error: 'Ошибка в переданных данных, уточните запрос'});
         }
     } else{
         res.status(500);
@@ -160,46 +214,50 @@ function saveSlotHandler(req, res, next){
     }
 }
 
-function removeSlot(name, id){
+function validator(data, params){ // все ли поля необходимые пришли на бек
+    console.log('validator: ', data, params.required_fields);
+    const reqFields = params.required_fields;
+    return reqFields.every(rf => !!data[rf]);
+}
+
+function removeSlot(params, id){
     return new Promise((resolve, reject) => {
+        const db_repo = params.db_links;
+        const qd = `DELETE FROM \`${ db_repo }\` WHERE id=${id}`;
+        console.log('qd: ', qd);
 
-        if( !!containers[name] ){
-            let containerParams = containers[name];
-            const db_repo = containerParams.db_list;
-            const qd = `DELETE FROM \`${ db_repo }\` WHERE id=${id}`;
-    
-            pool.query(qd, (err, result)=> {
-                if(err) {
-                    reject({error: err});
-                    return;
-                }
+        pool.query(qd, (err, result)=> {
+            if(err) {
+                reject({error: err});
+                return;
+            }
 
-                resolve('Контейнер с name: ' + name + ' и id: ' + id + ' удален из репозитория');
-            });
-        } else reject({error: 'Удаляемый контейнер не найден'});
+            resolve('Слот с name: ' + params.name + ' и id: ' + id + ' удален из репозитория');
+        });
     });
 }
 
 function deleteSlotHandler(req, res){
-    if( req.params.cid && req.params.name ){
-
+    if( req.params.sid && req.params.name ){
         console.log('delete params:', req.params);
-        //проверка наличия сущности в системе
-        /**
-         * Поправить запрос чтобы работал с эндпоинта DELETE /containername/id без передачи body
-         */
-        const id = req.params.cid;
+        const id = req.params.sid;
         const name = req.params.name;
 
-        let promiseSlot = removeSlot( name, id );
-
-        Promise.all( [promiseSlot] )
-            .then((result) => res.send({status: 'Данные о контейнере '+ id + ' удалены'}))
-            .catch((err) => {
-                res.status(500);
-                res.send({error: err.error});
+        if( !!slots[ name ] ){
+            let slotParams = slots[name];
+            removeSlot( slotParams, id )
+                .then(result => {
+                    res.send({status: result})
             })
+                .catch( error => {
+                    res.status(500);
+                    res.send({error: err.error});
+            });
 
+        } else {
+            res.status(500);
+            res.send({error: 'слот не найден'});
+        }
     }
 }
 
@@ -207,8 +265,9 @@ function deleteSlotHandler(req, res){
 const slot = express.Router();
 slot.get('/', cors(), getSlotList);
 slot.get('/:name', cors(), getSlot);
-// container.get('/:name/:cid', cors(), getContainer);
-// container.post('/:name/:cid', cors(), jsonparser, saveContainerHandler);
-// container.delete('/:name/:cid', cors(), deleteContainerHandler);
+// slot.get('/:name/:cid', cors(), getContainer);
+slot.post('/:name/', cors(), jsonparser, saveSlotHandler);
+slot.post('/:name/:sid', cors(), jsonparser, saveSlotHandler);
+slot.delete('/:name/:sid', cors(), deleteSlotHandler);
 
 module.exports = slot;

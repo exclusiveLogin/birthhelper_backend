@@ -125,6 +125,35 @@ module.exports = {
         ]
     },
 
+    ent_services_slots: {
+        db_name: 'service_slot',
+        filters: [],
+        container: null,
+        slot: 'slot_service_natal',
+        fields: [
+            { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
+            { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
+            { key: 'service_id', type: 'string', title: 'id услуги', required: true, showOnTable: true, readonly: true },
+            { key: 'contragent_id', type: 'string', title: 'id клиники', required: true, showOnTable: true, readonly: true },
+            { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
+            {
+                key: 'type',
+                title: 'Тип услуги',
+                required: false,
+                type: 'id',
+                proxyTo: 'name',
+                useDict: true,
+                canBeNull: true,
+                showOnTable: true,
+                dctKey: 'dict_slot_entity_type'
+            }
+        ],
+        links: [
+            { type: 'repo', title: 'Таблица услуг системы', entKey: 'services', multiselect: false, entType: 'entity', proxyTo: 'service_id'},
+            { type: 'repo', title: 'Таблица клиник системы', entKey: 'clinics', multiselect: false, entType: 'entity', proxyTo: 'contragent_id'},
+        ],
+    },
+
     ent_phones: { 
         db_name: 'phones',
         filters: [],

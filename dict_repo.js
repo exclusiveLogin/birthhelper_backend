@@ -13,5 +13,6 @@ module.exports = {
             'position_lon'
         ]
     },
-    dict_phone_container: { db: 'phone_container' }
+    dict_phone_container: { db: 'phone_container' },
+    dict_slot_entity_type: { db: 'slot_entity_type'}
 };
