@@ -278,6 +278,7 @@ entity.get('/:id', cors(), function(req, res){
         });
     } else {
         res.send([]);
+        console.log('сущность не определена');
     }
 });
 
