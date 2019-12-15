@@ -95,7 +95,8 @@ module.exports = {
                 useDict: true,
                 canBeNull: false,
                 showOnTable: true,
-                dctKey: 'dict_district'
+                dctKey: 'dict_district',
+                titleDictKey: 'title_short'
             }
         ]
     },
