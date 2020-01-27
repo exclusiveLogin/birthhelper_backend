@@ -30,7 +30,7 @@ module.exports = {
             }, 
             { key: 'description', title: 'Описание услуги', type: 'text', showOnTable: true }, 
             { key: 'article_id', type: 'id', hide: true, showOnTable: false }, 
-            { key: 'gallery_id', type: 'id', hide: true, showOnTable: false }, 
+            { key: 'image_id', title: 'Прикрепленное изображение', type: 'img', showOnTable: false },
             { 
                 key: 'trimester', 
                 type: 'id', 
@@ -165,6 +165,18 @@ module.exports = {
             { key: 'title', type: 'string', title: 'Название телефона', required: false, showOnTable: true }, 
             { key: 'description', title: 'Описание телефона', type: 'text', showOnTable: true },
             { key: 'comment', title: 'Комментарий', type: 'text', showOnTable: true },
+        ]
+    },
+
+    ent_images: {
+        db_name: 'images',
+        filters: [],
+        container: null,
+        fields: [
+            { key: 'id', title: 'ID телефона', type: 'id', readonly: true, showOnTable: true },
+            { key: 'title', type: 'string', title: 'Название картинки', required: true, showOnTable: true },
+            { key: 'description', title: 'Описание картинки', type: 'text', showOnTable: true },
+            { key: 'url', title: 'url изображения', type: 'text', required: true, showOnTable: true },
         ]
     },
 };

@@ -6,6 +6,22 @@ const entities = require('./entity_repo');
 const pool = require('./sql');
 const containers = require('./container_repo');
 const slots = require('./slot_repo');
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/')
+    },
+    filename: function (req, file, cb) {
+        const originalname = file.originalname.split('.');
+        const newName = originalname[0] + '_' + Date.now() + '.' + originalname[1];
+        cb(null, newName);
+    }
+});
+
+const fileFilter = (req, file, cb) => file && file.mimetype === 'image/jpeg' ? cb(null, true) : cb(null, false);
+
+const upload = multer({ storage: storage, fileFilter });
 
 const entity = express.Router();
 entity.get('/', cors(), function(req, res){
@@ -18,7 +34,6 @@ entity.get('/', cors(), function(req, res){
     res.end();
 
 });
-
 
 function concatFn(arrA, arrB){
     console.log('A:', arrA, 'B:', arrB);
@@ -136,6 +151,144 @@ function deleteEntity(req, res, next){
     }
 }
 
+function queryEntity( req, res, next ){
+    if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
+        const db = entities[req.params.id].db_name;
+        const fields = entities[req.params.id].fields;
+        const calc = entities[req.params.id].calculated;
+
+        let limit = !!req.query.skip && Number(req.query.skip)  || '20';
+
+        // проработать логику поиска типа поля запроса
+
+        let searchParamsKeys = Object.keys(req.query).filter(k =>
+            !( k === 'skip' || k === 'limit' ) &&
+            ( fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'id' )
+        );
+
+        let searchParamsValue = searchParamsKeys.map( k => req.query[k] );
+
+        let conSearchParams = concatFn( searchParamsKeys, searchParamsValue );
+
+        let searchStringKeys = Object.keys(req.query).filter(k =>
+            !( k === 'skip' || k === 'limit' ) &&
+            ( fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'string' )
+        );
+
+        let searchStringValue = searchStringKeys.map(k => `${req.query[k]}` );
+        let conSearchStrings = concatLikeFn( searchStringKeys, searchStringValue );
+
+        console.log('ent q:', req.query, 'ids:', searchParamsKeys, searchParamsValue, 'str:', searchStringKeys, searchStringValue);
+
+        // если спросили что то лишнее хотя с новой логикой сюда не попадуть те запросы которых нет в репозитории доступных
+        if( !Object.keys(req.query).every(r => !!( r === 'skip' || r === 'limit' ) || !!fields.find(f => f.key === r ))) {
+            res.status(500);
+            res.end('в запросе поиска присутствуют неизвестные поля');
+            console.warn('в запросе поиска присутствуют неизвестные поля');
+            return;
+        }
+
+        let likeStr = conSearchStrings.length && conSearchStrings.join(' AND ');
+        let whereStr = conSearchParams.length && conSearchParams.join(' AND ');
+
+        let limstr = `${ !!req.query.skip ? ' LIMIT ' + limit + ' OFFSET ' + req.query.skip  :'' }`;
+
+        let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : ''} ${likeStr ? (whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} ${limstr}`;
+
+        if (req.params.eid){
+            const eid = req.params.eid;
+            q = `SELECT * FROM \`${ db }\` WHERE id = ${ eid }`;
+        }
+
+        console.log('q:', q);
+
+        pool.query(q, (err, result)=> {
+
+            if( calc && result ){
+                let calcPr = result.map((c) => {
+                    const id = c.id;
+                    return new Promise((resolve, reject)=>{
+
+                        let tmpPr = calc.map(clc => {
+
+                            return new Promise((_resolve, _reject) => {
+
+                                switch( clc.type ){
+                                    case 'count':
+                                        const aq = `SELECT * FROM \`${ clc.db_name }\` WHERE \`${ clc.id_key }\`='${id}'`;
+
+                                        console.log('qa: ', aq);
+
+                                        pool.query(aq, function( err, a_result ){
+                                            if(err){
+                                                _reject(err);
+                                            }
+
+                                            _resolve({ key: clc.key, value: a_result.length});
+                                        });
+                                        break;
+
+                                    case 'test':
+                                        _resolve({key: clc.key, value: 'test'});
+                                        break;
+
+                                    default:
+                                        _resolve([]);
+
+                                }
+
+                            });
+
+
+                        });
+
+                        Promise.all( tmpPr ).then((_results)=>{
+                            const mergeField = _results.map((r, idx) => {
+                                Object.assign( c, {[r.key]: r.value} );
+                            });
+
+                            resolve(c)
+                        }).catch(err=>reject(err));
+
+
+                    })
+                });
+
+                Promise.all( calcPr ).then((add_results)=>{
+                    res.send(add_results);
+                }).catch(er => {
+                    console.error('error: ', er);
+                    res.status(500);
+                    res.send({error: er});
+                });
+            } else{
+                res.send(result);
+            }
+
+        });
+    } else {
+        res.send([]);
+        console.log('сущность не определена');
+    }
+}
+
+function uploadFile( req, res, next ) {
+    console.log('img uploaded', req.file);
+    if(
+        (req.file && req.file.mimetype === 'image/jpeg') ||
+        (req.file && req.file.mimetype === 'image/jpg')
+    ){
+
+        const newName = req.file.filename + '.' + req.file.originalname.split('.')[1];
+
+        res.status(201);
+        res.send({status: 'Файл загружен успешно, происходит обработка записей БД'});
+    } else {
+        console.error('error: ', 'Ошибка типа файла. Поддерживаются только: jpeg', 'file: ', req.file);
+        res.status(500);
+        res.send({error: 'Ошибка типа файла. Поддерживаются только: jpeg'});
+    }
+}
 
 entity.get('/:id/filters', cors(), function(req, res){
     if( !!entities[req.params.id] && !!entities[req.params.id].filters ){
@@ -164,123 +317,12 @@ entity.get('/:id/set', cors(), function(req, res){
     }
 });
 
-entity.get('/:id', cors(), function(req, res){
-    //res.send( JSON.stringify( req.query ) );
-    if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
+entity.get('/:id', cors(), queryEntity);
 
-        const db = entities[req.params.id].db_name;
-        const fields = entities[req.params.id].fields;
-        const calc = entities[req.params.id].calculated;
-        
-        let limit = !!req.query.skip && Number(req.query.skip)  || '20';
-        
-        // проработать логику поиска типа поля запроса
+entity.get('/:id/:eid', cors(), queryEntity);
 
-        let searchParamsKeys = Object.keys(req.query).filter(k => 
-                !( k === 'skip' || k === 'limit' ) && 
-                ( fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'id' )
-            );
+entity.post('/file', cors(), upload.single('photo'), uploadFile);
 
-        let searchParamsValue = searchParamsKeys.map( k => req.query[k] );
-
-        let conSearchParams = concatFn( searchParamsKeys, searchParamsValue );
-
-        let searchStringKeys = Object.keys(req.query).filter(k => 
-                !( k === 'skip' || k === 'limit' ) && 
-                ( fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'string' ) 
-            );
-
-        let searchStringValue = searchStringKeys.map(k => `${req.query[k]}` );
-        let conSearchStrings = concatLikeFn( searchStringKeys, searchStringValue );
-
-        console.log('ent q:', req.query, 'ids:', searchParamsKeys, searchParamsValue, 'str:', searchStringKeys, searchStringValue);
-
-        // если спросили что то лишнее хотя с новой логикой сюда не попадуть те запросы которых нет в репозитории доступных
-        if( !Object.keys(req.query).every(r => !!( r === 'skip' || r === 'limit' ) || !!fields.find(f => f.key === r ))) {
-            res.status(500);
-            res.end('в запросе поиска присутствуют неизвестные поля');
-            console.warn('в запросе поиска присутствуют неизвестные поля');
-            return;
-        }
-
-        let likeStr = conSearchStrings.length && conSearchStrings.join(' AND ');
-        let whereStr = conSearchParams.length && conSearchParams.join(' AND ');
-
-        let limstr = `${ !!req.query.skip ? ' LIMIT ' + limit + ' OFFSET ' + req.query.skip  :'' }`;
-
-        let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : ''} ${likeStr ? (whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} ${limstr}`;
-
-        console.log('q:', q);
-
-        pool.query(q, (err, result)=> {
-
-            if( calc && result ){
-                let calcPr = result.map((c) => {
-                    const id = c.id;
-                    return new Promise((resolve, reject)=>{
-
-                        let tmpPr = calc.map(clc => {
-
-                            return new Promise((_resolve, _reject) => {
-
-                                switch( clc.type ){
-                                    case 'count':
-                                        const aq = `SELECT * FROM \`${ clc.db_name }\` WHERE \`${ clc.id_key }\`='${id}'`;
-        
-                                        console.log('qa: ', aq);
-        
-                                        pool.query(aq, function( err, a_result ){
-                                            if(err){
-                                                _reject(err);
-                                            }
-        
-                                            _resolve({ key: clc.key, value: a_result.length});
-                                        });
-                                        break;
-    
-                                    case 'test':
-                                        _resolve({key: clc.key, value: 'test'});
-                                        break;
-
-                                    default:
-                                        _resolve([]);
-                                        
-                                }
-
-                            });
-                            
-
-                        });
-
-                        Promise.all( tmpPr ).then((_results)=>{
-                            const mergeField = _results.map((r, idx) => {
-                                Object.assign( c, {[r.key]: r.value} );
-                            });
-
-                            resolve(c)
-                        }).catch(err=>reject(err));
-                        
-                        
-                    })
-                });
-
-                Promise.all( calcPr ).then((add_results)=>{
-                    res.send(add_results);
-                }).catch(er => { 
-                    console.error('error: ', er);
-                    res.status(500);
-                    res.send({error: er});
-                });
-            } else{
-                res.send(result);
-            }
-            
-        });
-    } else {
-        res.send([]);
-        console.log('сущность не определена');
-    }
-});
 
 entity.delete('/:id', cors(), jsonparser, deleteEntity, function(req, res){
     res.end('delete done');
