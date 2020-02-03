@@ -184,9 +184,12 @@ module.exports = {
         fields: [
             { key: 'id', title: 'ID картинки', type: 'id', readonly: true, showOnTable: true },
             { key: 'file_id', type: 'id', title: 'ID Файла', readonly: true, showOnTable: true },
-            { key: 'title', title: 'Название', type: 'string', readonly: true, showOnTable: true },
-            { key: 'description', title: 'Описание', type: 'string', readonly: true, showOnTable: true },
-        ]
+            { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
+            { key: 'description', title: 'Описание', type: 'string', readonly: false, showOnTable: true },
+        ],
+        links: [
+            { type: 'repo', title: 'Таблица файлов системы', entKey: 'files', multiselect: false, entType: 'entity', proxyTo: 'file_id'},
+        ],
     },
     ent_files: {
         db_name: 'files',
