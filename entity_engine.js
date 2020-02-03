@@ -156,6 +156,7 @@ function queryEntity( req, res, next ){
         const db = entities[req.params.id].db_name;
         const fields = entities[req.params.id].fields;
         const calc = entities[req.params.id].calculated;
+        const fk = entities[req.params.id].fk;
 
         let limit = !!req.query.skip && Number(req.query.skip)  || '20';
 
@@ -197,8 +198,16 @@ function queryEntity( req, res, next ){
 
         if (req.params.eid){
             const eid = req.params.eid;
-            q = `SELECT * FROM \`${ db }\` WHERE id = ${ eid }`;
+            if( fk ){
+                let s_str = fk.restrictors.map(r => fk.db + '.' + r.key).join(', ');
+                let r_str = fk.restrictors.map(r => fk.db + '.' + r.key + ' LIKE "' + r.value + '"').join(', ');
+                let t_str = fk.target.map(t => fk.db + '.' + t).join(', ');
+
+                q = `SELECT ${db}.*, ${fk.db}.id as _id, ${s_str}, ${t_str} FROM ${db} INNER JOIN ${fk.db} ON ${db}.${fk.key} = ${fk.db}.id WHERE ${r_str} AND ${db}.id = ${eid}`;
+            } else
+                q = `SELECT * FROM \`${ db }\` WHERE id = ${ eid }`;
         }
+
 
         console.log('q:', q);
 
@@ -279,15 +288,68 @@ function uploadFile( req, res, next ) {
         (req.file && req.file.mimetype === 'image/jpg')
     ){
 
-        const newName = req.file.filename + '.' + req.file.originalname.split('.')[1];
+        let fields = ['filename', 'folder', 'type'];
+        let values = [`"${req.file.filename}"`, `"uploads"`, `"${req.file.mimetype}"`];
 
-        res.status(201);
-        res.send({status: 'Файл загружен успешно, происходит обработка записей БД'});
+        let title = req.body.title || 'Без названия';
+        let description = req.body.description || 'Без описания';
+
+        let q = `INSERT INTO \`${ 'files' }\` (\`${ fields.join('\`, \`') }\`) VALUES ( ${ values.join(',') } )`;
+
+        console.log('save file in db: ', q);
+        pool.query(q, (error , result) => {
+            if(error) {
+                res.status(500);
+                res.send(error);
+                return;
+            }
+            if(result && result.insertId){
+                let qi = `INSERT INTO \`${ 'images' }\` ( \`file_id\`, \`title\`, \`description\`) VALUES ( ${result.insertId}, "${title}", "${description}" )`;
+                pool.query(qi, (err, _result) => {
+                    if(err) {
+                        res.status(500);
+                        res.send(err);
+                        return;
+                    }
+
+                    res.status(201);
+                    res.send({status: 'Файл загружен успешно, id: ' + result.insertId, file: {id: _result.insertId}});
+                });
+            }
+        });
+
+
     } else {
         console.error('error: ', 'Ошибка типа файла. Поддерживаются только: jpeg', 'file: ', req.file);
         res.status(500);
         res.send({error: 'Ошибка типа файла. Поддерживаются только: jpeg'});
     }
+}
+
+function downloadFile( req, res, next ){
+    const id = req.params.id;
+
+    //SELECT `images`.*, files.id as fid, files.filename FROM `images`, files WHERE images.id = 2 AND files.id = images.file_id
+    //SELECT `images`.*, files.id as fid, files.filename, files.type FROM `images` INNER JOIN files ON images.file_id = files.id WHERE files.type LIKE "%image%" AND images.id = 2
+
+    if(!id) {
+        res.status(500);
+        res.send({error: 'не передан ID файла'});
+    }
+
+    let q = `SELECT * FROM \`files\` WHERE \`id\` = ${id}`;
+    console.log('dl file: ', id, 'q: ', q);
+
+
+    pool.query(q, function (error, result) {
+        if(error){
+            res.status(500);
+            res.end({error});
+        }
+
+        res.send(result);
+    });
+
 }
 
 entity.get('/:id/filters', cors(), function(req, res){
@@ -317,6 +379,7 @@ entity.get('/:id/set', cors(), function(req, res){
     }
 });
 
+entity.get('/file/:id', cors(), downloadFile);
 entity.get('/:id', cors(), queryEntity);
 
 entity.get('/:id/:eid', cors(), queryEntity);

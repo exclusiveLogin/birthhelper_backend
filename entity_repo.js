@@ -170,13 +170,33 @@ module.exports = {
 
     ent_images: {
         db_name: 'images',
+        fk: {
+            db: 'files',
+            target: [ 'filename' ],
+            key: 'file_id',
+            restrictors: [{
+                key: 'type',
+                value: '%image%'
+            }]
+        },
         filters: [],
         container: null,
         fields: [
-            { key: 'id', title: 'ID телефона', type: 'id', readonly: true, showOnTable: true },
-            { key: 'title', type: 'string', title: 'Название картинки', required: true, showOnTable: true },
-            { key: 'description', title: 'Описание картинки', type: 'text', showOnTable: true },
-            { key: 'url', title: 'url изображения', type: 'text', required: true, showOnTable: true },
+            { key: 'id', title: 'ID картинки', type: 'id', readonly: true, showOnTable: true },
+            { key: 'file_id', type: 'id', title: 'ID Файла', readonly: true, showOnTable: true },
+            { key: 'title', title: 'Название', type: 'string', readonly: true, showOnTable: true },
+            { key: 'description', title: 'Описание', type: 'string', readonly: true, showOnTable: true },
+        ]
+    },
+    ent_files: {
+        db_name: 'files',
+        filters: [],
+        container: null,
+        fields: [
+            { key: 'id', title: 'ID файла', type: 'id', readonly: true, showOnTable: true },
+            { key: 'filename', type: 'string', title: 'Название', readonly: true, showOnTable: true },
+            { key: 'type', title: 'Тип файла MIME', type: 'string', readonly: true, showOnTable: true },
+            { key: 'folder', title: 'Имя файлсервера', type: 'string', readonly: true, showOnTable: true },
         ]
     },
 };
