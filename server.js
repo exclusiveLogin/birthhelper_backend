@@ -1,9 +1,17 @@
 let express = require('express');
 const admin = require('./admin_rest');
+const fs = require('fs');
 
 let app = express();
 
 app.use('/admin', admin);
+app.use('/static', express.static(__dirname + '/uploads',{ fallthrough: false }), (err, req, res, next) => {
+    console.log('err static:', err);
+    if(err.status === 404){
+        console.log('Error 404 отдаем заглушку');
+        fs.createReadStream('assets/noimage.png').pipe(res);
+    }
+});
 
 // app.get('/', function(req, res){
 //     res.send('hello world');

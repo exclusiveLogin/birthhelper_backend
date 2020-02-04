@@ -188,7 +188,18 @@ module.exports = {
             { key: 'description', title: 'Описание', type: 'string', readonly: false, showOnTable: true },
         ],
         links: [
-            { type: 'repo', title: 'Таблица файлов системы', entKey: 'files', multiselect: false, entType: 'entity', proxyTo: 'file_id'},
+            {
+                type: 'repo',
+                title: 'Таблица файлов системы',
+                entKey: 'files',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'file_id',
+                image: {
+                    urlType: 'simple',
+                    urlKey: 'filename'
+                },
+            },
         ],
     },
     ent_files: {
