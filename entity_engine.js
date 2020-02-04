@@ -282,7 +282,6 @@ function queryEntity( req, res, next ){
 }
 
 function uploadFile( req, res, next ) {
-    console.log('img uploaded', req.file);
     if(
         (req.file && req.file.mimetype === 'image/jpeg') ||
         (req.file && req.file.mimetype === 'image/jpg')
@@ -291,8 +290,10 @@ function uploadFile( req, res, next ) {
         let fields = ['filename', 'folder', 'type'];
         let values = [`"${req.file.filename}"`, `"uploads"`, `"${req.file.mimetype}"`];
 
-        let title = req.body.title || 'Без названия';
-        let description = req.body.description || 'Без описания';
+        let meta = req.body && JSON.parse(req.body.meta);
+
+        let {title = 'Без названия', description = 'Без описания'} = meta;
+        console.log('meta:', meta);
 
         let q = `INSERT INTO \`${ 'files' }\` (\`${ fields.join('\`, \`') }\`) VALUES ( ${ values.join(',') } )`;
 
@@ -305,6 +306,7 @@ function uploadFile( req, res, next ) {
             }
             if(result && result.insertId){
                 let qi = `INSERT INTO \`${ 'images' }\` ( \`file_id\`, \`title\`, \`description\`) VALUES ( ${result.insertId}, "${title}", "${description}" )`;
+                console.log('qi:', qi);
                 pool.query(qi, (err, _result) => {
                     if(err) {
                         res.status(500);
