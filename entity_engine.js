@@ -198,9 +198,13 @@ function queryEntity( req, res, next ){
 
         if (req.params.eid){
             const eid = req.params.eid;
+            //link fk for parent table
             if( fk ){
+                //searching keys
                 let s_str = fk.restrictors.map(r => fk.db + '.' + r.key).join(', ');
+                //restrictor statements
                 let r_str = fk.restrictors.map(r => fk.db + '.' + r.key + ' LIKE "' + r.value + '"').join(', ');
+                //target fields db
                 let t_str = fk.target.map(t => fk.db + '.' + t).join(', ');
 
                 q = `SELECT ${db}.*, ${fk.db}.id as _id, ${s_str}, ${t_str} FROM ${db} INNER JOIN ${fk.db} ON ${db}.${fk.key} = ${fk.db}.id WHERE ${r_str} AND ${db}.id = ${eid}`;
