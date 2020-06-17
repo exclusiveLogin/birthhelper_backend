@@ -134,24 +134,51 @@ module.exports = {
         fields: [
             { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
             { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
-            { key: 'service_id', type: 'string', title: 'id услуги', required: true, showOnTable: true, readonly: true },
+            { key: 'service_id', type: 'string', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
             { key: 'contragent_id', type: 'string', title: 'id клиники', required: true, showOnTable: true, readonly: true },
             { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
             {
                 key: 'type',
                 title: 'Тип услуги',
-                required: false,
+                required: true,
                 type: 'id',
-                proxyTo: 'name',
                 useDict: true,
-                canBeNull: true,
+                canBeNull: false,
                 showOnTable: true,
                 dctKey: 'dict_slot_entity_type'
             }
         ],
         links: [
-            { type: 'repo', title: 'Таблица услуг системы', entKey: 'services', multiselect: false, entType: 'entity', proxyTo: 'service_id'},
-            { type: 'repo', title: 'Таблица клиник системы', entKey: 'clinics', multiselect: false, entType: 'entity', proxyTo: 'contragent_id'},
+            {
+                type: 'repo',
+                title: 'Таблица услуг',
+                entKey: 'services',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'service_id',
+                conditionField: 'type',
+                conditionKey: 'name',
+                conditionValue: 'entity'
+            },
+            {
+                type: 'repo',
+                title: 'Таблица пакетов услуг',
+                entKey: 'service_containers',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'service_id',
+                conditionField: 'type',
+                conditionKey: 'name',
+                conditionValue: 'container'
+            },
+            {
+                type: 'repo',
+                title: 'Таблица клиник системы',
+                entKey: 'clinics',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'contragent_id'
+            },
         ],
     },
 

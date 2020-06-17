@@ -216,7 +216,10 @@ function queryEntity( req, res, next ){
         console.log('q:', q);
 
         pool.query(q, (err, result)=> {
-
+            if(!!err) {
+                res.status(500);
+                res.send(JSON.stringify(err));
+            }
             if( calc && result ){
                 let calcPr = result.map((c) => {
                     const id = c.id;
@@ -274,7 +277,8 @@ function queryEntity( req, res, next ){
                     res.status(500);
                     res.send({error: er});
                 });
-            } else{
+            }
+            else{
                 res.send(result);
             }
 
