@@ -7,6 +7,7 @@ const pool = require('./sql');
 const containers = require('./container_repo');
 const slots = require('./slot_repo');
 const multer = require('multer');
+const fs = require('fs');
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -288,7 +289,13 @@ function queryEntity( req, res, next ){
         console.log('сущность не определена');
     }
 }
+function checkUploadsFS(req, res, next) {
+    if(!fs.existsSync('uploads')){
+        fs.mkdirSync('uploads');
+    }
 
+    next();
+}
 function uploadFile( req, res, next ) {
     if(
         (req.file && req.file.mimetype === 'image/jpeg') ||
@@ -394,7 +401,7 @@ entity.get('/:id', cors(), queryEntity);
 
 entity.get('/:id/:eid', cors(), queryEntity);
 
-entity.post('/file', cors(), upload.single('photo'), uploadFile);
+entity.post('/file', cors(), checkUploadsFS, upload.single('photo'), uploadFile);
 
 
 entity.delete('/:id', cors(), jsonparser, deleteEntity, function(req, res){
