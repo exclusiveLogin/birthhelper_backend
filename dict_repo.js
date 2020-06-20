@@ -14,5 +14,8 @@ module.exports = {
         ]
     },
     dict_phone_container: { db: 'phone_container' },
-    dict_slot_entity_type: { db: 'slot_entity_type'}
+    dict_slot_entity_type: { db: 'slot_entity_type'},
+    dict_birth_clinic_type: { db: 'birth_clinic_type'},
+    dict_doctor_position_type: { db: 'doctor_position_type'},
+    dict_doctor_category_type: { db: 'doctor_category_type'}
 };
