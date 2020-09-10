@@ -246,6 +246,7 @@ module.exports = {
                     urlType: 'simple',
                     urlKey: 'filename'
                 },
+                imageLoader: true,
             },
         ],
     },
