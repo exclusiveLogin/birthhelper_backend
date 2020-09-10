@@ -157,6 +157,7 @@ function queryEntity( req, res, next ){
         const fields = entities[req.params.id].fields;
         const calc = entities[req.params.id].calculated;
         const fk = entities[req.params.id].fk;
+        const eid = req.params.eid;
 
         let limit = !!req.query.skip && Number(req.query.skip)  || '20';
 
@@ -196,21 +197,40 @@ function queryEntity( req, res, next ){
 
         let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : ''} ${likeStr ? (whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} ${limstr}`;
 
-        if (req.params.eid){
-            const eid = req.params.eid;
-            //link fk for parent table
-            if( fk ){
-                //searching keys
-                let s_str = fk.restrictors.map(r => fk.db + '.' + r.key).join(', ');
-                //restrictor statements
-                let r_str = fk.restrictors.map(r => fk.db + '.' + r.key + ' LIKE "' + r.value + '"').join(', ');
-                //target fields db
-                let t_str = fk.target.map(t => fk.db + '.' + t).join(', ');
+        
+        //link fk for parent table
+        if( fk ){
+            //searching keys
+            let s_str = fk.restrictors.map(r => fk.db + '.' + r.key).join(', ');
+            //restrictor statements
+            let r_str = fk.restrictors.map(r => fk.db + '.' + r.key + ' LIKE "' + r.value + '"').join(', ');
+            //target fields db
+            let t_str = fk.target.map(t => fk.db + '.' + t).join(', ');
 
-                q = `SELECT ${db}.*, ${fk.db}.id as _id, ${s_str}, ${t_str} FROM ${db} INNER JOIN ${fk.db} ON ${db}.${fk.key} = ${fk.db}.id WHERE ${r_str} AND ${db}.id = ${eid}`;
-            } else
-                q = `SELECT * FROM \`${ db }\` WHERE id = ${ eid }`;
-        }
+            q = `SELECT 
+                ${db}.*, 
+                ${fk.db}.id as _id, 
+                ${s_str}, 
+                ${t_str} 
+                FROM ${db} 
+                INNER JOIN ${fk.db} 
+                ON ${db}.${fk.key} = ${fk.db}.id 
+                WHERE ${r_str} 
+                ${ eid ? `AND ${db}.id = ${eid}` : ``} 
+                ${whereStr ? 'AND ' + whereStr : ''} 
+                ${likeStr ? ' AND ' + likeStr : ''} 
+                ${limstr}`;
+        } else
+            q = `SELECT 
+                * 
+                FROM \`${ db }\` 
+                ${ eid ? `WHERE id = ${ eid }` : ``}
+                ${whereStr ? 'AND ' + whereStr : ''} 
+                ${likeStr ? ' AND ' + likeStr : ''} 
+                ${limstr}`;
+       
+
+        
 
 
         console.log('q:', q);

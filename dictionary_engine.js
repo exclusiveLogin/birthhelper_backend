@@ -20,7 +20,7 @@ dict.get('/:id', cors(), function(req, res){
             //console.log("dicts:", result);
 
             if( dict.titleMap || dict.titleAddMap ){
-                result.forEach( r => {
+                result && result.forEach( r => {
                     r.title = dict.titleMap.map(f => r[f]).join(', ');
                     r.title = dict.titleAddMap ? r.title + ` ( ${dict.titleAddMap.map(f => r[f]).join(', ')} )` : r.title;
                 })
