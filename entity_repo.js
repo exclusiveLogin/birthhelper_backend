@@ -45,6 +45,26 @@ module.exports = {
         ]
     },
 
+    ent_doctor: {
+        db_name: 'doctors',
+        filters: [],
+        container: null,
+        fields: [
+            { key: 'id', title: 'ID специалиста', type: 'id', readonly: true, showOnTable: false },
+            { key: 'image_id', title: 'Фото', type: 'img', showOnTable: false },
+            { key: 'full_name', type: 'string', title: 'Имя', required: true, showOnTable: true },
+            { key: 'short_name', type: 'string', title: 'Фамилия', required: true, showOnTable: true },
+            { key: 'patronymic', type: 'string', title: 'Отчество', required: false, showOnTable: true },
+            { key: 'experience', title: 'Стаж работы', type: 'string', stingType: 'numbers', showOnTable: false },
+            { key: 'count', title: 'Количество родов', type: 'string', stingType: 'numbers', showOnTable: false },
+            { key: 'description_education', title: 'Образование', type: 'text', showOnTable: false },
+            { key: 'description_experience', title: 'Профессиональные навыки', type: 'text', showOnTable: false },
+            { key: 'description_service', title: 'Услуги', type: 'text', showOnTable: false },
+            { key: 'category', title: 'Категория врача', type: 'id', useDict: true, dctKey: 'dict_doctor_category_type', showOnTable: false },
+            { key: 'category', title: 'Должность врача', type: 'id', useDict: true, dctKey: 'dict_doctor_position_type', showOnTable: false },
+        ],
+    },
+
     ent_service_containers: { 
         db_name: 'services_containers_repo',
         filters: [],
@@ -134,24 +154,51 @@ module.exports = {
         fields: [
             { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
             { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
-            { key: 'service_id', type: 'string', title: 'id услуги', required: true, showOnTable: true, readonly: true },
+            { key: 'service_id', type: 'string', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
             { key: 'contragent_id', type: 'string', title: 'id клиники', required: true, showOnTable: true, readonly: true },
             { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
             {
                 key: 'type',
                 title: 'Тип услуги',
-                required: false,
+                required: true,
                 type: 'id',
-                proxyTo: 'name',
                 useDict: true,
-                canBeNull: true,
+                canBeNull: false,
                 showOnTable: true,
                 dctKey: 'dict_slot_entity_type'
             }
         ],
         links: [
-            { type: 'repo', title: 'Таблица услуг системы', entKey: 'services', multiselect: false, entType: 'entity', proxyTo: 'service_id'},
-            { type: 'repo', title: 'Таблица клиник системы', entKey: 'clinics', multiselect: false, entType: 'entity', proxyTo: 'contragent_id'},
+            {
+                type: 'repo',
+                title: 'Таблица услуг',
+                entKey: 'services',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'service_id',
+                conditionField: 'type',
+                conditionKey: 'name',
+                conditionValue: 'entity'
+            },
+            {
+                type: 'repo',
+                title: 'Таблица пакетов услуг',
+                entKey: 'service_containers',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'service_id',
+                conditionField: 'type',
+                conditionKey: 'name',
+                conditionValue: 'container'
+            },
+            {
+                type: 'repo',
+                title: 'Таблица клиник системы',
+                entKey: 'clinics',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'contragent_id'
+            },
         ],
     },
 
@@ -213,4 +260,34 @@ module.exports = {
             { key: 'folder', title: 'Имя файлсервера', type: 'string', readonly: true, showOnTable: true },
         ]
     },
+    ent_birthtype: {
+        db_name: 'birth_clinic_type',
+        filters: [],
+        container: null,
+        fields: [
+            { key: 'id', title: 'ID файла', type: 'id', readonly: true, showOnTable: true },
+            { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
+            { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
+        ]
+    },
+    ent_doctor_position: {
+        db_name: 'doctor_position_type',
+        filters: [],
+        container: null,
+        fields: [
+            { key: 'id', title: 'ID файла', type: 'id', readonly: true, showOnTable: true },
+            { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
+            { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
+        ]
+    },ent_doctor_category: {
+        db_name: 'doctor_category_type',
+        filters: [],
+        container: null,
+        fields: [
+            { key: 'id', title: 'ID файла', type: 'id', readonly: true, showOnTable: true },
+            { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
+            { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
+        ]
+    },
+
 };

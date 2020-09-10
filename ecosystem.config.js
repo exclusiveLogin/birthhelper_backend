@@ -11,10 +11,11 @@ module.exports = {
     max_memory_restart: '1G',
     env: {
         NODE_ENV: 'development',
-        HOST: '91.240.87.153'
+        HOST: null
     },
     env_production: {
-      NODE_ENV: 'production'
+      NODE_ENV: 'production',
+      HOST: '185.178.46.248'
     }
   }],
 
