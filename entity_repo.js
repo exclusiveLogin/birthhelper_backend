@@ -117,6 +117,26 @@ module.exports = {
                 showOnTable: true,
                 dctKey: 'dict_district',
                 titleDictKey: 'title_short'
+            },
+            { 
+                key: 'facilities_type', 
+                title: 'Пакет удобств клиники', 
+                dctKey: 'dict_facilities_containers_repo', 
+                type: 'id', 
+                useDict: true, 
+                canBeNull: false,
+                required: true,
+                showOnTable: true,
+            },
+            {
+                key: 'specialities_type',
+                title: 'Пакет специализации клиники',
+                required: true,
+                type: 'id',
+                useDict: true,
+                canBeNull: false,
+                showOnTable: true,
+                dctKey: 'dict_facilities_containers_repo',
             }
         ]
     },
@@ -145,6 +165,45 @@ module.exports = {
             { key: 'items', type: 'count', id_key: 'container_id', db_name: 'phone_containers' },
         ]
     },
+
+    ent_facilities_containers: { 
+        db_name: 'facilities_containers_repo',
+        filters: [],
+        container: 'container_facilities',
+        fields: [
+            { key: 'id', title: 'ID контейнера', type: 'id', readonly: true, showOnTable: false }, 
+            { key: 'title', type: 'string', title: 'Название', required: true, showOnTable: true }, 
+            { key: 'description', title: 'Описание', type: 'text', required: true, showOnTable: true },
+            { key: 'comment', title: 'Комментарий', type: 'text', showOnTable: true },
+            { key: 'items', title: 'Элементов', type: 'text', showOnTable: true, readonly: true },
+        ],
+        links: [
+            { type: 'repo', title: 'Таблица удобств клиник системы', entKey: 'facilities', multiselect: true, dummyTitle: 'Таблица выбранных удобств контейнера'},
+        ],
+        calculated: [
+            { key: 'items', type: 'count', id_key: 'container_id', db_name: 'facilities_containers' },
+        ]
+    },
+
+    ent_specialities_clinic_containers: { 
+        db_name: 'clinic_specialities_containers_repo',
+        filters: [],
+        container: 'container_specialities',
+        fields: [
+            { key: 'id', title: 'ID контейнера', type: 'id', readonly: true, showOnTable: false }, 
+            { key: 'title', type: 'string', title: 'Название', required: true, showOnTable: true }, 
+            { key: 'description', title: 'Описание', type: 'text', required: true, showOnTable: true },
+            { key: 'comment', title: 'Комментарий', type: 'text', showOnTable: true },
+            { key: 'items', title: 'Элементов', type: 'text', showOnTable: true, readonly: true },
+        ],
+        links: [
+            { type: 'repo', title: 'Таблица специализаций для клиники', entKey: 'specialities_clinic', multiselect: true, dummyTitle: 'Таблица выбранных специализаций контейнера'},
+        ],
+        calculated: [
+            { key: 'items', type: 'count', id_key: 'container_id', db_name: 'clinic_specialities_containers' },
+        ]
+    },
+
 
     ent_services_slots: {
         db_name: 'service_slot',
@@ -266,7 +325,7 @@ module.exports = {
         filters: [],
         container: null,
         fields: [
-            { key: 'id', title: 'ID файла', type: 'id', readonly: true, showOnTable: true },
+            { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },
             { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
             { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
         ]
@@ -276,16 +335,37 @@ module.exports = {
         filters: [],
         container: null,
         fields: [
-            { key: 'id', title: 'ID файла', type: 'id', readonly: true, showOnTable: true },
+            { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },
             { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
             { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
         ]
-    },ent_doctor_category: {
+    },
+    ent_doctor_category: {
         db_name: 'doctor_category_type',
         filters: [],
         container: null,
         fields: [
-            { key: 'id', title: 'ID файла', type: 'id', readonly: true, showOnTable: true },
+            { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },
+            { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
+            { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
+        ]
+    },
+    ent_specialities_clinic: {
+        db_name: 'clinic_specialities_type',
+        filters: [],
+        container: null,
+        fields: [
+            { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },
+            { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
+            { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
+        ]
+    },
+    ent_facilities: {
+        db_name: 'facilities_type',
+        filters: [],
+        container: null,
+        fields: [
+            { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },
             { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
             { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
         ]

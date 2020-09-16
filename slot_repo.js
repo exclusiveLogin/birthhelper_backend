@@ -16,7 +16,7 @@ module.exports = {
             'contragent_id': 'number',
             'type': 'string'
         }, //поля обязательные для слота
-        entity_key: 'ent_services', // ключ сущности
+        entity_key: 'services', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
     }
