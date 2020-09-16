@@ -136,7 +136,7 @@ module.exports = {
                 useDict: true,
                 canBeNull: false,
                 showOnTable: true,
-                dctKey: 'dict_facilities_containers_repo',
+                dctKey: 'dict_clinic_specialities_containers_repo',
             }
         ]
     },
