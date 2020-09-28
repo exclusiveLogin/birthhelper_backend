@@ -225,6 +225,16 @@ module.exports = {
                 canBeNull: false,
                 showOnTable: true,
                 dctKey: 'dict_slot_entity_type'
+            },
+            {
+                key: 'service_type',
+                title: 'Вид услуги в конструкторе',
+                required: true,
+                type: 'id',
+                useDict: true,
+                canBeNull: false,
+                showOnTable: true,
+                dctKey: 'dict_slot_clinic_type'
             }
         ],
         links: [
@@ -362,6 +372,16 @@ module.exports = {
     },
     ent_facilities: {
         db_name: 'facilities_type',
+        filters: [],
+        container: null,
+        fields: [
+            { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },
+            { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
+            { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
+        ]
+    },
+    ent_slot_clinic_type: {
+        db_name: 'slot_clinic_type',
         filters: [],
         container: null,
         fields: [

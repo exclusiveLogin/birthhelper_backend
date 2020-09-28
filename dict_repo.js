@@ -21,5 +21,6 @@ module.exports = {
     dict_specialities_clinic_type: { db: 'specialities_clinic_type'},
     dict_clinic_specialities_containers_repo: { db: 'clinic_specialities_containers_repo'},
     dict_facilities_type: { db: 'facilities_type'},
-    dict_facilities_containers_repo: { db: 'facilities_containers_repo'}
+    dict_facilities_containers_repo: { db: 'facilities_containers_repo'},
+    dict_slot_clinic_type: { db: 'slot_clinic_type'}
 };
