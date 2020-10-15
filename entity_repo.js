@@ -235,6 +235,16 @@ module.exports = {
                 canBeNull: false,
                 showOnTable: true,
                 dctKey: 'dict_slot_clinic_type'
+            },
+            {
+                key: 'facilities_type',
+                title: 'Пакет удобств в конструкторе',
+                required: true,
+                type: 'id',
+                useDict: true,
+                canBeNull: false,
+                showOnTable: true,
+                dctKey: 'dict_facilities_containers_repo'
             }
         ],
         links: [
