@@ -226,8 +226,8 @@ function queryEntity( req, res, next ){
                 * 
                 FROM \`${ db }\` 
                 ${ eid ? `WHERE id = ${ eid }` : ``}
-                ${whereStr ? 'AND ' + whereStr : ''} 
-                ${likeStr ? ' AND ' + likeStr : ''} 
+                ${(whereStr && !eid) ? 'WHERE ' + whereStr : ''} 
+                ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} 
                 ${limstr}`;
        
 
@@ -235,6 +235,8 @@ function queryEntity( req, res, next ){
 
 
         console.log('q:', q);
+        console.log('like:', likeStr);
+        console.log('where:', whereStr);
 
         pool.query(q, (err, result)=> {
             if(!!err) {
