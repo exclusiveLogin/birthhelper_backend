@@ -1,6 +1,6 @@
-let express = require('express');
+import express from 'express';
 const admin = require('./admin_rest');
-const fs = require('fs');
+import fs from 'fs';
 
 let app = express();
 

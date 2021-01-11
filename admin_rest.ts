@@ -1,5 +1,5 @@
-let express = require('express');
-const cors = require('cors');
+import express from 'express';
+import cors from 'cors';
 
 const dict = require('./dictionary_engine');
 const entity = require('./entity_engine');

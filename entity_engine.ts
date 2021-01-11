@@ -1,13 +1,13 @@
-let express = require('express');
-const cors = require('cors');
-const bodyparser = require('body-parser');
-const jsonparser = bodyparser.json();
+import express from "express";
+import cors from "cors";
+import bodyParser from "body-parser";
+const jsonparser = bodyParser.json();
+import fs from "fs";
+import multer from 'multer';
 const entities = require('./entity_repo');
 const pool = require('./sql');
 const containers = require('./container_repo');
 const slots = require('./slot_repo');
-const multer = require('multer');
-const fs = require('fs');
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -283,7 +283,7 @@ function queryEntity( req, res, next ){
 
                         Promise.all( tmpPr ).then((_results)=>{
                             const mergeField = _results.map((r, idx) => {
-                                Object.assign( c, {[r.key]: r.value} );
+                                Object.assign( c, {[r['key']]: r['value']} );
                             });
 
                             resolve(c)
