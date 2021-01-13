@@ -1,7 +1,7 @@
-const express = require('express');
-const cors = require('cors');
-const bodyparser = require('body-parser');
-const jsonparser = bodyparser.json();
+import express from "express";
+import cors from "cors";
+import bodyParser from "body-parser";
+const jsonparser = bodyParser.json();
 const pool = require('./sql');
 const slots = require('./slot_repo');
 
@@ -251,7 +251,7 @@ function deleteSlotHandler(req, res){
             })
                 .catch( error => {
                     res.status(500);
-                    res.send({error: err.error});
+                    res.send({error: error.error});
             });
 
         } else {

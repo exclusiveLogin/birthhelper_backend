@@ -1,6 +1,6 @@
-const express = require('express');
-const cors = require('cors');
-const bodyparser = require('body-parser');
+import express from "express";
+import cors from "cors";
+import bodyparser from 'body-parser';
 const jsonparser = bodyparser.json();
 const pool = require('./sql');
 const containers = require('./container_repo');
@@ -120,7 +120,7 @@ function simpleSaveContainer(containerParams, id_container, ids){
                                 if(err) {
                                     rj({error: err});
                                 }
-                                rs('запись о контейнере с id ', cur_id, 'добавлена в БД');
+                                rs('запись о контейнере с id ' + cur_id + ' добавлена в БД');
                                 console.log('запись о контейнере с id ', cur_id, 'добавлена в БД');
                             })
                         });
