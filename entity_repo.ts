@@ -40,8 +40,17 @@ export const entityRepo: EntityRepo = {
                 dctKey: 'dict_trimester_service',
                 canBeNull: true,
                 showOnTable: true
-            }, 
-            { key: 'type', type: 'id', hide: true  }, 
+            },
+            {
+                key: 'type',
+                type: 'id',
+                title: 'Тип услуги',
+                useDict: true,
+                dctKey: 'dict_slot_clinic_type',
+                canBeNull: false,
+                required: true,
+                showOnTable: true,
+            },
             { key: 'adv', title: 'Рекламная услуга', type: 'flag', showOnTable: false  },
         ]
     },
@@ -206,11 +215,20 @@ export const entityRepo: EntityRepo = {
     },
 
 
-    ent_services_slots: {
+    ent_placement_slots: {
         db_name: 'service_slot',
-        filters: [],
+        filters: [
+            {
+                name: 'service_type',
+                title: 'Категория',
+                readonly: true,
+                type: 'id',
+                value: 2,
+                db_name: 'dict_slot_clinic_type'
+            }
+        ],
         container: null,
-        slot: 'slot_service_natal',
+        slot: 'slot_placement',
         fields: [
             { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
             { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
@@ -289,7 +307,7 @@ export const entityRepo: EntityRepo = {
         filters: [
             {
                 name: 'service_type',
-                title: 'Категория(Персонал)',
+                title: 'Категория',
                 readonly: true,
                 type: 'id',
                 value: 1,

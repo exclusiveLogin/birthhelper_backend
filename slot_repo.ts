@@ -1,7 +1,7 @@
 module.exports = {
-    slot_service_natal: {
-        name: 'slot_service_natal',
-        title: 'Слоты для услуг родовспоможения',
+    slot_placement: {
+        name: 'slot_placement',
+        title: 'Слоты для услуг размещения',
         db_entity: 'services', // БД сущностей
         db_container: 'service_containers', // БД контейнеров,
         db_repo: 'services_containers_repo', //БД репозитория контейнеров
