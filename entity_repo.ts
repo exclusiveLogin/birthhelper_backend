@@ -1,4 +1,5 @@
-module.exports = {
+import {EntityRepo} from './entity_repo.model';
+export const entityRepo: EntityRepo = {
     ent_services: {
         db_name: 'services',
         filters: [
@@ -53,15 +54,15 @@ module.exports = {
             { key: 'id', title: 'ID специалиста', type: 'id', readonly: true, showOnTable: false },
             { key: 'image_id', title: 'Фото', type: 'img', showOnTable: false },
             { key: 'full_name', type: 'string', title: 'Имя', required: true, showOnTable: true },
-            { key: 'short_name', type: 'string', title: 'Фамилия', required: true, showOnTable: true },
-            { key: 'patronymic', type: 'string', title: 'Отчество', required: false, showOnTable: true },
-            { key: 'experience', title: 'Стаж работы', type: 'string', stingType: 'numbers', showOnTable: false },
-            { key: 'count', title: 'Количество родов', type: 'string', stingType: 'numbers', showOnTable: false },
+            { key: 'short_name', type: 'string', title: 'Фамилия', required: true, showOnTable: false },
+            { key: 'patronymic', type: 'string', title: 'Отчество', required: false, showOnTable: false },
+            { key: 'experience', title: 'Стаж работы', type: 'string', showOnTable: false },
+            { key: 'count', title: 'Количество родов', type: 'string', showOnTable: false },
             { key: 'description_education', title: 'Образование', type: 'text', showOnTable: false },
             { key: 'description_experience', title: 'Профессиональные навыки', type: 'text', showOnTable: false },
-            { key: 'description_service', title: 'Услуги', type: 'text', showOnTable: false },
-            { key: 'category', title: 'Категория врача', type: 'id', useDict: true, dctKey: 'dict_doctor_category_type', showOnTable: false },
-            { key: 'category', title: 'Должность врача', type: 'id', useDict: true, dctKey: 'dict_doctor_position_type', showOnTable: false },
+            { key: 'category', title: 'Категория врача', type: 'id', useDict: true, dctKey: 'dict_doctor_category_type', showOnTable: true },
+            { key: 'position', title: 'Должность врача', type: 'id', useDict: true, dctKey: 'dict_doctor_position_type', showOnTable: true },
+            { key: 'clinic_id', type: 'id', title: 'Клиника', required: true, showOnTable: true, useDict: true, dctKey: 'dict_clinics' },
         ],
     },
 
@@ -325,7 +326,7 @@ module.exports = {
                 showOnTable: true,
                 dctKey: 'dict_slot_clinic_type',
                 readonly: true,
-                initData: 3,
+                initData: 1,
             },
         ],
         links: [
@@ -336,6 +337,19 @@ module.exports = {
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'service_id',
+                filters: [
+                    {
+                        name: 'clinic_id',
+                        title: 'ID клиники',
+                        db_name: 'clinics',
+                        type: 'string',
+                        readonly: true,
+                        formLink: {
+                            formKey: 'editor',
+                            formFieldKey: 'contragent_id'
+                        }
+                    }
+                ],
             },
             {
                 type: 'repo',
