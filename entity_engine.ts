@@ -1,13 +1,17 @@
-import express from "express";
-import cors from "cors";
-import bodyParser from "body-parser";
+import express = require('express');
+import cors = require('cors');
+import bodyParser = require('body-parser');
+
 const jsonparser = bodyParser.json();
 import fs from "fs";
 import multer from 'multer';
-const entities = require('./entity_repo');
+
+import { entityRepo } from './entity_repo';
 const pool = require('./sql');
 const containers = require('./container_repo');
 const slots = require('./slot_repo');
+
+const entities = entityRepo;
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -153,6 +157,7 @@ function deleteEntity(req, res, next){
 }
 
 function queryEntity( req, res, next ){
+    console.log('ent repo config: ', entities, ' url params: ', req.params);
     if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
         const db = entities[req.params.id].db_name;
         const fields = entities[req.params.id].fields;
@@ -230,9 +235,6 @@ function queryEntity( req, res, next ){
                 ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} 
                 ${limstr}`;
        
-
-        
-
 
         console.log('q:', q);
         console.log('like:', likeStr);
