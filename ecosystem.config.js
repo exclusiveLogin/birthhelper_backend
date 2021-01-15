@@ -11,7 +11,7 @@ module.exports = {
     max_memory_restart: '1G',
     env: {
         NODE_ENV: 'development',
-        HOST: null
+        HOST: 'localhost'
     },
     env_local: {
       NODE_ENV: 'local',
