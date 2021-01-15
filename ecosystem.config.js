@@ -1,7 +1,7 @@
 module.exports = {
   apps : [{
     name: 'BH_API',
-    script: 'server.js',
+    script: 'dist/out-tsc/server.js',
 
     // Options reference: https://pm2.io/doc/en/runtime/reference/ecosystem-file/
     args: '',
@@ -13,20 +13,20 @@ module.exports = {
         NODE_ENV: 'development',
         HOST: null
     },
-    env_production: {
-      NODE_ENV: 'production',
+    env_local: {
+      NODE_ENV: 'local',
       HOST: '185.178.46.248'
     }
   }],
 
-  deploy : {
-    production : {
-      user : 'node',
-      host : '212.83.163.1',
-      ref  : 'origin/master',
-      repo : 'git@github.com:repo.git',
-      path : '/var/www/production',
-      'post-deploy' : 'npm install && pm2 reload ecosystem.config.js --env production'
-    }
-  }
+  // deploy : {
+  //   production : {
+  //     user : 'node',
+  //     host : '212.83.163.1',
+  //     ref  : 'origin/master',
+  //     repo : 'git@github.com:repo.git',
+  //     path : '/var/www/production',
+  //     'post-deploy' : 'npm install && pm2 reload ecosystem.config.js --env production'
+  //   }
+  // }
 };
