@@ -315,8 +315,13 @@ function queryEntity( req, res, next ){
 }
 function checkUploadsFS(req, res, next) {
     if(!fs.existsSync('uploads')){
+        console.log('folder upload not exist, creating...');
         fs.mkdirSync('uploads');
+    } else {
+        console.log('folder upload exist');
     }
+    
+    console.log('FS:', ...fs.readdirSync('./'));
 
     next();
 }

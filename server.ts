@@ -5,7 +5,7 @@ import fs from 'fs';
 let app = express();
 
 app.use('/admin', admin);
-app.use('/static', express.static(__dirname + '/uploads',{ fallthrough: false }), (err, req, res, next) => {
+app.use('/static', express.static('uploads/',{ fallthrough: false }), (err, req, res, next) => {
     console.log('err static:', err);
     if(err.status === 404){
         console.log('Error 404 отдаем заглушку');
