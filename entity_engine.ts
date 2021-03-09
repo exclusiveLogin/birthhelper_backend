@@ -35,7 +35,7 @@ entity.get('/', cors(), function(req, res){
     Object.keys(entities).forEach( key => res.write(key + '<br>') );
 
     res.write('<p> Формат запроса GET /entity/{key} </p> <br>');
-    res.write('<p> ex: GET 91.240.87.153/admin/entity/ent_services </p> <br>');
+    res.write('<p> ex: GET http://birthhelper.ru/admin/entity/ent_services </p> <br>');
     res.end();
 
 });
