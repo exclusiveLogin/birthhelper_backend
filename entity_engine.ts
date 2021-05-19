@@ -1,6 +1,7 @@
 import express = require('express');
 import cors = require('cors');
 import bodyParser = require('body-parser');
+import validator from 'validator';
 
 const jsonparser = bodyParser.json();
 import fs from "fs";
@@ -12,6 +13,7 @@ const containers = require('./container_repo');
 const slots = require('./slot_repo');
 
 const entities = entityRepo;
+const sanitizer = validator.escape;
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -92,8 +94,8 @@ function createEntity(req, res, next){
 
             let valArr = Object.keys(data).map(datakey => {
                 const targetReq = fields.find(r => r.key === datakey);
-                if(!targetReq) return `"${data[datakey]}"`;
-                return targetReq.type === 'string' || targetReq.type === 'text' ? `"${data[datakey]}"` : data[datakey];
+                if(!targetReq) return ;`"${sanitizer((data[datakey]).toString())}"`;
+                return targetReq.type === 'string' || targetReq.type === 'text' ? `"${sanitizer((data[datakey]).toString())}"` : data[datakey];
             });
 
             let existArr = concatFn( Object.keys(data), valArr );
@@ -245,6 +247,14 @@ function queryEntity( req, res, next ){
                 res.status(500);
                 res.send(JSON.stringify(err));
             }
+            result.forEach(row => {
+                Object.keys(row).forEach(k => {
+                    const targetReq = fields.find(r => r.key === k);
+                    if(targetReq?.type === 'string' || targetReq?.type === 'text'){
+                        row[k] = validator.unescape(`${row[k]}`);
+                    }
+                })
+            });
             if( calc && result ){
                 let calcPr = result.map((c) => {
                     const id = c.id;
@@ -433,12 +443,8 @@ entity.get('/:id/:eid', cors(), queryEntity);
 entity.post('/file', cors(), checkUploadsFS, upload.single('photo'), uploadFile);
 
 
-entity.delete('/:id', cors(), jsonparser, deleteEntity, function(req, res){
-    res.end('delete done');
-});
+entity.delete('/:id', cors(), jsonparser, deleteEntity);
 
-entity.post('/:id', cors(), jsonparser, createEntity, function(req, res){
-    res.end('post done');
-});
+entity.post('/:id', cors(), jsonparser, createEntity);
 
 module.exports = entity;
