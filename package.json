@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start:local": "cross-env HOST=185.178.46.248 nodemon",
+    "build": "tsc",
     "deploy": "tsc && pm2 restart ecosystem.config.js",
     "deploy:local": "tsc && pm2 restart ecosystem.config.js --env local",
     "deploy:docker": "tsc && pm2-runtime ecosystem.config.js --env local",
