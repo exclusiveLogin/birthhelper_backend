@@ -1,3 +1,5 @@
+import { type } from "os";
+
 export interface EntityRepo {
     [key: string]: Entity;
 }
@@ -26,9 +28,11 @@ export interface EntityFilter {
     }
 }
 
+type FieldType = 'string' | 'flag' | 'id' | 'dict' | 'number' | 'text' | 'img';
+
 export interface EntityField {
     key: string,
-    type: string,
+    type: FieldType,
     title?: string,
     dctKey?: string,
     useDict?: boolean,
