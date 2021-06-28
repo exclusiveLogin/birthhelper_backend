@@ -128,17 +128,6 @@ export const entityRepo: EntityRepo = {
                 required: true,
                 showOnTable: true,
             },
-            {
-                key: 'district',
-                title: 'Регион москвы',
-                required: true,
-                type: 'id',
-                useDict: true,
-                canBeNull: false,
-                showOnTable: true,
-                dctKey: 'dict_district',
-                titleDictKey: 'title_short'
-            },
             { 
                 key: 'facilities_type', 
                 title: 'Пакет удобств клиники', 
