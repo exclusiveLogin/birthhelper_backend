@@ -8,9 +8,11 @@ import fs from "fs";
 import multer from 'multer';
 
 import { entityRepo } from './entity_repo';
+
 const pool = require('./sql');
 const containers = require('./container_repo');
 const slots = require('./slot_repo');
+const dict = require('./dict_repo');
 
 const entities = entityRepo;
 const sanitizer = validator.escape;
@@ -275,6 +277,25 @@ async function queryEntity( req, res, next ){
                                 });
                             }));
                         }
+
+                        // логика для загрузки ссылочной сущности по id 
+                        if(targetReq?.type === 'id'){
+                            const db = targetReq.dctKey ? dict[targetReq.dctKey].db : null;
+
+                            if(db){
+                                const q = `SELECT * FROM \`${db}\` WHERE \`id\` = ${row[k]}`;
+                                lazy_q.push(new Promise( (_resolve, _reject) => {
+                                    pool.query(q, function( err, a_result ){
+                                        if(err){
+                                            _reject(err);
+                                        }
+
+                                        _resolve({ key: targetReq.key, value: a_result, id: row.id});
+                                    });
+                                }));
+                            }
+                            
+                        }
                     }
                 });
             });
@@ -287,9 +308,9 @@ async function queryEntity( req, res, next ){
                     const t_row = result.find(r => r.id === d.id);
 
                     if(t_row) {
-                        t_row.meta = {
-                            [d.key]: d.value
-                        }
+                        t_row.meta = t_row.meta ? 
+                        {...t_row.meta, [d.key]: d.value} :
+                        { [d.key]: d.value }
                     }
                 });
                 

@@ -127,6 +127,7 @@ export const entityRepo: EntityRepo = {
                 canBeNull: false,
                 required: true,
                 showOnTable: true,
+                loadEntity: true,
             },
             { 
                 key: 'facilities_type', 
