@@ -158,8 +158,8 @@ function deleteEntity(req, res, next){
     }
 }
 
-function queryEntity( req, res, next ){
-    console.log('ent repo config: ', entities, ' url params: ', req.params);
+async function queryEntity( req, res, next ){
+    // console.log('ent repo config: ', entities, ' url params: ', req.params);
     if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
         const db = entities[req.params.id].db_name;
         const fields = entities[req.params.id].fields;
@@ -242,19 +242,59 @@ function queryEntity( req, res, next ){
         console.log('like:', likeStr);
         console.log('where:', whereStr);
 
-        pool.query(q, (err, result)=> {
+        pool.query(q, async (err, result)=> {
             if(!!err) {
                 res.status(500);
                 res.send(JSON.stringify(err));
             }
+
+            const lazy_q: Promise<any>[] = [];
+
             result.forEach(row => {
+
                 Object.keys(row).forEach(k => {
                     const targetReq = fields.find(r => r.key === k);
+
                     if(targetReq?.type === 'string' || targetReq?.type === 'text'){
                         row[k] = validator.unescape(`${row[k]}`);
                     }
-                })
+
+                    // асинхронная подгрузка сущности по id 
+                    if(targetReq?.loadEntity && row[k] ){
+
+                        // логика загрузки мета сущности для картинки по id
+                        if(targetReq?.type === 'img'){
+                            const q = `SELECT \`images\`.*, \`files\`.\`filename\` FROM \`files\` INNER JOIN \`images\` ON \`images\`.\`file_id\` = \`files\`.\`id\` WHERE \`images\`.\`id\` = ${row[k]}`;
+                            lazy_q.push(new Promise( (_resolve, _reject) => {
+                                pool.query(q, function( err, a_result ){
+                                    if(err){
+                                        _reject(err);
+                                    }
+
+                                    _resolve({ key: targetReq.key, value: a_result, id: row.id});
+                                });
+                            }));
+                        }
+                    }
+                });
             });
+
+            // проход по всем полям сущности 
+            await Promise.all(lazy_q).then(data => {
+                console.log('lazy: ', data);
+
+                data.forEach(d => {
+                    const t_row = result.find(r => r.id === d.id);
+
+                    if(t_row) {
+                        t_row.meta = {
+                            [d.key]: d.value
+                        }
+                    }
+                });
+                
+            });
+
             if( calc && result ){
                 let calcPr = result.map((c) => {
                     const id = c.id;

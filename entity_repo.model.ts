@@ -43,6 +43,7 @@ export interface EntityField {
     showOnTable?: boolean,
     hide?: boolean,
     titleDictKey?: string,
+    loadEntity?: boolean,
 }
 
 export interface EntityLink{
