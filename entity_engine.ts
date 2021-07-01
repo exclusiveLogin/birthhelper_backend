@@ -309,8 +309,8 @@ async function queryEntity( req, res, next ){
 
                     if(t_row) {
                         t_row.meta = t_row.meta ? 
-                        {...t_row.meta, [d.key]: d.value} :
-                        { [d.key]: d.value }
+                        { ...t_row.meta, [d.key]: d.value ? d.value?.[0] : null } :
+                        { [d.key]: d.value ? d.value?.[0] : null }
                     }
                 });
                 
