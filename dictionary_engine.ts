@@ -9,7 +9,7 @@ dict.get('/:id', cors(), function(req, res){
 
         const dict = dicts[req.params.id];
 
-        let limit = (!!req.query.skip && !!Number(req.query.skip))  || '200';
+        let limit = (!!req.query.limit && !!Number(req.query.limit))  || '200';
 
         let limstr = `${ !!req.query.skip ? ' LIMIT ' + limit + ' OFFSET ' + req.query.skip  :'' }`;
         let q = `SELECT * FROM \`${ dict.db }\` ${limstr}`;

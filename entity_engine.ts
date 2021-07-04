@@ -169,7 +169,7 @@ async function queryEntity( req, res, next ){
         const fk = entities[req.params.id].fk;
         const eid = req.params.eid;
 
-        let limit = !!req.query.skip && Number(req.query.skip)  || '20';
+        let limit = !!req.query.limit && Number(req.query.limit)  || '20';
 
         // проработать логику поиска типа поля запроса
 
