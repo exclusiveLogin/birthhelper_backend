@@ -263,6 +263,8 @@ async function queryEntity( req, res, next ){
 
             const lazy_q: Promise<any>[] = [];
 
+            console.log('main result:', result);
+
             result.forEach(row => {
 
                 Object.keys(row).forEach(k => {

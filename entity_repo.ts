@@ -105,7 +105,7 @@ export const entityRepo: EntityRepo = {
             {
                 name: 'active',
                 title: 'По Активности',
-                type: 'string',
+                type: 'flag',
             },
         ],
         fields: [
