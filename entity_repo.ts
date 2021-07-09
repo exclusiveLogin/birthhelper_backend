@@ -102,6 +102,11 @@ export const entityRepo: EntityRepo = {
                 title: 'По названию',
                 type: 'string',
             },
+            {
+                name: 'active',
+                title: 'По Активности',
+                type: 'string',
+            },
         ],
         fields: [
             { key: 'id', title: 'ID клиники', type: 'id', readonly: true, showOnTable: false }, 

@@ -161,7 +161,7 @@ function deleteEntity(req, res, next){
 }
 
 async function queryEntity( req, res, next ){
-    // console.log('ent repo config: ', entities, ' url params: ', req.params);
+    // console.log('ent req search: ', req.query, ' url params: ', req.params);
     if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
         const db = entities[req.params.id].db_name;
         const fields = entities[req.params.id].fields;
@@ -187,10 +187,21 @@ async function queryEntity( req, res, next ){
             ( fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'string' )
         );
 
-        let searchStringValue = searchStringKeys.map(k => `${req.query[k]}` );
-        let conSearchStrings = concatLikeFn( searchStringKeys, searchStringValue );
+        let searchFlagKeys = Object.keys(req.query).filter(k =>
+            !( k === 'skip' || k === 'limit' ) &&
+            ( fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'flag' )
+        );
 
-        console.log('ent q:', req.query, 'ids:', searchParamsKeys, searchParamsValue, 'str:', searchStringKeys, searchStringValue);
+        let searchStringValue = searchStringKeys.map(k => `${req.query[k]}` );
+
+        let searchFlagValue = searchFlagKeys.map(k => `${req.query[k] == true ? '1' : '0'}` );
+
+        let conSearchStrings = [
+            ...concatLikeFn( searchStringKeys, searchStringValue ),
+            ...concatLikeFn( searchFlagKeys, searchFlagValue ),
+        ]
+       
+        console.log('ent q:', req.query, 'ids:', conSearchParams, 'str:', conSearchStrings);
 
         // если спросили что то лишнее хотя с новой логикой сюда не попадуть те запросы которых нет в репозитории доступных
         if( !Object.keys(req.query).every(r => !!( r === 'skip' || r === 'limit' ) || !!fields.find(f => f.key === r ))) {
