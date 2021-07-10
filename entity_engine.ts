@@ -545,7 +545,17 @@ entity.get('/:id/filters', cors(), function(req, res){
 
 entity.get('/:id/set', cors(), function(req, res){
     if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
-        pool.query(`SELECT * FROM \`${ entities[req.params.id].db_name }\``, (err, result)=> {
+
+        const likeStr = [...generateQStr(req, 'string'), ...generateQStr(req, 'flag')].join(' AND ');
+        const whereStr = [...generateQStr(req, 'id')].join(' AND ');
+
+        const q = 
+            `SELECT * 
+            FROM \`${ entities[req.params.id].db_name }\`
+            ${(whereStr) ? 'WHERE ' + whereStr : ''} 
+            ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} `;
+
+        pool.query(q, (err, result)=> {
             const lenSet = result && result.length || 0;
             const con = entities[req.params.id].container || null;
             const slot = entities[req.params.id].slot || null;
