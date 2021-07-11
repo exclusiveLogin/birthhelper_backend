@@ -2,6 +2,7 @@ import express = require('express');
 import cors = require('cors');
 import bodyParser = require('body-parser');
 import validator from 'validator';
+import { Request } from 'express';
 
 const jsonparser = bodyParser.json();
 import fs from "fs";
@@ -13,6 +14,8 @@ const pool = require('./sql');
 const containers = require('./container_repo');
 const slots = require('./slot_repo');
 const dict = require('./dict_repo');
+
+type reqType = 'string' | 'id' | 'flag';
 
 const entities = entityRepo;
 const sanitizer = validator.escape;
@@ -66,6 +69,55 @@ function concatLikeFn(arrA, arrB){
         return fine;
     }
     return [];
+}
+
+function generateQStr(req: Request, type: reqType): string[] {
+
+    if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
+        const db = entities[req.params.id].db_name;
+        const fields = entities[req.params.id].fields;
+        const calc = entities[req.params.id].calculated;
+        const fk = entities[req.params.id].fk;
+        const eid = req.params.eid;
+
+        const filtered = Object.keys(req.query).filter(k => !( k === 'skip' || k === 'limit' ));
+
+        const keys = [];
+        const values = [];
+
+        if (type === 'id') {
+            keys.push(
+                ...filtered.filter(k => ( fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'id' ))
+            ) 
+
+            values.push(keys.map( k => req.query[k] ));
+
+            return concatFn(keys, values);
+        }
+
+        if (type === 'string') {
+            keys.push(
+                ...filtered.filter(k => ( fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'string' ))
+            ) 
+
+            values.push(keys.map( k => `${req.query[k]}` ));
+
+            return concatLikeFn(keys, values);
+        }
+
+        if (type === 'flag') {
+            keys.push(
+                ...filtered.filter(k => ( fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'flag' ))
+            )
+            
+            values.push(keys.map( k => `${ (req.query[k] as any as boolean) == true ? '1' : '0'}` ));
+
+            return concatLikeFn(keys, values);
+        }
+
+    
+    }
+
 }
 
 function createEntity(req, res, next){
@@ -161,6 +213,7 @@ function deleteEntity(req, res, next){
 }
 
 async function queryEntity( req, res, next ){
+    
     // console.log('ent req search: ', req.query, ' url params: ', req.params);
     if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
         const db = entities[req.params.id].db_name;
@@ -171,38 +224,6 @@ async function queryEntity( req, res, next ){
 
         let limit = !!req.query.limit && Number(req.query.limit)  || '20';
 
-        // проработать логику поиска типа поля запроса
-
-        let searchParamsKeys = Object.keys(req.query).filter(k =>
-            !( k === 'skip' || k === 'limit' ) &&
-            ( fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'id' )
-        );
-
-        let searchParamsValue = searchParamsKeys.map( k => req.query[k] );
-
-        let conSearchParams = concatFn( searchParamsKeys, searchParamsValue );
-
-        let searchStringKeys = Object.keys(req.query).filter(k =>
-            !( k === 'skip' || k === 'limit' ) &&
-            ( fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'string' )
-        );
-
-        let searchFlagKeys = Object.keys(req.query).filter(k =>
-            !( k === 'skip' || k === 'limit' ) &&
-            ( fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'flag' )
-        );
-
-        let searchStringValue = searchStringKeys.map(k => `${req.query[k]}` );
-
-        let searchFlagValue = searchFlagKeys.map(k => `${req.query[k] == true ? '1' : '0'}` );
-
-        let conSearchStrings = [
-            ...concatLikeFn( searchStringKeys, searchStringValue ),
-            ...concatLikeFn( searchFlagKeys, searchFlagValue ),
-        ]
-       
-        console.log('ent q:', req.query, 'ids:', conSearchParams, 'str:', conSearchStrings);
-
         // если спросили что то лишнее хотя с новой логикой сюда не попадуть те запросы которых нет в репозитории доступных
         if( !Object.keys(req.query).every(r => !!( r === 'skip' || r === 'limit' ) || !!fields.find(f => f.key === r ))) {
             res.status(500);
@@ -211,8 +232,8 @@ async function queryEntity( req, res, next ){
             return;
         }
 
-        let likeStr = conSearchStrings.length && conSearchStrings.join(' AND ');
-        let whereStr = conSearchParams.length && conSearchParams.join(' AND ');
+        let likeStr = [...generateQStr(req, 'string'), ...generateQStr(req, 'flag')].join(' AND ');
+        let whereStr = [...generateQStr(req, 'id')].join(' AND ');
 
         let limstr = `${ !!req.query.skip ? ' LIMIT ' + limit + ' OFFSET ' + req.query.skip  :'' }`;
 
@@ -255,141 +276,175 @@ async function queryEntity( req, res, next ){
         console.log('like:', likeStr);
         console.log('where:', whereStr);
 
-        pool.query(q, async (err, result)=> {
+        pool.getConnection((err, connection)  => {
             if(!!err) {
                 res.status(500);
                 res.send(JSON.stringify(err));
+                return;
             }
 
-            const lazy_q: Promise<any>[] = [];
+            connection.query(q, async (err, result)=> {
+                
+                connection.release();
 
-            result.forEach(row => {
+                if(!!err) {
+                    res.status(500);
+                    res.send(JSON.stringify(err));
+                }
 
-                Object.keys(row).forEach(k => {
-                    const targetReq = fields.find(r => r.key === k);
+                const lazy_q: Promise<any>[] = [];
 
-                    if(targetReq?.type === 'string' || targetReq?.type === 'text'){
-                        row[k] = validator.unescape(`${row[k]}`);
-                    }
+                result.forEach(row => {
 
-                    // асинхронная подгрузка сущности по id 
-                    if(targetReq?.loadEntity && row[k] ){
+                    Object.keys(row).forEach(k => {
+                        const targetReq = fields.find(r => r.key === k);
 
-                        // логика загрузки мета сущности для картинки по id
-                        if(targetReq?.type === 'img'){
-                            const q = `SELECT \`images\`.*, \`files\`.\`filename\` FROM \`files\` INNER JOIN \`images\` ON \`images\`.\`file_id\` = \`files\`.\`id\` WHERE \`images\`.\`id\` = ${row[k]}`;
-                            lazy_q.push(new Promise( (_resolve, _reject) => {
-                                pool.query(q, function( err, a_result ){
-                                    if(err){
-                                        _reject(err);
-                                    }
-
-                                    _resolve({ key: targetReq.key, value: a_result, id: row.id});
-                                });
-                            }));
+                        if(targetReq?.type === 'string' || targetReq?.type === 'text'){
+                            row[k] = validator.unescape(`${row[k]}`);
                         }
 
-                        // логика для загрузки ссылочной сущности по id 
-                        if(targetReq?.type === 'id'){
-                            const db = targetReq.dctKey ? dict[targetReq.dctKey].db : null;
+                        // асинхронная подгрузка сущности по id 
+                        if(targetReq?.loadEntity && row[k] ){
 
-                            if(db){
-                                const q = `SELECT * FROM \`${db}\` WHERE \`id\` = ${row[k]}`;
+                            // логика загрузки мета сущности для картинки по id
+                            if(targetReq?.type === 'img'){
+                                const q = `SELECT \`images\`.*, \`files\`.\`filename\` FROM \`files\` INNER JOIN \`images\` ON \`images\`.\`file_id\` = \`files\`.\`id\` WHERE \`images\`.\`id\` = ${row[k]}`;
                                 lazy_q.push(new Promise( (_resolve, _reject) => {
-                                    pool.query(q, function( err, a_result ){
+                                    pool.getConnection((err, connection) => {
                                         if(err){
                                             _reject(err);
+                                            return;
                                         }
+                                        connection.query(q, function( err, a_result ){
+                                            
+                                            connection.release();
 
-                                        _resolve({ key: targetReq.key, value: a_result, id: row.id});
-                                    });
-                                }));
-                            }
-                            
-                        }
-                    }
-                });
-            });
-
-            // проход по всем полям сущности 
-            await Promise.all(lazy_q).then(data => {
-                console.log('lazy: ', data);
-
-                data.forEach(d => {
-                    const t_row = result.find(r => r.id === d.id);
-
-                    if(t_row) {
-                        t_row.meta = t_row.meta ? 
-                        { ...t_row.meta, [d.key]: d.value ? d.value?.[0] : null } :
-                        { [d.key]: d.value ? d.value?.[0] : null }
-                    }
-                });
-                
-            });
-
-            if( calc && result ){
-                let calcPr = result.map((c) => {
-                    const id = c.id;
-                    return new Promise((resolve, reject)=>{
-
-                        let tmpPr = calc.map(clc => {
-
-                            return new Promise((_resolve, _reject) => {
-
-                                switch( clc.type ){
-                                    case 'count':
-                                        const aq = `SELECT * FROM \`${ clc.db_name }\` WHERE \`${ clc.id_key }\`='${id}'`;
-
-                                        console.log('qa: ', aq);
-
-                                        pool.query(aq, function( err, a_result ){
                                             if(err){
                                                 _reject(err);
                                             }
 
-                                            _resolve({ key: clc.key, value: a_result.length});
+                                            _resolve({ key: targetReq.key, value: a_result, id: row.id});
                                         });
-                                        break;
+                                    })
+                                    
+                                }));
+                            }
 
-                                    case 'test':
-                                        _resolve({key: clc.key, value: 'test'});
-                                        break;
+                            // логика для загрузки ссылочной сущности по id 
+                            if(targetReq?.type === 'id'){
+                                const db = targetReq.dctKey ? dict[targetReq.dctKey].db : null;
 
-                                    default:
-                                        _resolve([]);
+                                if(db){
+                                    const q = `SELECT * FROM \`${db}\` WHERE \`id\` = ${row[k]}`;
+                                    lazy_q.push(new Promise( (_resolve, _reject) => {
+                                        pool.getConnection((err, connection) => {
+                                            if(err){
+                                                _reject(err);
+                                                return;
+                                            }
+                                            connection.query(q, function( err, a_result ){
 
+                                                connection.release();
+
+                                                if(err){
+                                                    _reject(err);
+                                                }
+
+                                                _resolve({ key: targetReq.key, value: a_result, id: row.id});
+                                            });
+                                        });
+                                        
+                                    }));
                                 }
+                                
+                            }
+                        }
+                    });
+                });
+
+                // проход по всем полям сущности 
+                await Promise.all(lazy_q).then(data => {
+                    console.log('lazy: ', data);
+
+                    data.forEach(d => {
+                        const t_row = result.find(r => r.id === d.id);
+
+
+                        if(t_row) {
+                            t_row.meta = t_row.meta ? 
+                            { ...t_row.meta, [d.key]: d.value ? d.value?.[0] : null } :
+                            { [d.key]: d.value ? d.value?.[0] : null }
+                        }
+                    });
+                    
+                });
+
+                if( calc && result ){
+                    let calcPr = result.map((c) => {
+                        const id = c.id;
+                        return new Promise((resolve, reject)=>{
+
+                            let tmpPr = calc.map(clc => {
+
+                                return new Promise((_resolve, _reject) => {
+
+                                    switch( clc.type ){
+                                        case 'count':
+                                            const aq = `SELECT * FROM \`${ clc.db_name }\` WHERE \`${ clc.id_key }\`='${id}'`;
+
+                                            console.log('qa: ', aq);
+
+                                            pool.query(aq, function( err, a_result ){
+                                                if(err){
+                                                    _reject(err);
+                                                }
+
+                                                _resolve({ key: clc.key, value: a_result.length});
+                                            });
+                                            break;
+
+                                        case 'test':
+                                            _resolve({key: clc.key, value: 'test'});
+                                            break;
+
+                                        default:
+                                            _resolve([]);
+
+                                    }
+
+                                });
+
 
                             });
 
+                            Promise.all( tmpPr ).then((_results)=>{
+                                const mergeField = _results.map((r, idx) => {
+                                    Object.assign( c, {[r['key']]: r['value']} );
+                                });
 
-                        });
-
-                        Promise.all( tmpPr ).then((_results)=>{
-                            const mergeField = _results.map((r, idx) => {
-                                Object.assign( c, {[r['key']]: r['value']} );
-                            });
-
-                            resolve(c)
-                        }).catch(err=>reject(err));
+                                resolve(c)
+                            }).catch(err=>reject(err));
 
 
-                    })
-                });
+                        })
+                    });
 
-                Promise.all( calcPr ).then((add_results)=>{
-                    res.send(add_results);
-                }).catch(er => {
-                    console.error('error: ', er);
-                    res.status(500);
-                    res.send({error: er});
-                });
-            }
-            else{
-                res.send(result);
-            }
+                    Promise.all( calcPr ).then((add_results)=>{
+                        res.send(add_results);
+                    }).catch(er => {
+                        console.error('error: ', er);
+                        res.status(500);
+                        res.send({error: er});
+                    });
+                }
+                else{
+                    res.send(result);
+                }
 
-        });
+            });
+        })
+
+        
     } else {
         res.send([]);
         console.log('сущность не определена');
@@ -490,7 +545,17 @@ entity.get('/:id/filters', cors(), function(req, res){
 
 entity.get('/:id/set', cors(), function(req, res){
     if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
-        pool.query(`SELECT * FROM \`${ entities[req.params.id].db_name }\``, (err, result)=> {
+
+        const likeStr = [...generateQStr(req, 'string'), ...generateQStr(req, 'flag')].join(' AND ');
+        const whereStr = [...generateQStr(req, 'id')].join(' AND ');
+
+        const q = 
+            `SELECT * 
+            FROM \`${ entities[req.params.id].db_name }\`
+            ${(whereStr) ? 'WHERE ' + whereStr : ''} 
+            ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} `;
+
+        pool.query(q, (err, result)=> {
             const lenSet = result && result.length || 0;
             const con = entities[req.params.id].container || null;
             const slot = entities[req.params.id].slot || null;

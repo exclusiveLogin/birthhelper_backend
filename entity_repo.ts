@@ -98,6 +98,13 @@ export const entityRepo: EntityRepo = {
         db_name: 'clinics',
         filters: [
             {
+                name: 'id',
+                title: 'По ID',
+                type: 'id',
+                db_name: 'dict_clinics'
+
+            },
+            {
                 name: 'title',
                 title: 'По названию',
                 type: 'string',
@@ -105,7 +112,7 @@ export const entityRepo: EntityRepo = {
             {
                 name: 'active',
                 title: 'По Активности',
-                type: 'string',
+                type: 'flag',
             },
         ],
         fields: [
