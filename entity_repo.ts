@@ -321,7 +321,7 @@ export const entityRepo: EntityRepo = {
             }
         ],
         container: null,
-        slot: 'slot_service_natal',
+        slot: 'slot_doctors',
         fields: [
             { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
             { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
