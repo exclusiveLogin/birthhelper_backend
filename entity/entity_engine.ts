@@ -9,10 +9,10 @@ import multer from 'multer';
 
 import { entityRepo } from './entity_repo';
 
-const pool = require('./sql');
-const containers = require('./container_repo');
-const slots = require('./slot_repo');
-const dict = require('./dict_repo');
+const pool = require('../db/sql');
+const containers = require('../container/container_repo');
+const slots = require('../slot/slot_repo');
+const dict = require('../dictionary/dictionary_repo');
 
 type reqType = 'string' | 'id' | 'flag';
 

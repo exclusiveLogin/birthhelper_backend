@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
-const admin = require('./admin_rest');
-const api = require('./api_rest');
-const dict = require('./dictionary_engine');
+const admin = require('./api/admin_rest');
+const api = require('./api/api_rest');
+const dict = require('./dictionary/dictionary_engine');
 import fs from 'fs';
 
 let app = express();

@@ -1,9 +1,8 @@
 import express from "express";
 import bodyparser from 'body-parser';
 const jsonparser = bodyparser.json();
-const pool = require('./sql');
-const containers = require('./container_repo');
-
+const pool = require('../db/sql');
+const containers = require('../container/container_repo');
 
 // функция возвращающая список существующих в системе контейнеров
 function getContainersList(req, res, next){

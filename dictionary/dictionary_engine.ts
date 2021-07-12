@@ -1,6 +1,6 @@
 import express = require('express');
-const pool = require('./sql');
-const dicts = require('./dict_repo');
+const pool = require('../db/sql');
+const dicts = require('../dictionary/dictionary_repo');
 
 const dict = express.Router();
 dict.get('/:id', function(req, res){

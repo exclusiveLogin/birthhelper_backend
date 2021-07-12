@@ -1,8 +1,8 @@
 import express from 'express';
-const dict = require('./dictionary_engine');
-const entity = require('./entity_engine');
-const container = require('./container_engine');
-const slot = require('./slot_engine');
+const dict = require('../dictionary/dictionary_engine');
+const entity = require('../entity/entity_engine');
+const container = require('../container/container_engine');
+const slot = require('../slot/slot_engine');
 
 let admin = express.Router();
 admin.get('/', adminRootHandler);

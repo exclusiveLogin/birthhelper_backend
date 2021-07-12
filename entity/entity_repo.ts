@@ -1,4 +1,4 @@
-import {EntityRepo} from './entity_repo.model';
+import {EntityRepo} from '../entity/entity_repo.model';
 export const entityRepo: EntityRepo = {
     ent_services: {
         db_name: 'services',

@@ -1,4 +1,4 @@
-import {Cached} from "./cache.engine/cache.model";
+import {Cached} from "../cache.engine/cache.model";
 
 export interface Slot extends Cached{
     name: string;

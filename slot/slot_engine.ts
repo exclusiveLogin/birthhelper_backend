@@ -1,8 +1,8 @@
 import express from "express";
 import bodyParser from "body-parser";
 const jsonparser = bodyParser.json();
-const pool = require('./sql');
-const slots = require('./slot_repo');
+const pool = require('../db/sql');
+const slots = require('../slot/slot_repo');
 
 // функция возвращающая список существующих в системе контейнеров
 function getSlotList(req, res, next){

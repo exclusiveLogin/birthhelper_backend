@@ -1,6 +1,6 @@
 import express = require('express');
-const pool = require('./sql');
-const filters = require('./filter_repo');
+const pool = require('../db/sql');
+const filters = require('../filter/filter_repo');
 
 const filter = express.Router();
 
