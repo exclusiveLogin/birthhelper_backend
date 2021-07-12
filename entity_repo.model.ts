@@ -1,10 +1,10 @@
-import { type } from "os";
+import {Cached} from "./cache.engine/cache.model";
 
 export interface EntityRepo {
     [key: string]: Entity;
 }
 
-export interface Entity{
+export interface Entity extends Cached {
     db_name: string,
     filters: EntityFilter[],
     container?: string,

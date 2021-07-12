@@ -1,4 +1,6 @@
-export interface Slot {
+import {Cached} from "./cache.engine/cache.model";
+
+export interface Slot extends Cached{
     name: string;
     title: string;
     db_entity: string; // БД сущностей
