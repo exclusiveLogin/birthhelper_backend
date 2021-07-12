@@ -1,4 +1,10 @@
-module.exports = {
+export interface IDictionary {
+    db: string;
+    titleMap?: string[];
+    titleAddMap?: string[];
+}
+
+const dictionaries: { [key: string ]: IDictionary } = {
     dict_category_service: { db: 'category_service' },
     dict_trimester_service: { db: 'trimester' },
     dict_clinics: { db: 'clinics' },
@@ -24,3 +30,5 @@ module.exports = {
     dict_facilities_containers_repo: { db: 'facilities_containers_repo'},
     dict_slot_clinic_type: { db: 'slot_clinic_type'}
 };
+
+module.exports = dictionaries;

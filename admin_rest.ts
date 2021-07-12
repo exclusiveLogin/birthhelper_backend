@@ -8,7 +8,7 @@ let admin = express.Router();
 admin.get('/', adminRootHandler);
 
 function adminRootHandler(req, res){
-    res.send('HELLO ADMIN ROOT');
+    res.send({index: 'admin root index'});
 }
 
 

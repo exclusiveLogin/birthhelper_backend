@@ -1,4 +1,23 @@
-module.exports = {
+export interface Slot {
+    name: string;
+    title: string;
+    db_entity: string; // БД сущностей
+    db_container: string; // БД контейнеров,
+    db_repo: string; //БД репозитория контейнеров
+    db_links: string; // БД связей
+    entity_fields: string[]; // поля для сущности которые показываем в информации о слоте(таблица, карточка)
+    container_fields?: string[]; //поля контейнера (container_repo)
+    overrided_fields?: string[]; // поля доступные для перекрытия
+    required_fields?: string[]; //поля обязательные для слота
+    required_fields_type?: { [key: string]: FieldType }; //поля обязательные для слота
+    entity_key: string; // ключ сущности
+    contragent_id_key: string; // название поля для хранения ссылки на КА
+    entity_id_key: string; // название поля для хранения ссылки на сущность
+}
+
+export type FieldType = 'number' | 'string' | 'flag';
+
+const slots: { [key: string]: Slot } = {
     slot_placement: {
         name: 'slot_placement',
         title: 'Слоты для услуг размещения',
@@ -8,7 +27,7 @@ module.exports = {
         db_links: 'service_slot', // БД связей
         entity_fields: ['title', 'description'], // поля для сущности которые показываем в информации о слоте(таблица, карточка)
         container_fields: ['title', 'description', 'comment'], //поля контейнера (container_repo)
-        overrided_fields: ['price'], // поля доступные для перекрытия 
+        overrided_fields: ['price'], // поля доступные для перекрытия
         required_fields: ['price', 'service_id', 'contragent_id', 'type', 'service_type'], //поля обязательные для слота
         required_fields_type: {
             'price': 'number',
@@ -30,7 +49,7 @@ module.exports = {
         db_links: 'service_slot', // БД связей
         entity_fields: ['title', 'description'], // поля для сущности которые показываем в информации о слоте(таблица, карточка)
         container_fields: ['title', 'description', 'comment'], //поля контейнера (container_repo)
-        overrided_fields: ['price'], // поля доступные для перекрытия 
+        overrided_fields: ['price'], // поля доступные для перекрытия
         required_fields: ['price', 'service_id', 'contragent_id', 'type', 'service_type'], //поля обязательные для слота
         required_fields_type: {
             'price': 'number',
@@ -44,3 +63,5 @@ module.exports = {
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
     }
 };
+
+module.exports = slots;

@@ -14,7 +14,8 @@ filter.get('/:id', function (req, res) {
         res.send(target);
     } else {
         console.log('error', req.params);
-        res.send([]);
+        res.status(500);
+        res.send({error: 'Фильтров для данной секции не найдено', context: req.params});
     }
 });
 

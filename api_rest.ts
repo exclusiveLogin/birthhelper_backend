@@ -4,10 +4,10 @@ const entity = require('./entity_engine');
 const filter = require('./filter_engine');
 
 let admin = express.Router();
-admin.get('/', adminRootHandler);
+admin.get('/', apiRootHandler);
 
-function adminRootHandler(req, res){
-    res.send('HELLO API ROOT');
+function apiRootHandler(req, res){
+    res.send({index: 'api root index'});
 }
 
 admin.use('/filter', filter);
