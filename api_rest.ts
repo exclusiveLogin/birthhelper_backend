@@ -1,6 +1,4 @@
 import express from 'express';
-import cors from 'cors';
-
 const dict = require('./dictionary_engine');
 const entity = require('./entity_engine');
 
@@ -14,6 +12,6 @@ function adminRootHandler(req, res){
 
 
 admin.use('/dict', dict);
-admin.use('/', cors(), entity);
+admin.use('/', entity);
 
 module.exports = admin;

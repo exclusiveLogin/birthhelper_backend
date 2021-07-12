@@ -1,10 +1,9 @@
 import express = require('express');
-import cors = require('cors');
 const pool = require('./sql');
 const dicts = require('./dict_repo');
 
 const dict = express.Router();
-dict.get('/:id', cors(), function(req, res){
+dict.get('/:id', function(req, res){
     if(!!dicts[req.params.id]){
 
         const dict = dicts[req.params.id];

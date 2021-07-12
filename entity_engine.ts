@@ -1,5 +1,4 @@
 import express = require('express');
-import cors = require('cors');
 import bodyParser = require('body-parser');
 import validator from 'validator';
 import { Request } from 'express';
@@ -36,7 +35,7 @@ const fileFilter = (req, file, cb) => file && file.mimetype === 'image/jpeg' ? c
 const upload = multer({ storage: storage, fileFilter });
 
 const entity = express.Router();
-entity.get('/', cors(), function(req, res){
+entity.get('/', function(req, res){
     res.set('Content-Type', 'text/html'); 
     res.write('Эндпоинт для сущностей доступны следующие: <br>');
     Object.keys(entities).forEach( key => res.write(key + '<br>') );
@@ -535,7 +534,7 @@ function downloadFile( req, res, next ){
 
 }
 
-entity.get('/:id/filters', cors(), function(req, res){
+entity.get('/:id/filters', function(req, res){
     if( !!entities[req.params.id] && !!entities[req.params.id].filters ){
         res.send( JSON.stringify( entities[req.params.id].filters ) )
     } else {
@@ -543,7 +542,7 @@ entity.get('/:id/filters', cors(), function(req, res){
     }
 });
 
-entity.get('/:id/set', cors(), function(req, res){
+entity.get('/:id/set', function(req, res){
     if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
 
         const likeStr = [...generateQStr(req, 'string'), ...generateQStr(req, 'flag')].join(' AND ');
@@ -572,16 +571,16 @@ entity.get('/:id/set', cors(), function(req, res){
     }
 });
 
-entity.get('/file/:id', cors(), downloadFile);
-entity.get('/:id', cors(), queryEntity);
+entity.get('/file/:id', downloadFile);
+entity.get('/:id', queryEntity);
 
-entity.get('/:id/:eid', cors(), queryEntity);
+entity.get('/:id/:eid', queryEntity);
 
-entity.post('/file', cors(), checkUploadsFS, upload.single('photo'), uploadFile);
+entity.post('/file', checkUploadsFS, upload.single('photo'), uploadFile);
 
 
-entity.delete('/:id', cors(), jsonparser, deleteEntity);
+entity.delete('/:id', jsonparser, deleteEntity);
 
-entity.post('/:id', cors(), jsonparser, createEntity);
+entity.post('/:id', jsonparser, createEntity);
 
 module.exports = entity;

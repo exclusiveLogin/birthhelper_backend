@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import bodyParser from "body-parser";
 const jsonparser = bodyParser.json();
 const pool = require('./sql');
@@ -263,11 +262,10 @@ function deleteSlotHandler(req, res){
 
 
 const slot = express.Router();
-slot.get('/', cors(), getSlotList);
-slot.get('/:name', cors(), getSlot);
-// slot.get('/:name/:cid', cors(), getContainer);
-slot.post('/:name/', cors(), jsonparser, saveSlotHandler);
-slot.post('/:name/:sid', cors(), jsonparser, saveSlotHandler);
-slot.delete('/:name/:sid', cors(), deleteSlotHandler);
+slot.get('/', getSlotList);
+slot.get('/:name', getSlot);
+slot.post('/:name/', jsonparser, saveSlotHandler);
+slot.post('/:name/:sid', jsonparser, saveSlotHandler);
+slot.delete('/:name/:sid', deleteSlotHandler);
 
 module.exports = slot;

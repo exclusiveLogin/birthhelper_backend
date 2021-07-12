@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import bodyparser from 'body-parser';
 const jsonparser = bodyparser.json();
 const pool = require('./sql');
@@ -229,10 +228,10 @@ function deleteContainerHandler(req, res){
 
 
 const container = express.Router();
-container.get('/', cors(), getContainersList);
-container.get('/:name', cors(), getContainer);
-container.get('/:name/:cid', cors(), getContainer);
-container.post('/:name/:cid', cors(), jsonparser, saveContainerHandler);
-container.delete('/:name/:cid', cors(), deleteContainerHandler);
+container.get('/', getContainersList);
+container.get('/:name', getContainer);
+container.get('/:name/:cid', getContainer);
+container.post('/:name/:cid', jsonparser, saveContainerHandler);
+container.delete('/:name/:cid', deleteContainerHandler);
 
 module.exports = container;

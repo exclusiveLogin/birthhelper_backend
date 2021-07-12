@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 const admin = require('./admin_rest');
 const api = require('./api_rest');
 const dict = require('./dictionary_engine');
@@ -6,6 +7,7 @@ import fs from 'fs';
 
 let app = express();
 
+app.use(cors());
 app.use('/admin', admin);
 app.use('/api', api);
 app.use('/dict', dict);
