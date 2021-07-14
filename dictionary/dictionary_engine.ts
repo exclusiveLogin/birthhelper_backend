@@ -1,6 +1,6 @@
 import express = require('express');
 import {CacheEngine} from "../cache.engine/cache_engine";
-import {Router} from "express";
+import {Response, Router} from "express";
 import {rejects} from "assert";
 const pool = require('../db/sql');
 const dicts = require('../dictionary/dictionary_repo');
@@ -38,11 +38,16 @@ dict.get('/:id', function(req, res){
             });
         });
 
+        const sendError = (res: Response, err): void => {
+            res.status(500);
+            res.end({err});
+        }
+
         if(ce.checkCache(req.params.id)) {
-            console.log('cached');
-            ce.getCachedByKey<any>(req.params.id).subscribe(data => res.send(data));
+            ce.getCachedByKey<any>(req.params.id)
+                .subscribe(data => res.send(data), err => sendError(res, err));
         } else {
-            getDatabasePr.then(data => res.send(data));
+            getDatabasePr.then(data => res.send(data)).catch(err => sendError(res, err));
         }
     } else {
         console.log('error', req.params);
