@@ -13,9 +13,9 @@ const SE = new SearchEngine();
 let app = express();
 
 app.use(cors());
+app.use('/search', SE.getRouter(CE));
 app.use('/admin', admin(CE));
 app.use('/api', api(CE));
-app.use('/search', SE.getRouter(CE));
 app.use('/static', express.static('/usr/src/app/uploads/',{ fallthrough: false }), (err, req, res, next) => {
     console.log('err static:', err);
     if(err.status === 404){

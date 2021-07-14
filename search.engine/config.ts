@@ -17,12 +17,14 @@ export interface SearchFilter {
 
 export type SearchFilterType = 'flag' | 'select';
 
-export const sectionClinicConfig: string[] = [
-    'clinic_type_birth_section',
-    'clinic_personal_birth_section',
-    'clinic_placement_birth_section',
-    'clinic_facilities_birth_section',
-];
+export const sectionClinicConfig: {[k: string]: string[]} = {
+    clinic: [
+        'clinic_type_birth_section',
+        'clinic_personal_birth_section',
+        'clinic_placement_birth_section',
+        'clinic_facilities_birth_section',
+    ]
+};
 
 export const searchConfig: SearchConfig = {
     clinic_type_birth_section: {
