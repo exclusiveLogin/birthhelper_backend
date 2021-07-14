@@ -1,5 +1,4 @@
 import {Observable, of, throwError} from "rxjs";
-import {map} from "rxjs/operators";
 
 interface CacheStore {
     [key: string]: any;
@@ -10,6 +9,10 @@ export class CacheEngine {
 
     constructor() {
         this.store = {};
+    }
+
+    checkCache(key: string): boolean {
+        return !!this.store[key];
     }
 
     getCachedByKey<T = any | any[]>(key: string): Observable<T> {
