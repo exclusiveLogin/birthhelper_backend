@@ -1,9 +1,14 @@
 import express = require('express');
+import {CacheEngine} from "../cache.engine/cache_engine";
+import {Router} from "express";
 const pool = require('../db/sql');
 const dicts = require('../dictionary/dictionary_repo');
 
+
+let ce: CacheEngine;
 const dict = express.Router();
 dict.get('/:id', function(req, res){
+
     if(!!dicts[req.params.id]){
 
         const dict = dicts[req.params.id];
@@ -17,6 +22,7 @@ dict.get('/:id', function(req, res){
         //console.log('dict:', req.params.id, limstr, q);
         pool.query(q, (err, result)=> {
             //console.log("dicts:", result);
+            ce.saveCacheData(`dict_${req.params.id}`, result);
 
             if( dict.titleMap || dict.titleAddMap ){
                 result && result.forEach( r => {
@@ -36,4 +42,9 @@ dict.get('/:id', function(req, res){
     }
 });
 
-module.exports = dict;
+function getDictMiddleware(_: CacheEngine): Router {
+    ce = _;
+    return dict;
+}
+
+module.exports = getDictMiddleware;

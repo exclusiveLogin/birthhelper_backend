@@ -2,15 +2,17 @@ import express from 'express';
 import cors from 'cors';
 const admin = require('./api/admin_rest');
 const api = require('./api/api_rest');
-const dict = require('./dictionary/dictionary_engine');
 import fs from 'fs';
+import {CacheEngine} from "./cache.engine/cache_engine";
+
+// cache engine provider
+const CE = new CacheEngine();
 
 let app = express();
 
 app.use(cors());
-app.use('/admin', admin);
-app.use('/api', api);
-app.use('/dict', dict);
+app.use('/admin', admin(CE));
+app.use('/api', api(CE));
 app.use('/static', express.static('/usr/src/app/uploads/',{ fallthrough: false }), (err, req, res, next) => {
     console.log('err static:', err);
     if(err.status === 404){

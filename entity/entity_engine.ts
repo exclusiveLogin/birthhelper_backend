@@ -1,18 +1,21 @@
 import express = require('express');
 import bodyParser = require('body-parser');
 import validator from 'validator';
-import { Request } from 'express';
+import {Request, Router} from 'express';
 
 const jsonparser = bodyParser.json();
 import fs from "fs";
 import multer from 'multer';
 
 import { entityRepo } from './entity_repo';
+import {CacheEngine} from "../cache.engine/cache_engine";
 
 const pool = require('../db/sql');
 const containers = require('../container/container_repo');
 const slots = require('../slot/slot_repo');
 const dict = require('../dictionary/dictionary_repo');
+
+let ce: CacheEngine;
 
 type reqType = 'string' | 'id' | 'flag';
 
@@ -35,6 +38,7 @@ const fileFilter = (req, file, cb) => file && file.mimetype === 'image/jpeg' ? c
 const upload = multer({ storage: storage, fileFilter });
 
 const entity = express.Router();
+
 entity.get('/', function(req, res){
     res.set('Content-Type', 'text/html'); 
     res.write('Эндпоинт для сущностей доступны следующие: <br>');
@@ -213,7 +217,7 @@ function deleteEntity(req, res, next){
 
 async function queryEntity( req, res, next ){
     
-    // console.log('ent req search: ', req.query, ' url params: ', req.params);
+    console.log('ent req search: ', req.query, ' url params: ', req.params, ' cache: ', ce);
     if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
         const db = entities[req.params.id].db_name;
         const fields = entities[req.params.id].fields;
@@ -583,4 +587,9 @@ entity.delete('/:id', jsonparser, deleteEntity);
 
 entity.post('/:id', jsonparser, createEntity);
 
-module.exports = entity;
+function getEntityMiddleware(_: CacheEngine): Router {
+    ce = _;
+    return entity;
+}
+
+module.exports = getEntityMiddleware;

@@ -1,4 +1,5 @@
-import {Observable, of, throwError} from "rxjs/dist/types";
+import {Observable, of, throwError} from "rxjs";
+import {map} from "rxjs/operators";
 
 interface CacheStore {
     [key: string]: any;
@@ -12,7 +13,7 @@ export class CacheEngine {
     }
 
     getCachedByKey<T = any | any[]>(key: string): Observable<T> {
-        return this.store[key] ? of(this.store[key]) : throwError(() => new Error('Нет данных в кеше по ключу' + key));
+        return this.store[key] ? of(JSON.parse(this.store[key])) : throwError(() => new Error('Нет данных в кеше по ключу' + key));
     }
 
     getCacheInStore(): Observable<CacheStore> {
@@ -20,7 +21,7 @@ export class CacheEngine {
     }
 
     saveCacheData(key: string, data: any): void {
-        this.store[key] = data;
+        this.store[key] = JSON.stringify(data);
     }
 
     clearCache(): void {
