@@ -10,6 +10,17 @@ export interface SearchSectionConfig {
     fetcher$: Observable<SearchFilter[]>
 }
 
+export interface SearchSection {
+    key: string;
+    title: string;
+    type: SearchFilterType;
+    filters: SearchFilter[];
+}
+
+export interface SearchSectionResponse {
+    [sections: number]: SearchSection[]
+}
+
 export interface SearchFilter {
     id: number;
     title: string;

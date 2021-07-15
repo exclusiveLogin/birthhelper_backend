@@ -1,8 +1,9 @@
 import express = require('express');
 import {Router} from "express";
 import {CacheEngine} from "../cache.engine/cache_engine";
-import {searchConfig, sectionClinicConfig} from "./config";
+import {searchConfig, SearchFilter, SearchSection, SearchSectionResponse, sectionClinicConfig} from "./config";
 import {zip} from "rxjs";
+import {map} from "rxjs/operators";
 
 
 export class SearchEngine {
@@ -20,7 +21,7 @@ export class SearchEngine {
 
     }
 
-    rootHandler(req, res){
+    rootHandler(req, res) {
         res.send({index: 'search root index'});
     }
 
@@ -29,7 +30,20 @@ export class SearchEngine {
         const conf = this.configSection[req.params.id];
         if (conf) {
             const f$ = conf.map(k => this.searchConfig[k].fetcher$);
-            zip(...f$).subscribe(results => {
+            zip(...f$).pipe(
+                map((data: SearchFilter[][]): SearchSection[] => {
+                    const keys: string[] = Object.keys(this.searchConfig);
+
+                    return data.map((filters, idx) => (
+                        {
+                            key: keys[idx],
+                            title: this.searchConfig[keys[idx]].title,
+                            filters: data[idx],
+                            type: this.searchConfig[keys[idx]].type,
+                        }
+                    ));
+                }),
+            ).subscribe((results: SearchSection[]) => {
                 console.log('search results:', results);
                 res.send({index: 'search section', results});
             });

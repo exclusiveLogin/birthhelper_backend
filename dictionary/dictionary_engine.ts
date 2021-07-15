@@ -1,13 +1,13 @@
 import express = require('express');
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {Response, Router} from "express";
-import {rejects} from "assert";
 const pool = require('../db/sql');
 const dicts = require('../dictionary/dictionary_repo');
 
 
 let ce: CacheEngine;
 const dict = express.Router();
+
 dict.get('/:id', function(req, res){
 
     if(!!dicts[req.params.id]){
