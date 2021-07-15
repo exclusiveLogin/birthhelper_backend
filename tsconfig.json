@@ -10,9 +10,10 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "downlevelIteration": true,
-    "target": "es5",
+    "target": "es2017",
     "typeRoots": [
-      "node_modules/@types"
+      "node_modules/@types",
+      "rxjs/dist/types"
     ],
     "lib": [
       "es2017",
