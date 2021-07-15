@@ -9,8 +9,9 @@ import {DictionaryEngine} from "./dictionary/dictionary_engine";
 
 // cache engine provider
 const CE = new CacheEngine();
-const SE = new SearchEngine();
 const DE = new DictionaryEngine(CE);
+const SE = new SearchEngine(CE, DE);
+
 
 let app = express();
 

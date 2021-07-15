@@ -1,7 +1,8 @@
-import express = require('express');
+import {DictionaryEngine} from "../dictionary/dictionary_engine";
+const express = require('express');
 import {Router} from "express";
 import {CacheEngine} from "../cache.engine/cache_engine";
-import {searchConfig, SearchFilter, SearchSection, SearchSectionResponse, sectionClinicConfig} from "./config";
+import {Context, getSearchConfig, SearchConfig, SearchFilter, SearchSection, sectionClinicConfig} from "./config";
 import {zip} from "rxjs";
 import {map} from "rxjs/operators";
 
@@ -11,10 +12,11 @@ export class SearchEngine {
     router: Router = express.Router();
     cache: CacheEngine;
     configSection = sectionClinicConfig;
-    searchConfig = searchConfig
+    searchConfig: SearchConfig;
 
-    constructor() {
-
+    constructor(private _ce: CacheEngine, private _de: DictionaryEngine) {
+        const context: Context = {cacheEngine: this._ce, searchEngine: this, dictionaryEngine: this._de};
+        this.searchConfig = getSearchConfig(context);
     }
 
     createVector(req, res, next): void {

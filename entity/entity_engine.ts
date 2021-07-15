@@ -1,5 +1,5 @@
-import express = require('express');
-import bodyParser = require('body-parser');
+const express = require('express');
+const bodyParser = require('body-parser');
 import validator from 'validator';
 import {Request, Router} from 'express';
 
