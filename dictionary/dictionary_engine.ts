@@ -3,6 +3,7 @@ import {IDictionaryFilters} from "./dictionary_repo";
 import * as express from "express";
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {Response, Router} from "express";
+import {Observable, throwError} from "rxjs";
 const pool = require('../db/sql');
 const dicts = require('../dictionary/dictionary_repo');
 
@@ -92,13 +93,13 @@ export class DictionaryEngine {
 
     }
     
-    getDict(id: string, limit = '200', skip = '0'): Promise<DictionaryItem[]> {
+    getDict(id: string, limit = '200', skip = '0'): Observable<DictionaryItem[]> {
         const dict = dicts[id];
         if(!dict) {
-            return Promise.reject(`Словарь ${id} не найден`);
+            return throwError(`Словарь ${id} не найден`);
         }
 
-        const fetchFromDB = new Promise<any[]>((resolve, rejects) => {
+        const fetchFromDB = new Observable<any[]>((subscriber) => {
             let limstr = `${ !!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip  : '' }`;
 
             let likeStr = [...this.generateQStr(dict?.filters || [], 'string'), ...this.generateQStr(dict?.filters || [], 'flag')].join(' AND ');
@@ -113,7 +114,7 @@ export class DictionaryEngine {
 
             pool.query(q, (err, result)=> {
                 if (err){
-                    rejects(err);
+                    subscriber.error(err);
                 }
 
                 this.ce.saveCacheData(`${id}`, result);
@@ -124,12 +125,13 @@ export class DictionaryEngine {
                         r.title = dict.titleAddMap ? r.title + ` ( ${dict.titleAddMap.map(f => r[f]).join(', ')} )` : r.title;
                     })
                 }
-                resolve(result);
+                subscriber.next(result);
+                subscriber.complete();
             });
         });
 
         if(this.ce.checkCache(id)) {
-            return this.ce.getCachedByKey(id).toPromise();
+            return this.ce.getCachedByKey(id);
         } else {
             return fetchFromDB
         }
@@ -146,9 +148,7 @@ export class DictionaryEngine {
 
             const id = req.params.id;
 
-            if (!!id) this.getDict(id)
-                .then(data => res.send(data))
-                .catch(error => this.sendError(res, error));
+            if (!!id) this.getDict(id).subscribe((data) => res.send(data),  error => this.sendError(res, error));
         });
     }
 }
