@@ -1,4 +1,5 @@
-import express, {Router} from 'express';
+import {Router} from 'express';
+import * as express from "express";
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {DictionaryEngine} from "../dictionary/dictionary_engine";
 const entity = require('../entity/entity_engine');

@@ -1,6 +1,6 @@
 import {IDictionaryFilters} from "./dictionary_repo";
 
-const express = require('express');
+import * as express from "express";
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {Response, Router} from "express";
 const pool = require('../db/sql');

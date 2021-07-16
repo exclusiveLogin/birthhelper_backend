@@ -1,4 +1,4 @@
-const express = require('express');
+import * as express from "express";
 const bodyParser = require('body-parser');
 import validator from 'validator';
 import {Request, Router} from 'express';

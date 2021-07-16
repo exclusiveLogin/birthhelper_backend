@@ -1,4 +1,4 @@
-import express = require('express');
+import * as express from "express";
 const pool = require('../db/sql');
 const filters = require('../filter/filter_repo');
 

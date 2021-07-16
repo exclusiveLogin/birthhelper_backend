@@ -1,4 +1,4 @@
-import express from "express";
+import * as express from "express";
 import bodyparser from 'body-parser';
 const jsonparser = bodyparser.json();
 const pool = require('../db/sql');

@@ -1,5 +1,5 @@
 import {DictionaryEngine} from "../dictionary/dictionary_engine";
-const express = require('express');
+import * as express from "express";
 import {Router} from "express";
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {Context, getSearchConfig, SearchConfig, SearchFilter, SearchSection, sectionClinicConfig} from "./config";

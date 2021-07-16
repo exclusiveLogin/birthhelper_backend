@@ -1,4 +1,5 @@
-import express, {Router} from 'express';
+import {Router} from 'express';
+import * as express from "express";
 const dict = require('../dictionary/dictionary_engine');
 const entity = require('../entity/entity_engine');
 const filter = require('../filter/filter_engine');
