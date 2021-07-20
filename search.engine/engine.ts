@@ -5,6 +5,7 @@ import {CacheEngine} from "../cache.engine/cache_engine";
 import {Context, getSearchConfig, SearchConfig, SearchFilter, SearchSection, sectionClinicConfig} from "./config";
 import {zip} from "rxjs";
 import {map} from "rxjs/operators";
+import {md5Encript} from "./sections.handler";
 
 
 export class SearchEngine {
@@ -24,7 +25,7 @@ export class SearchEngine {
     }
 
     rootHandler(req, res) {
-        res.send({index: 'search root index'});
+        res.send({index: 'search root index', testMD5: md5Encript({test: 'hello-world'})});
     }
 
     sendFiltersHandler(req, res): void {
