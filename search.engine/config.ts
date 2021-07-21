@@ -32,14 +32,14 @@ export interface SearchFilter {
 
 export type SearchFilterType = 'flag' | 'select';
 
-export const sectionClinicConfig: {[k: string]: string[]} = {
+export const sectionClinicConfig = {
     clinic: [
         'clinic_type_birth_section',
         'clinic_personal_birth_section',
         'clinic_placement_birth_section',
         'clinic_facilities_birth_section',
     ]
-};
+} as const;
 export interface Context {
     dictionaryEngine: DictionaryEngine;
     searchEngine: SearchEngine;

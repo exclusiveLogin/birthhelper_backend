@@ -8,3 +8,12 @@ export function md5Encript(body: object): string {
     const str = JSON.stringify(body);
     return md(str);
 }
+
+export function genarateAverage() {}
+
+export function genarateRange() {}
+
+export function genarateTotal() {}
+
+export function genarateDistinct() {}
+
