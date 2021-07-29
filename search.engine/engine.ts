@@ -44,7 +44,6 @@ export type FilterSection = { [section: string]: { [key: string]: any }}
 export class SearchEngine {
 
     router: Router = express.Router();
-    cache: CacheEngine;
     configSection = sectionClinicConfig;
     searchConfig: SearchConfig;
 
@@ -149,8 +148,7 @@ export class SearchEngine {
 
     }
 
-    getRouter(_: CacheEngine): Router {
-        this.cache = _;
+    getRouter(): Router {
         this.router.get('/', this.rootHandler.bind(this));
         this.router.get('/:id', this.sendFiltersHandler.bind(this));
         this.router.post('/:id', jsonparser, this.createVector.bind(this));
