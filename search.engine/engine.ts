@@ -6,17 +6,22 @@ import {Context, getSearchConfig, SearchConfig, SearchFilter, SearchSection, sec
 import {zip} from "rxjs";
 import {map} from "rxjs/operators";
 import {md5Encript} from "./sections.handler";
+const bodyParser = require('body-parser');
+const jsonparser = bodyParser.json();
+
+type ConditionalSection<T> = T extends FilterSection ? T : T[];
 
 interface Hashed <T>{
-    [hash: string]: T[]
+    [hash: string]: ConditionalSection<T>
 }
 type SectionKeys = keyof typeof sectionClinicConfig;
-type TypeSection<T> = {
+type TypeSection<T = any> = {
     [k in SectionKeys]: Hashed<T>
 }
 
-export interface SearchStore extends TypeSection<any> {}
+export interface SearchStore extends TypeSection<Stored> {}
 export interface SetStore extends TypeSection<Setted> {}
+export interface FilterStore extends TypeSection<FilterSection> {}
 
 export interface SlotPriceSet {
     min_price: number;
@@ -32,7 +37,9 @@ export interface Rating {
     count_votes: number;
 }
 
+export type Stored = {id: number, [key: string]: any};
 export type Setted = (SlotPriceSet | Rating) & {id: number};
+export type FilterSection = { [section: string]: { [key: string]: any }}
 
 export class SearchEngine {
 
@@ -47,6 +54,9 @@ export class SearchEngine {
     setStore: SetStore = {
         clinic: {}
     };
+    filterStore: FilterStore = {
+        clinic: {}
+    };
 
     constructor(private _ce: CacheEngine, private _de: DictionaryEngine) {
         const context: Context = {cacheEngine: this._ce, searchEngine: this, dictionaryEngine: this._de};
@@ -54,6 +64,23 @@ export class SearchEngine {
     }
 
     createVector(req, res, next): void {
+        const section = req.params.id;
+        const body = req.body;
+
+        if(section && body){
+            const hash = md5Encript(body);
+            this.setFilterStore(section, hash, body);
+
+            res.status(201);
+            res.send({hash, filters: body});
+
+            console.log('createVector', this.filterStore);
+        } else {
+            res.status(500);
+            res.send({error: 'not valid query', body, section});
+        }
+
+
 
     }
 
@@ -83,8 +110,18 @@ export class SearchEngine {
         return !!this.setStore[section];
     }
 
+    setFilterStore(section: SectionKeys, hash: string, data: any): void {
+        if (!this.checkSummarySectionExist(section)) {
+            this.filterStore[section] = {};
+        }
+        this.filterStore[section][hash] = data;
+    }
+
+    checkFilterSectionExist(section: SectionKeys): boolean {
+        return !!this.filterStore[section];
+    }
+
     sendFiltersHandler(req, res): void {
-        console.log(this);
         const conf = this.configSection[req.params.id];
         if (conf) {
             const f$ = conf.map(k => this.searchConfig[k].fetcher$);
@@ -116,7 +153,7 @@ export class SearchEngine {
         this.cache = _;
         this.router.get('/', this.rootHandler.bind(this));
         this.router.get('/:id', this.sendFiltersHandler.bind(this));
-        this.router.post('/', this.createVector.bind(this));
+        this.router.post('/:id', jsonparser, this.createVector.bind(this));
 
         return this.router;
     }
