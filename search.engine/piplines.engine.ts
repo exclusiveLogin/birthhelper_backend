@@ -1,7 +1,8 @@
 import {Observable, of} from "rxjs";
 import {sectionClinicConfig} from "./config";
 import {CacheEngine} from "../cache.engine/cache_engine";
-import {DictionaryEngine} from "../dictionary/dictionary_engine";
+
+const pool = require('../db/sql');
 
 interface ClinicSetMini {
     average:number;
@@ -37,12 +38,18 @@ export class PiplinesEngine {
 
     constructor(
         private ce: CacheEngine,
-        private de: DictionaryEngine,
     ) {
     }
 
-    query(config): Observable<any> {
-        return
+    query<T>(q: string): Observable<any> {
+        return new Observable<T[]>(observer => {
+           pool.query(q, (err, result) => {
+               if(err){
+                   observer.error(err);
+               }
+               observer.next(result);
+           });
+        });
     }
 
     hasher(data: any[]): string {
