@@ -110,7 +110,7 @@ export class SearchEngine {
     }
 
     setFilterStore(section: SectionKeys, hash: string, data: any): void {
-        if (!this.checkSummarySectionExist(section)) {
+        if (!this.checkFilterSectionExist(section)) {
             this.filterStore[section] = {};
         }
         this.filterStore[section][hash] = data;
