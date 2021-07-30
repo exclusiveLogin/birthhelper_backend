@@ -2,7 +2,15 @@ import {DictionaryEngine} from "../dictionary/dictionary_engine";
 import * as express from "express";
 import {Router} from "express";
 import {CacheEngine} from "../cache.engine/cache_engine";
-import {Context, getSearchConfig, SearchConfig, SearchFilter, SearchSection, sectionClinicConfig} from "./config";
+import {
+    Context,
+    getSearchConfig,
+    SearchConfig,
+    SearchFilter,
+    SearchSection,
+    sectionClinicConfig,
+    SectionKeys
+} from "./config";
 import {zip} from "rxjs";
 import {map} from "rxjs/operators";
 import {md5Encript} from "./sections.handler";
@@ -14,7 +22,7 @@ type ConditionalSection<T> = T extends FilterSection ? T : T[];
 interface Hashed <T>{
     [hash: string]: ConditionalSection<T>
 }
-type SectionKeys = keyof typeof sectionClinicConfig;
+
 type TypeSection<T = any> = {
     [k in SectionKeys]: Hashed<T>
 }
@@ -121,19 +129,20 @@ export class SearchEngine {
     }
 
     sendFiltersHandler(req, res): void {
-        const conf = this.configSection[req.params.id];
+        const section: SectionKeys = req.params.id;
+        const keys = this.configSection[section];
+        const conf = keys.map(k => this.searchConfig[section][k]);
         if (conf) {
-            const f$ = conf.map(k => this.searchConfig[k].fetcher$);
+            const f$ = conf.map(k => k.fetcher$);
             zip(...f$).pipe(
                 map((data: SearchFilter[][]): SearchSection[] => {
-                    const keys: string[] = Object.keys(this.searchConfig);
-
+                    console.log('tick', data)
                     return data.map((filters, idx) => (
                         {
                             key: keys[idx],
-                            title: this.searchConfig[keys[idx]].title,
+                            title: this.searchConfig[section][keys[idx]].title,
                             filters: data[idx],
-                            type: this.searchConfig[keys[idx]].type,
+                            type: this.searchConfig[section][keys[idx]].type,
                         }
                     ));
                 }),
