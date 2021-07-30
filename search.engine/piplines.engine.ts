@@ -1,5 +1,5 @@
 import {Observable, of, throwError} from "rxjs";
-import {sectionClinicConfig} from "./config";
+import {sectionClinicConfig, SectionKeys} from "./config";
 import {CacheEngine} from "../cache.engine/cache_engine";
 
 const pool = require('../db/sql');
@@ -24,8 +24,8 @@ interface PipeClinicResult {
     summarySet: ClinicSetSummary;
 }
 
-const clinicSectionKeys = sectionClinicConfig.clinic;
-type keys = typeof clinicSectionKeys[number];
+type ChapterKeys = typeof sectionClinicConfig[SectionKeys]
+type keys = ChapterKeys[number];
 
 export class PiplinesEngine {
     clinic_facilities_birth_section(): Observable<any> {
