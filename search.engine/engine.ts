@@ -5,10 +5,10 @@ import {CacheEngine} from "../cache.engine/cache_engine";
 import {
     Context,
     getSearchConfig,
-    SearchConfig,
+    SearchConfig, SearchConfigResponse,
     SearchFilter,
     SearchSection,
-    sectionClinicConfig,
+    sectionConfig,
     SectionKeys
 } from "./config";
 import {zip} from "rxjs";
@@ -28,7 +28,7 @@ type TypeSection<T = any> = {
 }
 
 export interface SearchStore extends TypeSection<Stored> {}
-export interface SetStore extends TypeSection<Setted> {}
+export interface SetStore extends TypeSection<SummaryType> {}
 export interface FilterStore extends TypeSection<FilterSection> {}
 
 export interface SlotPriceSet {
@@ -45,14 +45,17 @@ export interface Rating {
     count_votes: number;
 }
 
+type SectionConfigType = typeof sectionConfig;
+type FilterSectionKeys = SectionConfigType[SectionKeys][number];
+
 export type Stored = {id: number, [key: string]: any};
-export type Setted = (SlotPriceSet | Rating) & {id: number};
-export type FilterSection = { [section: string]: { [key: string]: any }}
+export type SummaryType = (SlotPriceSet | Rating) & {id: number};
+export type FilterSection = { [filterSection in FilterSectionKeys]?: { [key: string]: any }}
 
 export class SearchEngine {
 
     router: Router = express.Router();
-    configSection = sectionClinicConfig;
+    configSection = sectionConfig;
     searchConfig: SearchConfig;
 
     searchStore: SearchStore = {
@@ -70,12 +73,42 @@ export class SearchEngine {
         this.searchConfig = getSearchConfig(context);
     }
 
+    validator<T extends SectionKeys>(json: SearchConfigResponse<T>, section: SectionKeys): string {
+
+        let valid = false;
+        const config = this.searchConfig[section];
+        const keys: Array<FilterSectionKeys> = Object.keys(config) as Array<FilterSectionKeys>;
+
+        const result: FilterSection = {};
+
+        keys.forEach(k => {
+            const targetType = config[k]?.type;
+            const filterSectionData = json[k];
+
+            if (filterSectionData){
+                if (targetType === "flag" || targetType === "select") {
+                    valid = !!Object.keys(filterSectionData).length;
+                }
+            }
+        });
+
+        console.log('tick validator:', result, valid);
+
+        return valid ? md5Encript(result) : null;
+    }
+
     createVector(req, res, next): void {
         const section = req.params.id;
         const body = req.body;
 
-        if(section && body){
-            const hash = md5Encript(body);
+        let hash: string;
+        let searchKey: SectionKeys;
+
+        if(section === 'clinic') searchKey = section;
+
+        if(searchKey) hash = this.validator<typeof searchKey>(body || {}, searchKey)
+
+        if(hash){
             this.setFilterStore(section, hash, body);
 
             res.status(201);

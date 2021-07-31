@@ -5,7 +5,11 @@ import {CacheEngine} from "../cache.engine/cache_engine";
 import {filter, map, switchMap} from "rxjs/operators";
 
 export type SearchConfig = {
-    [section in SectionKeys]: { [key in typeof sectionClinicConfig[section][number]]: SearchSectionConfig};
+    [section in SectionKeys]: { [key in typeof sectionConfig[section][number]]: SearchSectionConfig};
+}
+
+export type SearchConfigResponse<T extends SectionKeys> = {
+    [key in typeof sectionConfig[T][number]]?: { [key: string]: any };
 }
 
 export interface SearchSectionConfig {
@@ -21,10 +25,6 @@ export interface SearchSection {
     filters: SearchFilter[];
 }
 
-export interface SearchSectionResponse {
-    [sections: number]: SearchSection[]
-}
-
 export interface SearchFilter {
     id: number;
     title: string;
@@ -32,9 +32,9 @@ export interface SearchFilter {
 
 export type SearchFilterType = 'flag' | 'select';
 
-export type SectionKeys = keyof typeof sectionClinicConfig;
+export type SectionKeys = keyof typeof sectionConfig;
 
-export const sectionClinicConfig = {
+export const sectionConfig = {
     clinic: [
         'clinic_type_birth_section',
         'clinic_personal_birth_section',
