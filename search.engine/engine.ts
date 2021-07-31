@@ -78,7 +78,6 @@ export class SearchEngine {
         let valid = false;
         const config = this.searchConfig[section];
         const keys: Array<FilterSectionKeys> = Object.keys(config) as Array<FilterSectionKeys>;
-
         const result: FilterSection = {};
 
         keys.forEach(k => {
@@ -86,6 +85,7 @@ export class SearchEngine {
             const filterSectionData = json[k];
 
             if (filterSectionData){
+                result[k] = filterSectionData;
                 if (targetType === "flag" || targetType === "select") {
                     valid = !!Object.keys(filterSectionData).length;
                 }
@@ -94,7 +94,13 @@ export class SearchEngine {
 
         console.log('tick validator:', result, valid);
 
-        return valid ? md5Encript(result) : null;
+        if (valid){
+            const hash = md5Encript(result);
+            this.setFilterStore(section, hash, result);
+            return hash;
+        }
+
+        return null;
     }
 
     createVector(req, res, next): void {
@@ -109,10 +115,8 @@ export class SearchEngine {
         if(searchKey) hash = this.validator<typeof searchKey>(body || {}, searchKey)
 
         if(hash){
-            this.setFilterStore(section, hash, body);
-
             res.status(201);
-            res.send({hash, filters: body});
+            res.send({hash, input: body, result: this.getFilterStore(section, hash)});
 
             console.log('createVector', this.filterStore);
         } else {
@@ -150,11 +154,19 @@ export class SearchEngine {
         return !!this.setStore[section];
     }
 
-    setFilterStore(section: SectionKeys, hash: string, data: any): void {
+    setFilterStore(section: SectionKeys, hash: string, data: FilterSection): void {
         if (!this.checkFilterSectionExist(section)) {
             this.filterStore[section] = {};
         }
         this.filterStore[section][hash] = data;
+    }
+
+    getFilterStore(section: SectionKeys, hash: string): FilterSection {
+        if (this.checkFilterSectionExist(section)) {
+            return this.filterStore[section][hash];
+        }
+
+        return null;
     }
 
     checkFilterSectionExist(section: SectionKeys): boolean {
