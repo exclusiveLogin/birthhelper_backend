@@ -17,28 +17,28 @@ import {md5Encript} from "./sections.handler";
 const bodyParser = require('body-parser');
 const jsonparser = bodyParser.json();
 
-type ConditionalSection<T> = T extends FilterSection ? T : T[];
-
 interface Hashed <T>{
-    [hash: string]: ConditionalSection<T>
+    [hash: string]: T;
 }
 
 type TypeSection<T = any> = {
-    [k in SectionKeys]: Hashed<T>
+    [k in SectionKeys]: Hashed<T>;
 }
 
-export interface SearchStore extends TypeSection<Stored> {}
-export interface SetStore extends TypeSection<SummaryType> {}
+export interface SearchStore extends TypeSection<StoredIds> {}
+export interface SummaryStore extends TypeSection<Summary> {}
 export interface FilterStore extends TypeSection<FilterSection> {}
 
-export interface SlotPriceSet {
+export type Summary = Partial<SummaryPrice & SummaryRate> & {id: number};
+
+export type SummaryPrice = {
     min_price: number;
     max_price: number;
     avg_price: number;
-    total_slots: number;
+    count_slots: number;
 }
 
-export interface Rating {
+export interface SummaryRate {
     min_rate: number;
     max_rate: number;
     avg_rate: number;
@@ -48,8 +48,7 @@ export interface Rating {
 type SectionConfigType = typeof sectionConfig;
 type FilterSectionKeys = SectionConfigType[SectionKeys][number];
 
-export type Stored = {id: number, [key: string]: any};
-export type SummaryType = (SlotPriceSet | Rating) & {id: number};
+export type StoredIds = number[];
 export type FilterSection = { [filterSection in FilterSectionKeys]?: { [key: string]: any }}
 
 export class SearchEngine {
@@ -61,7 +60,7 @@ export class SearchEngine {
     searchStore: SearchStore = {
         clinic: {}
     };
-    setStore: SetStore = {
+    summaryStore: SummaryStore = {
         clinic: {}
     };
     filterStore: FilterStore = {
@@ -145,13 +144,13 @@ export class SearchEngine {
 
     setSummaryStore(section: SectionKeys, hash: string, data: any): void {
         if (!this.checkSummarySectionExist(section)) {
-            this.setStore[section] = {};
+            this.summaryStore[section] = {};
         }
-        this.setStore[section][hash] = data;
+        this.summaryStore[section][hash] = data;
     }
 
     checkSummarySectionExist(section: SectionKeys): boolean {
-        return !!this.setStore[section];
+        return !!this.summaryStore[section];
     }
 
     setFilterStore(section: SectionKeys, hash: string, data: FilterSection): void {
