@@ -33,7 +33,7 @@ export class PipelineEngine {
 
     clinic_facilities_birth_section(facilityId: number): Observable<StoredIds> {
 
-        const cacheKey = cacheKeyGenerator('ent_facilities_containers', 'facility_id', facilityId.toString());
+        const cacheKey = cacheKeyGenerator('ent_facilities_containers', 'facility_id', facilityId);
 
         // first step containers by facilities
         // определяем какие контейнеры содержат услугу
@@ -48,11 +48,11 @@ export class PipelineEngine {
                 const cacheKey = cacheKeyGenerator(
                     'ent_placement_slots',
                     'facilities_type',
-                    'all',
+                    container_ids,
                     'grouped',
                     'contragent_id');
 
-                const whereStr = container_ids.map(id => `facilities_type = ${id}`).join(' OR ')
+                const whereStr = container_ids.map(id => `facilities_type = ${id}`).join(' AND ')
 
                 const q = `SELECT contragent_id as id, 
                     COUNT(id) as count_slots, 
@@ -63,7 +63,7 @@ export class PipelineEngine {
                     WHERE ${whereStr}
                     GROUP BY contragent_id`;
 
-                // console.log('clinic_facilities_birth_section: ', q);
+                console.log('clinic_facilities_birth_section: ', q, cacheKey);
 
                 return this.getEntitiesByDBOrCache<Summary>(q, cacheKey);
             }),

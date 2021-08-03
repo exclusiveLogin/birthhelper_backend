@@ -11,7 +11,7 @@ import {
     sectionConfig,
     SectionKeys
 } from "./config";
-import {zip} from "rxjs";
+import {Observable, zip} from "rxjs";
 import {map} from "rxjs/operators";
 import {md5Encript} from "./sections.handler";
 import {PipelineEngine} from "../search.engine/piplines.engine";
@@ -75,7 +75,11 @@ export class SearchEngine {
         const context: Context = {cacheEngine: this._ce, searchEngine: this, dictionaryEngine: this._de};
         this.searchConfig = getSearchConfig(context);
 
-        // this.pipeliner.clinic_facilities_birth_section(14).subscribe((result) => console.log('clinic_facilities_birth_section result:', result));
+        this.pipeliner.clinic_facilities_birth_section(14).subscribe((result) => console.log('clinic_facilities_birth_section result:', result));
+    }
+
+    getEntitiesByHash<T>(key: SectionKeys, hash: string): Observable<T[]>{
+        return
     }
 
     validator<T extends SectionKeys>(json: SearchConfigResponse<T>, section: SectionKeys): string {
