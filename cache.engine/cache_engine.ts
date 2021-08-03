@@ -15,7 +15,7 @@ export class CacheEngine {
         return !!this.store[key];
     }
 
-    getCachedByKey<T = any | any[]>(key: string): Observable<T> {
+    getCachedByKey<T>(key: string): Observable<T> {
         return this.store[key] ? of(this.store[key]) : throwError(() => new Error('Нет данных в кеше по ключу' + key));
     }
 

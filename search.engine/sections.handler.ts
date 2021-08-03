@@ -1,7 +1,8 @@
 const md = require('md5');
 
-export const cacheKeyGenerator =  (from: string, by: string, type = 'one_many', id: number): string => {
-    return `${from}.${by}_${id}`;
+type RelationType = `simple` | `grouped`;
+export const cacheKeyGenerator =  (from: string, by: string, id: string, type: RelationType = 'simple', groupKey?: string): string => {
+    return `${from}.${by}_${id}${type === "grouped" ? '_groupby'+groupKey : ''}`;
 }
 
 export function md5Encript(body: object): string {

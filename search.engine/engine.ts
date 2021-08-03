@@ -14,6 +14,7 @@ import {
 import {zip} from "rxjs";
 import {map} from "rxjs/operators";
 import {md5Encript} from "./sections.handler";
+import {PipelineEngine} from "../search.engine/piplines.engine";
 const bodyParser = require('body-parser');
 const jsonparser = bodyParser.json();
 
@@ -68,9 +69,13 @@ export class SearchEngine {
         clinic: {}
     };
 
+    pipeliner = new PipelineEngine(this._ce);
+
     constructor(private _ce: CacheEngine, private _de: DictionaryEngine) {
         const context: Context = {cacheEngine: this._ce, searchEngine: this, dictionaryEngine: this._de};
         this.searchConfig = getSearchConfig(context);
+
+        // this.pipeliner.clinic_facilities_birth_section(14).subscribe((result) => console.log('clinic_facilities_birth_section result:', result));
     }
 
     validator<T extends SectionKeys>(json: SearchConfigResponse<T>, section: SectionKeys): string {
