@@ -29,6 +29,7 @@ export interface SearchStore extends TypeSection<StoredIds> {}
 export interface SummaryStore extends TypeSection<Summary> {}
 export interface FilterStore extends TypeSection<FilterSection> {}
 
+// при сильных различиях расширить условным generic
 export type Summary = Partial<SummaryPrice & SummaryRate> & {id: number};
 
 export type SummaryPrice = {

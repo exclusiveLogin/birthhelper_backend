@@ -1,7 +1,7 @@
 import {Observable, of, throwError} from "rxjs";
 import {sectionConfig, SectionKeys} from "./config";
 import {CacheEngine} from "../cache.engine/cache_engine";
-import {SectionPriceSummary} from "../search.engine/engine";
+import {Summary} from "../search.engine/engine";
 const pool = require('../db/sql');
 
 
@@ -10,8 +10,15 @@ type keys = ChapterKeys[number];
 
 export class PiplinesEngine {
 
-    clinic_summary_pipeline_default(): Observable<SectionPriceSummary> {
-        return of(null);
+    clinic_summary_pipeline_default(): Observable<Summary> {
+        const q = `SELECT contragent_id as id, 
+                    COUNT(id), 
+                    MAX(price) as max_price, 
+                    MIN(price) as min_price, 
+                    AVG(price) as avg_price 
+                    FROM service_slot 
+                    GROUP BY contragent_id`;
+        return this.query<Summary>(q);
     }
     clinic_facilities_birth_section(): Observable<any> {
         return of(null);
