@@ -28,11 +28,7 @@ export class PipelineEngine {
                     FROM service_slot 
                     GROUP BY contragent_id`;
 
-        return this.ce.checkCache(cacheKey) ?
-            this.ce.getCachedByKey<Summary[]>(cacheKey) :
-            this.query<Summary>(q).pipe(
-                tap(result => this.ce.saveCacheData(cacheKey, result))
-            );
+        return this.getEntitiesByDBOrCache<Summary>(q, cacheKey);
     }
 
     clinic_facilities_birth_section(facilityId: number): Observable<StoredIds> {
