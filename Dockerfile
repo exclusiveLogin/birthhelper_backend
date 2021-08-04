@@ -2,6 +2,7 @@ FROM node:12.20.2
 COPY . /usr/src/app
 WORKDIR /usr/src/app
 RUN npm i
+RUN rm dist/ -rf
 RUN mkdir dist && cd dist && mkdir upload
 
 RUN npm install pm2 -g
