@@ -52,7 +52,7 @@ export class PipelineEngine {
                     'grouped',
                     'contragent_id');
 
-                const whereStr = container_ids.map(id => `facilities_type = ${id}`).join(' AND ')
+                const whereStr = container_ids.map(id => `facilities_type = ${id}`).join(' OR ');
 
                 const q = `SELECT contragent_id as id, 
                     COUNT(id) as count_slots, 
@@ -63,7 +63,7 @@ export class PipelineEngine {
                     WHERE ${whereStr}
                     GROUP BY contragent_id`;
 
-                console.log('clinic_facilities_birth_section: ', q, cacheKey);
+                // console.log('clinic_facilities_birth_section: ', q, cacheKey);
 
                 return this.getEntitiesByDBOrCache<Summary>(q, cacheKey);
             }),
@@ -76,8 +76,31 @@ export class PipelineEngine {
         return of(null);
     }
 
-    clinic_placement_birth_section(): Observable<any> {
-        return of(null);
+    clinic_placement_birth_section(serviceId: number): Observable<any> {
+
+        const cacheKey = cacheKeyGenerator(
+            'ent_placement_slots',
+            'service_id',
+            serviceId,
+            'grouped',
+            'contragent_id');
+
+        // Scoring по клиникам содержащим данный вид палаты
+        const q = `SELECT contragent_id as id, 
+                    COUNT(id) as count_slots, 
+                    MAX(price) as max_price, 
+                    MIN(price) as min_price, 
+                    AVG(price) as avg_price 
+                    FROM service_slot 
+                    WHERE \`service_type\` = 2 
+                    AND \`service_id\` = ${serviceId} 
+                    GROUP BY contragent_id`;
+
+        // console.log('clinic_placement_birth_section: ', q, cacheKey);
+        return of(null).pipe(
+            switchMap(() => this.getEntitiesByDBOrCache<Summary>(q, cacheKey)),
+            map(data => data.map(c => c.id)),
+        )
     }
 
     clinic_type_birth_section(): Observable<any> {

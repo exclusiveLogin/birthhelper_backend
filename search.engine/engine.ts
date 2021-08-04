@@ -76,6 +76,7 @@ export class SearchEngine {
         this.searchConfig = getSearchConfig(context);
 
         this.pipeliner.clinic_facilities_birth_section(14).subscribe((result) => console.log('clinic_facilities_birth_section result:', result));
+        this.pipeliner.clinic_placement_birth_section(3).subscribe((result) => console.log('clinic_placement_birth_section result:', result));
     }
 
     getEntitiesByHash<T>(key: SectionKeys, hash: string): Observable<T[]>{
