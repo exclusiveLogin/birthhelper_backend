@@ -72,8 +72,32 @@ export class PipelineEngine {
 
     }
 
-    clinic_personal_birth_section(): Observable<any> {
-        return of(null);
+    clinic_personal_birth_section(positionId: number): Observable<any> {
+
+        const cacheKey = cacheKeyGenerator(
+            'ent_doctor_slots',
+            'position',
+            positionId,
+            'grouped',
+            'contragent_id');
+
+        // Scoring по клиникам содержащим врача выбранной специализации как услугу. с подготовкой сета
+        const q = `SELECT contragent_id as id, 
+                    COUNT(id) as count_slots, 
+                    MAX(price) as max_price, 
+                    MIN(price) as min_price, 
+                    AVG(price) as avg_price 
+                    FROM service_slot 
+                    WHERE service_id IN 
+                    (SELECT id FROM doctors WHERE position = ${positionId})
+                    AND service_type = 1
+                    GROUP BY contragent_id`;
+
+        // console.log('clinic_personal_birth_section: ', q, cacheKey);
+        return of(null).pipe(
+            switchMap(() => this.getEntitiesByDBOrCache<Summary>(q, cacheKey)),
+            map(data => data.map(c => c.id)),
+        );
     }
 
     clinic_placement_birth_section(serviceId: number): Observable<any> {
@@ -104,6 +128,7 @@ export class PipelineEngine {
     }
 
     clinic_type_birth_section(): Observable<any> {
+
         return of(null);
     }
 
