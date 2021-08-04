@@ -315,6 +315,74 @@ export const entityRepo: EntityRepo = {
         ],
     },
 
+    ent_birth_type_slots: {
+        db_name: 'service_slot',
+        filters: [
+            {
+                name: 'service_type',
+                title: 'Категория',
+                readonly: true,
+                type: 'id',
+                value: 3,
+                db_name: 'dict_slot_clinic_type'
+            }
+        ],
+        container: null,
+        slot: 'slot_placement',
+        fields: [
+            { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
+            { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
+            { key: 'service_id', type: 'string', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
+            { key: 'contragent_id', type: 'string', title: 'id клиники', required: true, showOnTable: true, readonly: true },
+            { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
+            {
+                key: 'type',
+                title: 'Тип услуги',
+                required: true,
+                type: 'id',
+                initData: 1,
+                readonly: true,
+                useDict: true,
+                canBeNull: false,
+                showOnTable: true,
+                dctKey: 'dict_slot_entity_type'
+            },
+            {
+                key: 'service_type',
+                title: 'Вид услуги в конструкторе',
+                required: true,
+                type: 'id',
+                useDict: true,
+                canBeNull: false,
+                showOnTable: true,
+                dctKey: 'dict_slot_clinic_type',
+                readonly: true,
+                initData: 3,
+            },
+        ],
+        links: [
+            {
+                type: 'repo',
+                title: 'Таблица видов родов',
+                entKey: 'birthtype',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'service_id',
+                conditionField: 'type',
+                conditionKey: 'name',
+                conditionValue: 'entity'
+            },
+            {
+                type: 'repo',
+                title: 'Таблица клиник системы',
+                entKey: 'clinics',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'contragent_id'
+            },
+        ],
+    },
+
     ent_doctor_slots: {
         db_name: 'service_slot',
         filters: [
