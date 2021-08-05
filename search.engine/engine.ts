@@ -78,6 +78,7 @@ export class SearchEngine {
         this.pipeliner.clinic_facilities_birth_section(14).subscribe((result) => console.log('clinic_facilities_birth_section result:', result));
         this.pipeliner.clinic_placement_birth_section(3).subscribe((result) => console.log('clinic_placement_birth_section result:', result));
         this.pipeliner.clinic_personal_birth_section(1).subscribe((result) => console.log('clinic_personal_birth_section result:', result));
+        this.pipeliner.clinic_type_birth_section(1).subscribe((result) => console.log('clinic_type_birth_section result:', result));
     }
 
     getEntitiesByHash<T>(key: SectionKeys, hash: string): Observable<T[]>{
