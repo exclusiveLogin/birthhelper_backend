@@ -126,12 +126,12 @@ export class SearchEngine {
                 searchEnt = Object.keys(filterSection)
             }
 
-            console.log('searchEnt ', searchEnt);
+            // console.log('searchEnt ', searchEnt);
 
             // return of(searchEnt);
             return this.pipeliner.getPipelineContext(k, searchEnt).pipe(
                 map(data => data ? data.reduce((acc, cur) => acc ? this.intersector(acc, cur) : cur) : null),
-                tap(data => console.log('getEntitiesIDByHash tap', data)),
+                tap(ids => this.setSearchStore(key, hash, ids)),
             );
         });
 
@@ -139,7 +139,7 @@ export class SearchEngine {
         return forkJoin(pipes).pipe(
             map(data => data.filter(d => !!d)),
             map(data => data.reduce((acc, cur) => acc ? this.intersector(acc, cur) : cur)),
-            tap(data => console.log('getEntitiesIDByHash, forkJoin', data)),
+            // tap(data => console.log('getEntitiesIDByHash, forkJoin', data)),
         )
     }
 
@@ -202,7 +202,7 @@ export class SearchEngine {
         res.send({index: 'search root index', testMD5: md5Encript({test: 'hello-world'})});
     }
 
-    setDataStore(section: SectionKeys, hash: string, data: any): void {
+    setSearchStore(section: SectionKeys, hash: string, data: any): void {
         if (!this.checkSectionExist(section)) {
             this.searchStore[section] = {};
         }
@@ -283,9 +283,23 @@ export class SearchEngine {
 
     }
 
+    sendIdsByHashHandler(req, res): void {
+        const section: SectionKeys = req.params.id;
+        const hash: SectionKeys = req.params.hash;
+
+        if(!section || !hash) {
+            res.status(500);
+            res.send({error: 'hash or section ket invalid'});
+        }
+
+        this.getEntitiesIDByHash(section, hash).subscribe(ids => res.send({ids}));
+
+    }
+
     getRouter(): Router {
         this.router.get('/', this.rootHandler.bind(this));
         this.router.get('/:id', this.sendFiltersHandler.bind(this));
+        this.router.get('/:id/:hash', this.sendIdsByHashHandler.bind(this));
         this.router.post('/:id', jsonparser, this.createVector.bind(this));
 
         return this.router;
