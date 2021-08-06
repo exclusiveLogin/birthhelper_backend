@@ -11,8 +11,8 @@ import {
     sectionConfig,
     SectionKeys
 } from "./config";
-import {Observable, zip} from "rxjs";
-import {map} from "rxjs/operators";
+import {forkJoin, from, Observable, of, zip} from "rxjs";
+import {filter, map, tap} from "rxjs/operators";
 import {md5Encript} from "./sections.handler";
 import {PipelineEngine} from "../search.engine/piplines.engine";
 const bodyParser = require('body-parser');
@@ -51,7 +51,8 @@ type SectionConfigType = typeof sectionConfig;
 type FilterSectionKeys = SectionConfigType[SectionKeys][number];
 
 export type StoredIds = number[];
-export type FilterSection = { [filterSection in FilterSectionKeys]?: { [key: string]: any }}
+export type FilterSectionFilter = {[key: string]: any};
+export type FilterSection = { [filterSection in FilterSectionKeys]?: FilterSectionFilter}
 
 export class SearchEngine {
 
@@ -75,14 +76,71 @@ export class SearchEngine {
         const context: Context = {cacheEngine: this._ce, searchEngine: this, dictionaryEngine: this._de};
         this.searchConfig = getSearchConfig(context);
 
-        this.pipeliner.clinic_facilities_birth_section(14).subscribe((result) => console.log('clinic_facilities_birth_section result:', result));
-        this.pipeliner.clinic_placement_birth_section(3).subscribe((result) => console.log('clinic_placement_birth_section result:', result));
-        this.pipeliner.clinic_personal_birth_section(1).subscribe((result) => console.log('clinic_personal_birth_section result:', result));
-        this.pipeliner.clinic_type_birth_section(1).subscribe((result) => console.log('clinic_type_birth_section result:', result));
+        const mock = {
+            clinic_facilities_birth_section: {14: true,},
+            clinic_placement_birth_section: {3: true},
+            clinic_personal_birth_section: {},
+            clinic_type_birth_section: {1: true}
+        }
+
+        this.setFilterStore("clinic", '_', mock);
+        console.log('setFilterStore result:', this.filterStore);
+
+        // this.pipeliner.clinic_facilities_birth_section(14).subscribe((result) => console.log('clinic_facilities_birth_section result:', result));
+        // this.pipeliner.clinic_placement_birth_section(3).subscribe((result) => console.log('clinic_placement_birth_section result:', result));
+        // this.pipeliner.clinic_personal_birth_section(1).subscribe((result) => console.log('clinic_personal_birth_section result:', result));
+        // this.pipeliner.clinic_type_birth_section(1).subscribe((result) => console.log('clinic_type_birth_section result:', result));
+
+        this.getEntitiesIDByHash("clinic", '_').subscribe(
+            result => console.log('getEntitiesIDByHash result:', result),
+            (err) => console.error('getEntitiesIDByHash error: ', err)
+        );
     }
 
-    getEntitiesByHash<T>(key: SectionKeys, hash: string): Observable<T[]>{
-        return
+    intersector(a: Array<number>, b: Array<number>): number[] {
+        return [...new Set(a.filter(i => b.includes(i)))]
+    }
+
+    getEntitiesIDByHash(key: SectionKeys, hash: string): Observable<any>{
+        const config = this.searchConfig[key];
+
+        // проверяем кеш
+        const stored = this.getSearchStore(key, hash);
+        if(stored)return of(stored);
+
+        // забираем фильтры по хешу
+        const filters = this.getFilterStore(key, hash);
+        if(!filters) return of(null);
+
+        // генерируем пайп поиска.
+        const keys = Object.keys(filters);
+
+        // valueKeys
+        const pipes = keys.map((k: FilterSectionKeys, idx) => {
+            const type = config[k].type;
+
+            const filterSection = filters[k];
+
+            let searchEnt = [];
+            if(type === "flag" || type === "select") {
+                searchEnt = Object.keys(filterSection)
+            }
+
+            console.log('searchEnt ', searchEnt);
+
+            // return of(searchEnt);
+            return this.pipeliner.getPipelineContext(k, searchEnt).pipe(
+                map(data => data ? data.reduce((acc, cur) => acc ? this.intersector(acc, cur) : cur) : null),
+                tap(data => console.log('getEntitiesIDByHash tap', data)),
+            );
+        });
+
+        // вертаем в зад только совпавшие ids сущностей
+        return forkJoin(pipes).pipe(
+            map(data => data.filter(d => !!d)),
+            map(data => data.reduce((acc, cur) => acc ? this.intersector(acc, cur) : cur)),
+            tap(data => console.log('getEntitiesIDByHash, forkJoin', data)),
+        )
     }
 
     validator<T extends SectionKeys>(json: SearchConfigResponse<T>, section: SectionKeys): string {
@@ -151,6 +209,13 @@ export class SearchEngine {
         this.searchStore[section][hash] = data;
     }
 
+    getSearchStore(section: SectionKeys, hash: string): StoredIds {
+        if (this.checkSearchSectionExist(section)) {
+            return this.searchStore[section][hash];
+        }
+        return null;
+    }
+
     checkSectionExist(section: SectionKeys): boolean {
         return !!this.searchStore[section];
     }
@@ -183,6 +248,10 @@ export class SearchEngine {
 
     checkFilterSectionExist(section: SectionKeys): boolean {
         return !!this.filterStore[section];
+    }
+
+    checkSearchSectionExist(section: SectionKeys): boolean {
+        return !!this.searchStore[section];
     }
 
     sendFiltersHandler(req, res): void {

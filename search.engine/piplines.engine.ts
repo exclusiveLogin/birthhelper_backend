@@ -1,8 +1,8 @@
-import {Observable, of} from "rxjs";
+import {forkJoin, Observable, of} from "rxjs";
 import {sectionConfig, SectionKeys} from "./config";
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {StoredIds, Summary} from "../search.engine/engine";
-import {map, switchMap, tap} from "rxjs/operators";
+import {catchError, map, switchMap, take, tap} from "rxjs/operators";
 import {cacheKeyGenerator} from "../search.engine/sections.handler";
 const pool = require('../db/sql');
 
@@ -32,27 +32,16 @@ export class PipelineEngine {
     }
 
     clinic_facilities_birth_section(facilityId: number): Observable<StoredIds> {
-
-        const cacheKey = cacheKeyGenerator('ent_facilities_containers', 'facility_id', facilityId);
-
-        // first step containers by facilities
-        // определяем какие контейнеры содержат услугу
-        const q = `SELECT * FROM \`facilities_containers\` WHERE facility_id = ${facilityId}`;
-
         return of(null).pipe(
-            switchMap(() => this.getEntitiesByDBOrCache<ContainersByFacilities>(q, cacheKey)),
-            map(data => data.map(c => c.container_id)),
             // тут получаем ids контейнеров в которых есть данное удобство
             switchMap(container_ids => {
                 // определяем какие контейнеры содержат услугу
                 const cacheKey = cacheKeyGenerator(
                     'ent_placement_slots',
                     'ent_facilities',
-                    container_ids,
+                    facilityId,
                     'grouped',
                     'contragent_id');
-
-                const whereStr = container_ids.map(id => `facilities_type = ${id}`).join(' OR ');
 
                 const q = `SELECT contragent_id as id, 
                     COUNT(id) as count_slots, 
@@ -60,7 +49,12 @@ export class PipelineEngine {
                     MIN(price) as min_price, 
                     AVG(price) as avg_price 
                     FROM service_slot 
-                    WHERE ${whereStr}
+                    WHERE facilities_type IN 
+                    (
+                        SELECT \`container_id\` 
+                        FROM \`facilities_containers\` 
+                        WHERE ${facilityId ? 'facility_id = ' + facilityId : 1}
+                    )
                     GROUP BY contragent_id`;
 
                 // console.log('clinic_facilities_birth_section: ', q, cacheKey);
@@ -89,11 +83,11 @@ export class PipelineEngine {
                     AVG(price) as avg_price 
                     FROM service_slot 
                     WHERE service_id IN 
-                    (SELECT id FROM doctors WHERE position = ${positionId})
+                    (SELECT id FROM doctors WHERE ${positionId ? 'position = ' + positionId : 1})
                     AND service_type = 1
                     GROUP BY contragent_id`;
 
-        // console.log('clinic_personal_birth_section: ', q, cacheKey);
+        console.log('clinic_personal_birth_section: ', q, cacheKey);
         return of(null).pipe(
             switchMap(() => this.getEntitiesByDBOrCache<Summary>(q, cacheKey)),
             map(data => data.map(c => c.id)),
@@ -117,7 +111,7 @@ export class PipelineEngine {
                     AVG(price) as avg_price 
                     FROM service_slot 
                     WHERE \`service_type\` = 2 
-                    AND \`service_id\` = ${serviceId} 
+                    ${serviceId ? 'AND `service_id\` = ' + serviceId : 1} 
                     GROUP BY contragent_id`;
 
         // console.log('clinic_placement_birth_section: ', q, cacheKey);
@@ -136,7 +130,7 @@ export class PipelineEngine {
                     AVG(price) as avg_price 
                     FROM service_slot 
                     WHERE service_id IN 
-                    (SELECT id FROM birth_clinic_type WHERE id = 1)
+                    (SELECT id FROM birth_clinic_type WHERE ${ birthTypeId ? 'id = ' + birthTypeId : 1 })
                     AND service_type = 3
                     GROUP BY contragent_id`;
 
@@ -154,11 +148,11 @@ export class PipelineEngine {
         )
     }
 
-    pipelines: { [key in keys]: (...args: any) => Observable<any> } = {
-        clinic_facilities_birth_section: this.clinic_facilities_birth_section,
-        clinic_personal_birth_section: this.clinic_personal_birth_section,
-        clinic_placement_birth_section: this.clinic_placement_birth_section,
-        clinic_type_birth_section: this.clinic_type_birth_section,
+    pipelines: { [key in keys]: (arg: any) => Observable<StoredIds> } = {
+        clinic_facilities_birth_section: this.clinic_facilities_birth_section.bind(this),
+        clinic_personal_birth_section: this.clinic_personal_birth_section.bind(this),
+        clinic_placement_birth_section: this.clinic_placement_birth_section.bind(this),
+        clinic_type_birth_section: this.clinic_type_birth_section.bind(this),
     }
 
     summaryPipelines: { [key in SectionKeys]: () => Observable<Summary[]> } = {
@@ -173,6 +167,7 @@ export class PipelineEngine {
     query<T>(q: string): Observable<T[]> {
         return new Observable<T[]>(observer => {
            pool.query(q, (err, result) => {
+               // console.log('query raw: ', err, result, q);
                if(err){
                    observer.error(err);
                }
@@ -185,15 +180,20 @@ export class PipelineEngine {
         return this.ce.checkCache(cacheKey) ?
             this.ce.getCachedByKey<T[]>(cacheKey) :
             this.query<T>(q).pipe(
-                map(data => !!data ? data : []),
+                tap(data => console.error('getEntitiesByDBOrCache log', cacheKey, data.length)),
+                catchError(err => {
+                    console.error('getEntitiesByDBOrCache error', q, cacheKey, err);
+                    return [];
+                }),
                 tap(data => this.ce.saveCacheData(cacheKey, data)),
             )
     }
 
     // эта штука должна сразу возвращить intersect массив клиник
-    getPipelineContext<T>(key: string, args: any[]): Observable<T[]>{
+    getPipelineContext(key: keys, args: any[]): Observable<StoredIds[]>{
         const pipe = this.pipelines[key];
-        return pipe ? pipe(...args) : of(null);
+        // console.log('getPipelineContext', key, args);
+        return pipe && args.length ? forkJoin(args.map(arg => pipe(arg).pipe(take(1)))) : of<StoredIds[]>(null).pipe(take(1));
     }
 
     getSummaryPipelineContext<T>(key: string, ...args: any): Observable<T[]>{
