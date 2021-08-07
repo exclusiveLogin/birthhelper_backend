@@ -76,25 +76,25 @@ export class SearchEngine {
         const context: Context = {cacheEngine: this._ce, searchEngine: this, dictionaryEngine: this._de};
         this.searchConfig = getSearchConfig(context);
 
-        const mock = {
-            clinic_facilities_birth_section: {14: true,},
-            clinic_placement_birth_section: {3: true},
-            clinic_personal_birth_section: {},
-            clinic_type_birth_section: {1: true}
-        }
+        // const mock = {
+        //     clinic_facilities_birth_section: {14: true,},
+        //     clinic_placement_birth_section: {3: true},
+        //     clinic_personal_birth_section: {},
+        //     clinic_type_birth_section: {1: true}
+        // }
 
-        this.setFilterStore("clinic", '_', mock);
-        console.log('setFilterStore result:', this.filterStore);
+        // this.setFilterStore("clinic", '_', mock);
+        // console.log('setFilterStore result:', this.filterStore);
 
         // this.pipeliner.clinic_facilities_birth_section(14).subscribe((result) => console.log('clinic_facilities_birth_section result:', result));
         // this.pipeliner.clinic_placement_birth_section(3).subscribe((result) => console.log('clinic_placement_birth_section result:', result));
         // this.pipeliner.clinic_personal_birth_section(1).subscribe((result) => console.log('clinic_personal_birth_section result:', result));
         // this.pipeliner.clinic_type_birth_section(1).subscribe((result) => console.log('clinic_type_birth_section result:', result));
 
-        this.getEntitiesIDByHash("clinic", '_').subscribe(
-            result => console.log('getEntitiesIDByHash result:', result),
-            (err) => console.error('getEntitiesIDByHash error: ', err)
-        );
+        // this.getEntitiesIDByHash("clinic", '_').subscribe(
+        //     result => console.log('getEntitiesIDByHash result:', result),
+        //     (err) => console.error('getEntitiesIDByHash error: ', err)
+        // );
     }
 
     intersector(a: Array<number>, b: Array<number>): number[] {
@@ -131,7 +131,6 @@ export class SearchEngine {
             // return of(searchEnt);
             return this.pipeliner.getPipelineContext(k, searchEnt).pipe(
                 map(data => data ? data.reduce((acc, cur) => acc ? this.intersector(acc, cur) : cur) : null),
-                tap(ids => this.setSearchStore(key, hash, ids)),
             );
         });
 
@@ -139,6 +138,7 @@ export class SearchEngine {
         return forkJoin(pipes).pipe(
             map(data => data.filter(d => !!d)),
             map(data => data.reduce((acc, cur) => acc ? this.intersector(acc, cur) : cur)),
+            tap(ids => this.setSearchStore(key, hash, ids)),
             // tap(data => console.log('getEntitiesIDByHash, forkJoin', data)),
         )
     }

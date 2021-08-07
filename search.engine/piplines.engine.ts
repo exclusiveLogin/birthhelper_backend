@@ -177,10 +177,13 @@ export class PipelineEngine {
     }
 
     getEntitiesByDBOrCache<T>(q: string, cacheKey: string): Observable<T[]> {
+
         return this.ce.checkCache(cacheKey) ?
-            this.ce.getCachedByKey<T[]>(cacheKey) :
+            this.ce.getCachedByKey<T[]>(cacheKey).pipe(
+                tap(data => console.error('getEntitiesByDBOrCache CACHE log', cacheKey, data.length)),
+            ) :
             this.query<T>(q).pipe(
-                tap(data => console.error('getEntitiesByDBOrCache log', cacheKey, data.length)),
+                tap(data => console.error('getEntitiesByDBOrCache DB log', cacheKey, data.length)),
                 catchError(err => {
                     console.error('getEntitiesByDBOrCache error', q, cacheKey, err);
                     return [];
