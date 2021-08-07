@@ -15,7 +15,7 @@ function adminRootHandler(req, res){
 function getAdminMiddleware(context: Context): Router {
 
     admin.use('/dict', context.dictionaryEngine.getRouter(context.cacheEngine));
-    admin.use('/entity', entity(context.cacheEngine));
+    admin.use('/entity', entity(context.cacheEngine, context.searchEngine));
     admin.use('/containers', container);
     admin.use('/slots', slot);
 

@@ -9,11 +9,13 @@ import {CacheEngine} from "../cache.engine/cache_engine";
 const pool = require('../db/sql');
 
 import { entityRepo } from './entity_repo';
+import {SearchEngine} from "../search.engine/engine";
 const containers = require('../container/container_repo');
 const slots = require('../slot/slot_repo');
 const dict = require('../dictionary/dictionary_repo');
 
 let ce: CacheEngine;
+let se: SearchEngine;
 
 type reqType = 'string' | 'id' | 'flag';
 
@@ -584,8 +586,9 @@ entity.post('/file', checkUploadsFS, upload.single('photo'), uploadFile);
 entity.delete('/:id', jsonparser, deleteEntity);
 entity.post('/:id', jsonparser, createEntity);
 
-function getEntityMiddleware(_: CacheEngine): Router {
+function getEntityMiddleware(_: CacheEngine, __: SearchEngine): Router {
     ce = _;
+    se = __;
     return entity;
 }
 
