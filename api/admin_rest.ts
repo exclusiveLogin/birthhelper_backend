@@ -1,7 +1,6 @@
 import {Router} from 'express';
 import * as express from "express";
-import {CacheEngine} from "../cache.engine/cache_engine";
-import {DictionaryEngine} from "../dictionary/dictionary_engine";
+import {Context} from "../search.engine/config";
 const entity = require('../entity/entity_engine');
 const container = require('../container/container_engine');
 const slot = require('../slot/slot_engine');
@@ -13,10 +12,10 @@ function adminRootHandler(req, res){
     res.send({index: 'admin root index'});
 }
 
-function getAdminMiddleware(_ce: CacheEngine, _de: DictionaryEngine): Router {
+function getAdminMiddleware(context: Context): Router {
 
-    admin.use('/dict', _de.getRouter(_ce));
-    admin.use('/entity', entity(_ce));
+    admin.use('/dict', context.dictionaryEngine.getRouter(context.cacheEngine));
+    admin.use('/entity', entity(context.cacheEngine));
     admin.use('/containers', container);
     admin.use('/slots', slot);
 

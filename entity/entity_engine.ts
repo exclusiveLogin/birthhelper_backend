@@ -538,21 +538,13 @@ function downloadFile( req, res, next ){
 
 }
 
-entity.get('/:id/filters', function(req, res){
-    if( !!entities[req.params.id] && !!entities[req.params.id].filters ){
-        res.send( JSON.stringify( entities[req.params.id].filters ) )
-    } else {
-        res.send([]);
-    }
-});
-
-entity.get('/:id/set', function(req, res){
+function entitySetHandler(req, res): void {
     if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
 
         const likeStr = [...generateQStr(req, 'string'), ...generateQStr(req, 'flag')].join(' AND ');
         const whereStr = [...generateQStr(req, 'id')].join(' AND ');
 
-        const q = 
+        const q =
             `SELECT * 
             FROM \`${ entities[req.params.id].db_name }\`
             ${(whereStr) ? 'WHERE ' + whereStr : ''} 
@@ -573,18 +565,23 @@ entity.get('/:id/set', function(req, res){
     } else {
         res.send([]);
     }
-});
+}
 
+function entityFilterHandler(req, res): void {
+    if( !!entities[req.params.id] && !!entities[req.params.id].filters ){
+        res.send( JSON.stringify( entities[req.params.id].filters ) )
+    } else {
+        res.send([]);
+    }
+}
+
+entity.get('/:id/filters', entityFilterHandler);
+entity.get('/:id/set', entitySetHandler);
 entity.get('/file/:id', downloadFile);
 entity.get('/:id', queryEntity);
-
 entity.get('/:id/:eid', queryEntity);
-
 entity.post('/file', checkUploadsFS, upload.single('photo'), uploadFile);
-
-
 entity.delete('/:id', jsonparser, deleteEntity);
-
 entity.post('/:id', jsonparser, createEntity);
 
 function getEntityMiddleware(_: CacheEngine): Router {

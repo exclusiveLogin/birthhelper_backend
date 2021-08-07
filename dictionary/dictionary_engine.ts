@@ -42,10 +42,7 @@ const concatLikeFn = (arrA, arrB) => {
 
 export class DictionaryEngine {
     private dict = express.Router();
-
     constructor(private ce: CacheEngine) {}
-
-
 
     generateQStr(filters: IDictionaryFilters[], type: reqType): string[] {
 
