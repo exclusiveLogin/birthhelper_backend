@@ -2,15 +2,13 @@ import * as express from "express";
 const bodyParser = require('body-parser');
 import validator from 'validator';
 import {Request, Router} from 'express';
-
 const jsonparser = bodyParser.json();
 import fs from "fs";
 import multer from 'multer';
+import {CacheEngine} from "../cache.engine/cache_engine";
+const pool = require('../db/sql');
 
 import { entityRepo } from './entity_repo';
-import {CacheEngine} from "../cache.engine/cache_engine";
-
-const pool = require('../db/sql');
 const containers = require('../container/container_repo');
 const slots = require('../slot/slot_repo');
 const dict = require('../dictionary/dictionary_repo');
@@ -38,17 +36,6 @@ const fileFilter = (req, file, cb) => file && file.mimetype === 'image/jpeg' ? c
 const upload = multer({ storage: storage, fileFilter });
 
 const entity = express.Router();
-
-entity.get('/', function(req, res){
-    res.set('Content-Type', 'text/html'); 
-    res.write('Эндпоинт для сущностей доступны следующие: <br>');
-    Object.keys(entities).forEach( key => res.write(key + '<br>') );
-
-    res.write('<p> Формат запроса GET /entity/{key} </p> <br>');
-    res.write('<p> ex: GET http://birthhelper.ru/admin/entity/ent_services </p> <br>');
-    res.end();
-
-});
 
 function concatFn(arrA, arrB){
     console.log('A:', arrA, 'B:', arrB);
@@ -453,6 +440,7 @@ async function queryEntity( req, res, next ){
         console.log('сущность не определена');
     }
 }
+
 function checkUploadsFS(req, res, next) {
     if(!fs.existsSync('uploads')){
         console.log('folder upload not exist, creating...');
@@ -465,6 +453,7 @@ function checkUploadsFS(req, res, next) {
 
     next();
 }
+
 function uploadFile( req, res, next ) {
     if(
         (req.file && req.file.mimetype === 'image/jpeg') ||
@@ -575,6 +564,17 @@ function entityFilterHandler(req, res): void {
     }
 }
 
+function rootHandler(req, res) {
+    res.set('Content-Type', 'text/html');
+    res.write('Эндпоинт для сущностей доступны следующие: <br>');
+    Object.keys(entities).forEach( key => res.write(key + '<br>') );
+
+    res.write('<p> Формат запроса GET /entity/{key} </p> <br>');
+    res.write('<p> ex: GET http://birthhelper.ru/admin/entity/ent_services </p> <br>');
+    res.end();
+}
+
+entity.get('/', rootHandler);
 entity.get('/:id/filters', entityFilterHandler);
 entity.get('/:id/set', entitySetHandler);
 entity.get('/file/:id', downloadFile);
