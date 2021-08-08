@@ -1,7 +1,7 @@
 import * as express from "express";
 const bodyParser = require('body-parser');
 import validator from 'validator';
-import {Request, Router} from 'express';
+import {Router} from 'express';
 import fs from "fs";
 import multer from 'multer';
 import {CacheEngine} from "../cache.engine/cache_engine";
@@ -11,6 +11,7 @@ import {Context} from "../search.engine/config";
 import {forkJoin, Observable, of} from "rxjs";
 import {map, mapTo, switchMap, take, tap} from "rxjs/operators";
 import {concatFn, generateQStr} from "../db/sql.helper";
+import {EntityCalc, EntityField} from "../entity/entity_repo.model";
 
 const pool = require('../db/sql');
 const jsonparser = bodyParser.json();
@@ -295,107 +296,10 @@ export class EntityEngine {
             // console.log('like:', likeStr);
             // console.log('where:', whereStr);
 
-            this.query(q).pipe(
-                // деэкранизация строк
-                // FK
-                switchMap((data: Entity[]) => {
-                    console.log('FK tick', data.length);
-                    const qs: Observable<FKEntity>[] = []
-                    data.forEach(row => {
-                        Object.keys(row).forEach(k => {
-                            const targetReq = fields.find(r => r.key === k);
-                            const value = row[k];
+            let provider = this.query<Entity>(q);
+            provider = this.metanizer(provider, fields, calc);
 
-                            if (targetReq?.type === 'string' || targetReq?.type === 'text') {
-                                row[k] = validator.unescape(`${value}`);
-                            }
-
-                            if (targetReq?.loadEntity && value) {
-                                if (targetReq?.type === 'img') {
-                                    const q = `SELECT \`images\`.*, \`files\`.\`filename\` 
-                                                FROM \`files\` 
-                                                INNER JOIN \`images\` 
-                                                ON \`images\`.\`file_id\` = \`files\`.\`id\` 
-                                                WHERE \`images\`.\`id\` = ${row[k]}`;
-
-                                    qs.push(
-                                        this.query<Entity>(q).pipe(
-                                            map(a_result => ({key: targetReq.key, value: a_result, id: row.id})))
-                                    );
-                                }
-
-                                if (targetReq?.type === 'id') {
-                                    const db = targetReq.dctKey ? dict[targetReq.dctKey].db : null;
-                                    if (db) {
-                                        const q = `SELECT * FROM \`${db}\` WHERE \`id\` = ${row[k]}`;
-
-                                        qs.push(
-                                            this.query<Entity>(q).pipe(
-                                                map(a_result => ({key: targetReq.key, value: a_result, id: row.id})))
-                                        );
-                                    }
-                                }
-                            }
-                        })
-                    })
-
-                    console.log('FK que count', qs.length);
-                    return qs.length ?
-                        forkJoin(qs).pipe(
-                            take(1),
-                            tap((_data: FKEntity[]) => {
-                                _data.forEach(d => {
-                                    const t_row: Entity = data.find(r => r.id === d.id);
-                                    if (t_row) {
-                                        t_row.meta = t_row.meta ?
-                                            {...t_row.meta, [d.key]: d.value ? d.value?.[0] : null} :
-                                            {[d.key]: d.value ? d.value?.[0] : null}
-                                    }
-                                });
-                            }),
-                            mapTo(data)) :
-                        of(data);
-                }),
-                // CALC
-                switchMap((data: Entity[]) => {
-                    if(!calc) return of(data);
-                    console.log('CALC tick', data.length);
-                    const qs: Observable<CalcEntity>[] = []
-                    data.forEach(row => {
-                        const id = row.id;
-                        calc.forEach(clc => {
-                            switch (clc.type) {
-                                case 'count':
-                                    const aq = `SELECT * FROM \`${ clc.db_name }\` WHERE \`${ clc.id_key }\`='${id}'`;
-                                    qs.push(this.query(aq).pipe(map(a_result => ({
-                                        key: clc.key,
-                                        value: a_result.length,
-                                        id
-                                    }))));
-                                    break;
-                                case 'test':
-                                    qs.push(of({key: clc.key, value: 'test', id}));
-                                    break;
-                                default:
-                            }
-                        });
-                    })
-
-                    console.log('CALC que count', qs.length);
-
-                    return qs.length ?
-                        forkJoin(qs).pipe(
-                            take(1),
-                            tap((_data) => {
-                                _data.forEach(d => {
-                                    const target = data.find(t => t.id === d.id);
-                                    if (target) Object.assign(target, {[d.key]: d.value});
-                                });
-                            }),
-                            mapTo(data)) :
-                        of(data);
-                })
-            ).subscribe(
+            provider.subscribe(
                 (data) => {
                     res.send(data);
                 },
@@ -411,6 +315,109 @@ export class EntityEngine {
             res.send([]);
             console.log('сущность не определена');
         }
+    }
+
+    metanizer(pipeline: Observable<Entity[]>, fields: EntityField[], calc: EntityCalc[]): Observable<Entity[]> {
+        return pipeline.pipe(
+            // FK
+            switchMap((data: Entity[]) => {
+                console.log('FK tick', data.length);
+                const qs: Observable<FKEntity>[] = []
+                data.forEach(row => {
+                    Object.keys(row).forEach(k => {
+                        const targetReq = fields.find(r => r.key === k);
+                        const value = row[k];
+
+                        if (targetReq?.type === 'string' || targetReq?.type === 'text') {
+                            row[k] = validator.unescape(`${value}`);
+                        }
+
+                        if (targetReq?.loadEntity && value) {
+                            if (targetReq?.type === 'img') {
+                                const q = `SELECT \`images\`.*, \`files\`.\`filename\` 
+                                                FROM \`files\` 
+                                                INNER JOIN \`images\` 
+                                                ON \`images\`.\`file_id\` = \`files\`.\`id\` 
+                                                WHERE \`images\`.\`id\` = ${row[k]}`;
+
+                                qs.push(
+                                    this.query<Entity>(q).pipe(
+                                        map(a_result => ({key: targetReq.key, value: a_result, id: row.id})))
+                                );
+                            }
+
+                            if (targetReq?.type === 'id') {
+                                const db = targetReq.dctKey ? dict[targetReq.dctKey].db : null;
+                                if (db) {
+                                    const q = `SELECT * FROM \`${db}\` WHERE \`id\` = ${row[k]}`;
+
+                                    qs.push(
+                                        this.query<Entity>(q).pipe(
+                                            map(a_result => ({key: targetReq.key, value: a_result, id: row.id})))
+                                    );
+                                }
+                            }
+                        }
+                    })
+                })
+
+                console.log('FK que count', qs.length);
+                return qs.length ?
+                    forkJoin(qs).pipe(
+                        take(1),
+                        tap((_data: FKEntity[]) => {
+                            _data.forEach(d => {
+                                const t_row: Entity = data.find(r => r.id === d.id);
+                                if (t_row) {
+                                    t_row.meta = t_row.meta ?
+                                        {...t_row.meta, [d.key]: d.value ? d.value?.[0] : null} :
+                                        {[d.key]: d.value ? d.value?.[0] : null}
+                                }
+                            });
+                        }),
+                        mapTo(data)) :
+                    of(data);
+            }),
+            // CALC
+            switchMap((data: Entity[]) => {
+                if(!calc) return of(data);
+                console.log('CALC tick', data.length);
+                const qs: Observable<CalcEntity>[] = []
+                data.forEach(row => {
+                    const id = row.id;
+                    calc.forEach(clc => {
+                        switch (clc.type) {
+                            case 'count':
+                                const aq = `SELECT * FROM \`${ clc.db_name }\` WHERE \`${ clc.id_key }\`='${id}'`;
+                                qs.push(this.query(aq).pipe(map(a_result => ({
+                                    key: clc.key,
+                                    value: a_result.length,
+                                    id
+                                }))));
+                                break;
+                            case 'test':
+                                qs.push(of({key: clc.key, value: 'test', id}));
+                                break;
+                            default:
+                        }
+                    });
+                })
+
+                console.log('CALC que count', qs.length);
+
+                return qs.length ?
+                    forkJoin(qs).pipe(
+                        take(1),
+                        tap((_data) => {
+                            _data.forEach(d => {
+                                const target = data.find(t => t.id === d.id);
+                                if (target) Object.assign(target, {[d.key]: d.value});
+                            });
+                        }),
+                        mapTo(data)) :
+                    of(data);
+            })
+        );
     }
 
     checkUploadsFSHandler(req, res, next) {
