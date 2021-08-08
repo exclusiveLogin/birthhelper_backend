@@ -291,7 +291,6 @@ export class EntityEngine {
         const searchKey: SectionKeys = entities[req.params.id].searchKey;
 
         const ids = this.searchEngine.getEntitiesIDByHash(searchKey, hash);
-        console.log('getEntities ids: ', ids, hash);
         return ids ?
             ids.pipe(
                 switchMap(_ => this.getEntitiesByIds(_, key, req))
