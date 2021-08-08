@@ -2,7 +2,7 @@ import * as express from "express";
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {Response, Router} from "express";
 import {Observable, throwError} from "rxjs";
-import {generateQStr} from "../db/sql.helper";
+import {generateFilterQStr, generateQStr} from "../db/sql.helper";
 const pool = require('../db/sql');
 const dicts = require('../dictionary/dictionary_repo');
 
@@ -28,8 +28,8 @@ export class DictionaryEngine {
         const fetchFromDB = new Observable<any[]>((subscriber) => {
             let limstr = `${ !!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip  : '' }`;
 
-            let likeStr = [...generateQStr(dict?.filters || [], 'string'), ...generateQStr(dict?.filters || [], 'flag')].join(' AND ');
-            let whereStr = [...generateQStr(dict?.filters || [], 'id')].join(' AND ');
+            let likeStr = [...generateFilterQStr(dict?.filters || [], 'string'), ...generateFilterQStr(dict?.filters || [], 'flag')].join(' AND ');
+            let whereStr = [...generateFilterQStr(dict?.filters || [], 'id')].join(' AND ');
 
             let q =
                 `SELECT * 
@@ -64,6 +64,7 @@ export class DictionaryEngine {
     }
 
     sendError = (res: Response, err): void => {
+        console.log('DICT error: ', err);
         res.status(500);
         res.end({err});
     }
