@@ -1,7 +1,7 @@
 import {Router} from 'express';
 import * as express from "express";
 import {Context} from "../search.engine/config";
-const entity = require('../entity/entity_engine');
+import {EntityEngine} from "../entity/entity_engine";
 const container = require('../container/container_engine');
 const slot = require('../slot/slot_engine');
 
@@ -13,9 +13,9 @@ function adminRootHandler(req, res){
 }
 
 function getAdminMiddleware(context: Context): Router {
-
+    const EE = new EntityEngine(context, true);
     admin.use('/dict', context.dictionaryEngine.getRouter(context.cacheEngine));
-    admin.use('/entity', entity(context.cacheEngine, context.searchEngine));
+    admin.use('/entity', EE.getRouter());
     admin.use('/containers', container);
     admin.use('/slots', slot);
 
