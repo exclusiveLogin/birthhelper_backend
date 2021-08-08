@@ -39,24 +39,12 @@ const upload = multer({ storage: storage, fileFilter });
 
 const entity = express.Router();
 
-function concatFn(arrA, arrB){
+function concatFn(arrA, arrB, isStr?: boolean){
     console.log('A:', arrA, 'B:', arrB);
     if( arrA && arrA.length && arrB && arrB.length ){
         let fine = [];
         for(let i = 0; i < arrA.length; i++){
-            fine.push(`${arrA[i]} = ${arrB[i]}`);
-        }
-        return fine;
-    }
-    return [];
-}
-
-function concatLikeFn(arrA, arrB){
-    console.log('A:', arrA, 'B:', arrB);
-    if( arrA && arrA.length && arrB && arrB.length ){
-        let fine = [];
-        for(let i = 0; i < arrA.length; i++){
-            fine.push(`${arrA[i]} LIKE "%${arrB[i]}%"`);
+            fine.push((isStr ? `${arrA[i]} LIKE "%${arrB[i]}%"` : `${arrA[i]} = ${arrB[i]}`));
         }
         return fine;
     }
@@ -66,12 +54,7 @@ function concatLikeFn(arrA, arrB){
 function generateQStr(req: Request, type: reqType): string[] {
 
     if( !!entities[req.params.id] && !!entities[req.params.id].db_name ){
-        const db = entities[req.params.id].db_name;
         const fields = entities[req.params.id].fields;
-        const calc = entities[req.params.id].calculated;
-        const fk = entities[req.params.id].fk;
-        const eid = req.params.eid;
-
         const filtered = Object.keys(req.query).filter(k => !( k === 'skip' || k === 'limit' ));
 
         const keys = [];
@@ -94,7 +77,7 @@ function generateQStr(req: Request, type: reqType): string[] {
 
             values.push(keys.map( k => `${req.query[k]}` ));
 
-            return concatLikeFn(keys, values);
+            return concatFn(keys, values, true);
         }
 
         if (type === 'flag') {
@@ -104,7 +87,7 @@ function generateQStr(req: Request, type: reqType): string[] {
             
             values.push(keys.map( k => `${ (req.query[k] as any as boolean) == true ? '1' : '0'}` ));
 
-            return concatLikeFn(keys, values);
+            return concatFn(keys, values, true);
         }
 
     
