@@ -1,13 +1,13 @@
 import * as express from "express";
 const bodyParser = require('body-parser');
 import validator from 'validator';
-import {Router} from 'express';
+import {Request, Router} from 'express';
 import fs from "fs";
 import multer from 'multer';
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {entityRepo} from './entity_repo';
 import {SearchEngine} from "../search.engine/engine";
-import {Context} from "../search.engine/config";
+import {Context, SectionKeys} from "../search.engine/config";
 import {forkJoin, Observable, of} from "rxjs";
 import {map, mapTo, switchMap, take, tap} from "rxjs/operators";
 import {concatFn, generateQStr} from "../db/sql.helper";
@@ -230,46 +230,39 @@ export class EntityEngine {
         }
     }
 
-    queryEntityHandler(req, res, next) {
+    getEntitiesByIds(ids: number[], key: string, req: Request): Observable<Entity[]> {
+        const db = entities[req.params.id].db_name;
+        const whereStr = `${ids.map(id => 'id = ' + id).join(' OR ')}`;
+        // default query
+        let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : ''}`;
 
-        // console.log('ent req search: ', req.query, ' url params: ', req.params, ' cache: ', ce);
-        if (!!entities[req.params.id] && !!entities[req.params.id].db_name) {
-            const db = entities[req.params.id].db_name;
-            const fields = entities[req.params.id].fields;
-            const calc = entities[req.params.id].calculated;
-            const fk = entities[req.params.id].fk;
-            const eid = req.params.eid;
+        console.log('getEntityByIds q: ', q);
+        return this.query<Entity>(q);
+    }
 
-            console.log('queryEntityHandler: ', db, ' eid: ', eid);
+    getEntityPortion(key: string, req: Request): Observable<Entity[]> {
+        const db = entities[req.params.id].db_name;
+        const fk = entities[req.params.id].fk;
+        const eid = req.params.eid;
 
-            let limit = !!req.query.limit && Number(req.query.limit) || '20';
+        let limit = !!req.query.limit && Number(req.query.limit) || '20';
+        let likeStr = [...generateQStr(req, 'string'), ...generateQStr(req, 'flag')].join(' AND ');
+        let whereStr = [...generateQStr(req, 'id')].join(' AND ');
+        let limstr = `${!!req.query.skip ? ' LIMIT ' + limit + ' OFFSET ' + req.query.skip : ''}`;
 
-            // если спросили что то лишнее хотя с новой логикой сюда не попадуть те запросы которых нет в репозитории доступных
-            if (!Object.keys(req.query).every(r => !!(r === 'skip' || r === 'limit') || !!fields.find(f => f.key === r))) {
-                res.status(500);
-                res.end('в запросе поиска присутствуют неизвестные поля');
-                console.warn('в запросе поиска присутствуют неизвестные поля');
-                return;
-            }
+        // default query
+        let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : ''} ${likeStr ? (whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} ${limstr}`;
 
-            let likeStr = [...generateQStr(req, 'string'), ...generateQStr(req, 'flag')].join(' AND ');
-            let whereStr = [...generateQStr(req, 'id')].join(' AND ');
+        //link fk for parent table
+        if (fk) {
+            //searching keys
+            let s_str = fk.restrictors.map(r => fk.db + '.' + r.key).join(', ');
+            //restrictor statements
+            let r_str = fk.restrictors.map(r => fk.db + '.' + r.key + ' LIKE "' + r.value + '"').join(', ');
+            //target fields db
+            let t_str = fk.target.map(t => fk.db + '.' + t).join(', ');
 
-            let limstr = `${!!req.query.skip ? ' LIMIT ' + limit + ' OFFSET ' + req.query.skip : ''}`;
-
-            let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : ''} ${likeStr ? (whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} ${limstr}`;
-
-
-            //link fk for parent table
-            if (fk) {
-                //searching keys
-                let s_str = fk.restrictors.map(r => fk.db + '.' + r.key).join(', ');
-                //restrictor statements
-                let r_str = fk.restrictors.map(r => fk.db + '.' + r.key + ' LIKE "' + r.value + '"').join(', ');
-                //target fields db
-                let t_str = fk.target.map(t => fk.db + '.' + t).join(', ');
-
-                q = `SELECT 
+            q = `SELECT 
                 ${db}.*, 
                 ${fk.db}.id as _id, 
                 ${s_str}, 
@@ -282,8 +275,8 @@ export class EntityEngine {
                 ${whereStr ? 'AND ' + whereStr : ''} 
                 ${likeStr ? ' AND ' + likeStr : ''} 
                 ${limstr}`;
-            } else
-                q = `SELECT 
+        } else
+            q = `SELECT 
                 * 
                 FROM \`${ db }\` 
                 ${ eid ? `WHERE id = ${ eid }` : ``}
@@ -291,12 +284,40 @@ export class EntityEngine {
                 ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} 
                 ${limstr}`;
 
+        return this.query<Entity>(q);
+    }
 
-            // console.log('q:', q);
-            // console.log('like:', likeStr);
-            // console.log('where:', whereStr);
+    getEntities(key: string, hash: string, req: Request): Observable<Entity[]> {
+        const searchKey: SectionKeys = entities[req.params.id].searchKey;
 
-            let provider = this.query<Entity>(q);
+        const ids = this.searchEngine.getEntitiesIDByHash(searchKey, hash);
+        console.log('getEntities ids: ', ids, hash);
+        return ids ?
+            ids.pipe(
+                switchMap(_ => this.getEntitiesByIds(_, key, req))
+            ) : this.getEntityPortion(key, req);
+    }
+
+    queryEntityHandler(req, res, next) {
+        // console.log('ent req search: ', req.query, ' url params: ', req.params, ' cache: ', ce);
+        if (!!entities[req.params.id]) {
+            const entKey = req.params.id;
+            const hash = req.query.hash;
+
+            console.log('queryEntityHandler hash: ', hash);
+
+            const fields = entities[req.params.id].fields;
+            const calc = entities[req.params.id].calculated;
+
+            // если спросили что то лишнее хотя с новой логикой сюда не попадуть те запросы которых нет в репозитории доступных
+            if (!Object.keys(req.query).every(r => !!(r === 'skip' || r === 'limit' || r === 'hash') || !!fields.find(f => f.key === r))) {
+                res.status(500);
+                res.end('в запросе поиска присутствуют неизвестные поля');
+                console.warn('в запросе поиска присутствуют неизвестные поля');
+                return;
+            }
+
+            let provider = this.getEntities(entKey, hash, req);
             provider = this.metanizer(provider, fields, calc);
 
             provider.subscribe(
