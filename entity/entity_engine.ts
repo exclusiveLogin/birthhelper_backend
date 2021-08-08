@@ -12,6 +12,7 @@ import {forkJoin, Observable, of} from "rxjs";
 import {map, mapTo, switchMap, take, tap} from "rxjs/operators";
 import {concatFn, generateQStr} from "../db/sql.helper";
 import {EntityCalc, EntityField} from "../entity/entity_repo.model";
+import {cacheKeyGenerator} from "../search.engine/sections.handler";
 
 const pool = require('../db/sql');
 const jsonparser = bodyParser.json();
@@ -232,12 +233,17 @@ export class EntityEngine {
 
     getEntitiesByIds(ids: number[], key: string, req: Request): Observable<Entity[]> {
         const db = entities[req.params.id].db_name;
+        const cacheKey = cacheKeyGenerator(key, 'hash', ids);
         const whereStr = `${ids.map(id => 'id = ' + id).join(' OR ')}`;
         // default query
         let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : ''}`;
 
         console.log('getEntityByIds q: ', q);
-        return this.query<Entity>(q);
+        return of(cacheKey)
+            .pipe(
+                switchMap(key => this.cacheEngine.checkCache(key) ?
+                    this.cacheEngine.getCachedByKey<Entity[]>(key) :
+                    this.query<Entity>(q).pipe(tap(data => this.cacheEngine.saveCacheData(key, data)))));
     }
 
     getEntityPortion(key: string, req: Request): Observable<Entity[]> {
