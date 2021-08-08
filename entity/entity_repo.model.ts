@@ -1,4 +1,5 @@
 import {Cached} from "../cache.engine/cache.model";
+import {SectionKeys} from "../search.engine/config";
 
 export interface EntityRepo {
     [key: string]: Entity;
@@ -12,7 +13,8 @@ export interface Entity extends Cached {
     fields: EntityField[],
     links?: EntityLink[],
     fk?: EntityForeignKey,
-    calculated?: EntityCalc[]
+    calculated?: EntityCalc[],
+    searchKey?: SectionKeys,
 }
 
 export interface EntityFilter {

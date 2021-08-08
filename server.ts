@@ -6,19 +6,25 @@ import fs from 'fs';
 import {CacheEngine} from "./cache.engine/cache_engine";
 import {SearchEngine} from "./search.engine/engine";
 import {DictionaryEngine} from "./dictionary/dictionary_engine";
+import {Context} from "./search.engine/config";
 
 // cache engine provider
 const CE = new CacheEngine();
 const DE = new DictionaryEngine(CE);
 const SE = new SearchEngine(CE, DE);
 
+const context: Context = {
+    cacheEngine: CE,
+    searchEngine: SE,
+    dictionaryEngine: DE,
+}
 
 let app = express();
 
 app.use(cors());
-app.use('/search', SE.getRouter(CE));
-app.use('/admin', admin(CE, DE));
-app.use('/api', api(CE, DE));
+app.use('/search', SE.getRouter());
+app.use('/admin', admin(context));
+app.use('/api', api(context));
 app.use('/static', express.static('/usr/src/app/uploads/',{ fallthrough: false }), (err, req, res, next) => {
     console.log('err static:', err);
     if(err.status === 404){

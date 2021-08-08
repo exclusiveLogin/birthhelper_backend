@@ -96,6 +96,7 @@ export const entityRepo: EntityRepo = {
 
     ent_clinics: {
         db_name: 'clinics',
+        searchKey: 'clinic',
         filters: [
             {
                 name: 'id',

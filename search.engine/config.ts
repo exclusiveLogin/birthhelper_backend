@@ -4,8 +4,12 @@ import {SearchEngine} from "../search.engine/engine";
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {filter, map, switchMap} from "rxjs/operators";
 
-export interface SearchConfig {
-    [section: string]: SearchSectionConfig;
+export type SearchConfig = {
+    [section in SectionKeys]: { [key in typeof sectionConfig[section][number]]: SearchSectionConfig};
+}
+
+export type SearchConfigResponse<T extends SectionKeys> = {
+    [key in typeof sectionConfig[T][number]]?: { [key: string]: any };
 }
 
 export interface SearchSectionConfig {
@@ -21,10 +25,6 @@ export interface SearchSection {
     filters: SearchFilter[];
 }
 
-export interface SearchSectionResponse {
-    [sections: number]: SearchSection[]
-}
-
 export interface SearchFilter {
     id: number;
     title: string;
@@ -32,14 +32,16 @@ export interface SearchFilter {
 
 export type SearchFilterType = 'flag' | 'select';
 
-export const sectionClinicConfig: {[k: string]: string[]} = {
+export type SectionKeys = keyof typeof sectionConfig;
+
+export const sectionConfig = {
     clinic: [
         'clinic_type_birth_section',
         'clinic_personal_birth_section',
         'clinic_placement_birth_section',
         'clinic_facilities_birth_section',
     ]
-};
+} as const;
 export interface Context {
     dictionaryEngine: DictionaryEngine;
     searchEngine: SearchEngine;
@@ -47,42 +49,45 @@ export interface Context {
 }
 export const getSearchConfig = (context: Context): SearchConfig => {
     const searchConfig: SearchConfig = {
-        clinic_type_birth_section: {
-            type: "flag",
-            title: 'Как рожать',
-            fetcher$: of(null).pipe(switchMap(() => context.dictionaryEngine.getDict('dict_birth_clinic_type')))
-                .pipe(
-                    filter(data => !!data),
-                    map((dictItems: DictionaryItem[]) => (dictItems.map(item => ({id: item.id, title: item.title}))))
-                ),
-        },
-        clinic_personal_birth_section: {
-            type: "flag",
-            title: 'С кем рожать',
-            fetcher$: of(null).pipe(switchMap(() => context.dictionaryEngine.getDict('dict_doctor_position_type')))
-                .pipe(
-                    filter(data => !!data),
-                    map((dictItems: DictionaryItem[]) => (dictItems.map(item => ({id: item.id, title: item.title}))))
-                ),
-        },
-        clinic_placement_birth_section: {
-            type: "select",
-            title: 'Палата',
-            fetcher$: of(null).pipe(switchMap(() => context.dictionaryEngine.getDict('dict_placement')))
-                .pipe(
-                    filter(data => !!data),
-                    map((dictItems: DictionaryItem[]) => (dictItems.map(item => ({id: item.id, title: item.title}))))
-                ),
-        },
-        clinic_facilities_birth_section: {
-            type: "flag",
-            title: 'Удобства',
-            fetcher$: of(null).pipe(switchMap(() => context.dictionaryEngine.getDict('dict_facilities_type')))
-                .pipe(
-                    filter(data => !!data),
-                    map((dictItems: DictionaryItem[]) => (dictItems.map(item => ({id: item.id, title: item.title}))))
-                ),
+        clinic: {
+            clinic_type_birth_section: {
+                type: "flag",
+                title: 'Как рожать',
+                fetcher$: of(null).pipe(switchMap(() => context.dictionaryEngine.getDict('dict_birth_clinic_type')))
+                    .pipe(
+                        filter(data => !!data),
+                        map((dictItems: DictionaryItem[]) => (dictItems.map(item => ({id: item.id, title: item.title}))))
+                    ),
+            },
+            clinic_personal_birth_section: {
+                type: "flag",
+                title: 'С кем рожать',
+                fetcher$: of(null).pipe(switchMap(() => context.dictionaryEngine.getDict('dict_doctor_position_type')))
+                    .pipe(
+                        filter(data => !!data),
+                        map((dictItems: DictionaryItem[]) => (dictItems.map(item => ({id: item.id, title: item.title}))))
+                    ),
+            },
+            clinic_placement_birth_section: {
+                type: "select",
+                title: 'Палата',
+                fetcher$: of(null).pipe(switchMap(() => context.dictionaryEngine.getDict('dict_placement')))
+                    .pipe(
+                        filter(data => !!data),
+                        map((dictItems: DictionaryItem[]) => (dictItems.map(item => ({id: item.id, title: item.title}))))
+                    ),
+            },
+            clinic_facilities_birth_section: {
+                type: "flag",
+                title: 'Удобства',
+                fetcher$: of(null).pipe(switchMap(() => context.dictionaryEngine.getDict('dict_facilities_type')))
+                    .pipe(
+                        filter(data => !!data),
+                        map((dictItems: DictionaryItem[]) => (dictItems.map(item => ({id: item.id, title: item.title}))))
+                    ),
+            }
         }
+
     };
 
     return searchConfig;
