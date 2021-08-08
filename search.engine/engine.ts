@@ -284,13 +284,32 @@ export class SearchEngine {
 
     }
 
+    hashFilterHandler(req, res): void {
+        const section: SectionKeys = req.params.id;
+        const hash: SectionKeys = req.params.hash;
+
+        const filters = this.getFilterStore(section, hash);
+
+        if(!filters) {
+            res.status(500);
+            res.send({error: 'hash or section key invalid'});
+            return;
+        }
+
+        res.send({filters});
+
+    }
+
     sendIdsByHashHandler(req, res): void {
         const section: SectionKeys = req.params.id;
         const hash: SectionKeys = req.params.hash;
 
-        if(!section || !hash) {
+        const hashProvider = this.getEntitiesIDByHash(section, hash);
+
+        if(!section || !hash || !hashProvider) {
             res.status(500);
-            res.send({error: 'hash or section ket invalid'});
+            res.send({error: 'hash or section key invalid'});
+            return;
         }
 
         this.getEntitiesIDByHash(section, hash).subscribe(ids => res.send({ids}));
@@ -301,6 +320,7 @@ export class SearchEngine {
         this.router.get('/', this.rootHandler.bind(this));
         this.router.get('/:id', this.sendFiltersHandler.bind(this));
         this.router.get('/:id/:hash', this.sendIdsByHashHandler.bind(this));
+        this.router.get('/:id/filters/:hash', this.hashFilterHandler.bind(this));
         this.router.post('/:id', jsonparser, this.createVector.bind(this));
 
         return this.router;
