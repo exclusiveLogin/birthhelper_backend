@@ -234,11 +234,14 @@ export class EntityEngine {
     getEntitiesByIds(ids: number[], key: string, req: Request): Observable<Entity[]> {
         const db = entities[req.params.id].db_name;
         const cacheKey = cacheKeyGenerator(key, 'hash', ids);
+        const skip = req.query.skip ? Number(req.query.skip) : 0;
+        ids = ids.splice(skip, 20);
         const whereStr = `${ids.map(id => 'id = ' + id).join(' OR ')}`;
+
         // default query
         let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : ''}`;
 
-        console.log('getEntityByIds q: ', q);
+        // console.log('getEntityByIds q: ', q);
         return of(cacheKey)
             .pipe(
                 switchMap(key => this.cacheEngine.checkCache(key) ?
@@ -254,7 +257,7 @@ export class EntityEngine {
         let limit = !!req.query.limit && Number(req.query.limit) || '20';
         let likeStr = [...generateQStr(req, 'string'), ...generateQStr(req, 'flag')].join(' AND ');
         let whereStr = [...generateQStr(req, 'id')].join(' AND ');
-        let limstr = `${!!req.query.skip ? ' LIMIT ' + limit + ' OFFSET ' + req.query.skip : ''}`;
+        let limstr = `${!!req.query.skip ? ' LIMIT ' + limit + ' OFFSET ' + req.query.skip : ' LIMIT ' + limit}`;
 
         // default query
         let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : ''} ${likeStr ? (whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} ${limstr}`;
@@ -299,7 +302,7 @@ export class EntityEngine {
         const ids = this.searchEngine.getEntitiesIDByHash(searchKey, hash);
         return ids ?
             ids.pipe(
-                switchMap(_ => this.getEntitiesByIds(_, key, req))
+                switchMap(_ => this.getEntitiesByIds(_, key, req)),
             ) : this.getEntityPortion(key, req);
     }
 

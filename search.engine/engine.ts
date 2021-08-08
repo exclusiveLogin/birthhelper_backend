@@ -101,7 +101,7 @@ export class SearchEngine {
         return [...new Set(a.filter(i => b.includes(i)))]
     }
 
-    getEntitiesIDByHash(key: SectionKeys, hash: string): Observable<any>{
+    getEntitiesIDByHash(key: SectionKeys, hash: string): Observable<StoredIds>{
         const config = this.searchConfig[key];
         if(!config) return null;
 
@@ -138,7 +138,7 @@ export class SearchEngine {
         // вертаем в зад только совпавшие ids сущностей
         return forkJoin(pipes).pipe(
             map(data => data.filter(d => !!d)),
-            map(data => data.reduce((acc, cur) => acc ? this.intersector(acc, cur) : cur)),
+            map(data => data.reduce((acc, cur) => acc ? this.intersector(acc, cur) : cur, null)),
             tap(ids => this.setSearchStore(key, hash, ids)),
             // tap(data => console.log('getEntitiesIDByHash, forkJoin', data)),
         )
