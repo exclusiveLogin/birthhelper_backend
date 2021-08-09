@@ -135,6 +135,9 @@ export class SearchEngine {
             );
         });
 
+        const mergePipe = this.pipeliner.mergePipelines[key];
+        if(mergePipe) pipes.push(mergePipe())
+
         // вертаем в зад только совпавшие ids сущностей
         return forkJoin(pipes).pipe(
             map(data => data.filter(d => !!d)),

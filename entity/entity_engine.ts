@@ -349,8 +349,6 @@ export class EntityEngine {
                     res.send(JSON.stringify(error));
                 },
             )
-
-
         } else {
             res.send([]);
             console.log('сущность не определена');

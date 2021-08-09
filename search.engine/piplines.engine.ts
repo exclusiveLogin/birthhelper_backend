@@ -2,15 +2,10 @@ import {forkJoin, Observable, of} from "rxjs";
 import {sectionConfig, SectionKeys} from "./config";
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {StoredIds, Summary} from "../search.engine/engine";
-import {catchError, map, switchMap, take, tap} from "rxjs/operators";
+import {catchError, map, switchMap, tap} from "rxjs/operators";
 import {cacheKeyGenerator} from "../search.engine/sections.handler";
+import {Clinic} from "../models/clinic.interface";
 const pool = require('../db/sql');
-
-interface ContainersByFacilities{
-    id: number;
-    facility_id: number;
-    container_id: number;
-}
 
 type ChapterKeys = typeof sectionConfig[SectionKeys]
 type keys = ChapterKeys[number];
@@ -29,6 +24,17 @@ export class PipelineEngine {
                     GROUP BY contragent_id`;
 
         return this.getEntitiesByDBOrCache<Summary>(q, cacheKey);
+    }
+
+    clinic_active_pipeline(): Observable<StoredIds> {
+        const cacheKey = `clinic.active.default`;
+
+        const q = `SELECT * FROM \`clinics\` WHERE \`active\` = 1;`;
+
+        return this.getEntitiesByDBOrCache<Clinic>(q, cacheKey)
+            .pipe(
+                map(clinics => clinics.map(clinic => clinic.id)),
+                tap(ids => console.log('clinic_active_pipeline: ', ids.toString())));
     }
 
     clinic_facilities_birth_section(facilityId: number): Observable<StoredIds> {
@@ -156,7 +162,11 @@ export class PipelineEngine {
     }
 
     summaryPipelines: { [key in SectionKeys]: () => Observable<Summary[]> } = {
-        clinic: this.clinic_summary_pipeline_default,
+        clinic: this.clinic_summary_pipeline_default.bind(this),
+    }
+
+    mergePipelines: { [key in SectionKeys]: () => Observable<StoredIds> } = {
+        clinic: this.clinic_active_pipeline.bind(this),
     }
 
     constructor(
@@ -172,6 +182,7 @@ export class PipelineEngine {
                    observer.error(err);
                }
                observer.next(result);
+               observer.complete();
            });
         });
     }
@@ -195,8 +206,9 @@ export class PipelineEngine {
     // эта штука должна сразу возвращить intersect массив клиник
     getPipelineContext(key: keys, args: any[]): Observable<StoredIds[]>{
         const pipe = this.pipelines[key];
-        // console.log('getPipelineContext', key, args);
-        return pipe && args.length ? forkJoin(args.map(arg => pipe(arg).pipe(take(1)))) : of<StoredIds[]>(null).pipe(take(1));
+        return pipe && args.length ?
+            forkJoin(args.map(arg => pipe(arg))) :
+            of<StoredIds[]>(null);
     }
 
     getSummaryPipelineContext<T>(key: string, ...args: any): Observable<T[]>{
