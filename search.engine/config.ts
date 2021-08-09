@@ -5,7 +5,7 @@ import {CacheEngine} from "../cache.engine/cache_engine";
 import {filter, map, switchMap} from "rxjs/operators";
 
 export type SearchConfig = {
-    [section in SectionKeys]: { [key in typeof sectionConfig[section][number]]: SearchSectionConfig};
+    [section in SectionKeys]: { [key in typeof sectionConfig[section][number]]?: SearchSectionConfig};
 }
 
 export type SearchConfigResponse<T extends SectionKeys> = {

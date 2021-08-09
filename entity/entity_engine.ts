@@ -111,20 +111,6 @@ export class EntityEngine {
         res.end();
     }
 
-    getRouter(): Router {
-        entity.get('/', this.rootHandler.bind(this));
-        entity.get('/:id/filters', this.entityFilterHandler.bind(this));
-        entity.get('/:id/set', this.entitySetHandler.bind(this));
-        entity.get('/file/:id', this.downloadFileHandler.bind(this));
-        entity.get('/:id', this.queryEntityHandler.bind(this));
-        entity.get('/:id/:eid', this.queryEntityHandler.bind(this));
-        entity.post('/file', this.checkUploadsFSHandler.bind(this), upload.single('photo'), this.uploadFileHandler.bind(this));
-        entity.delete('/:id', jsonparser, this.deleteEntityHandler.bind(this));
-        entity.post('/:id', jsonparser, this.createEntityHandler.bind(this));
-
-        return entity;
-    }
-
     query<T>(q: string): Observable<T[]> {
         return new Observable<T[]>(observer => {
             pool.query(q, (err, result) => {
@@ -299,11 +285,15 @@ export class EntityEngine {
     getEntities(key: string, hash: string, req: Request): Observable<Entity[]> {
         const searchKey: SectionKeys = entities[req.params.id].searchKey;
 
-        const ids = this.searchEngine.getEntitiesIDByHash(searchKey, hash);
-        return ids ?
-            ids.pipe(
-                switchMap(_ => this.getEntitiesByIds(_, key, req)),
-            ) : this.getEntityPortion(key, req);
+        if(hash){
+            const ids$ = this.searchEngine.getEntitiesIDByHash(searchKey, hash);
+            return ids$ ?
+                ids$.pipe(
+                    switchMap(_ => this.getEntitiesByIds(_, key, req))) :
+                null;
+        }
+
+        return this.getEntityPortion(key, req);
     }
 
     queryEntityHandler(req, res, next) {
@@ -326,6 +316,13 @@ export class EntityEngine {
             }
 
             let provider = this.getEntities(entKey, hash, req);
+
+            if(!provider) {
+                res.status(500);
+                res.send({error: 'Hash unknown'});
+                return;
+            }
+
             provider = this.metanizer(provider, fields, calc);
 
             provider.subscribe(
@@ -338,8 +335,6 @@ export class EntityEngine {
                     res.send(JSON.stringify(error));
                 },
             )
-
-
         } else {
             res.send([]);
             console.log('сущность не определена');
@@ -536,5 +531,19 @@ export class EntityEngine {
             res.send(result);
         });
 
+    }
+
+    getRouter(): Router {
+        entity.get('/', this.rootHandler.bind(this));
+        entity.get('/:id/filters', this.entityFilterHandler.bind(this));
+        entity.get('/:id/set', this.entitySetHandler.bind(this));
+        entity.get('/file/:id', this.downloadFileHandler.bind(this));
+        entity.get('/:id', this.queryEntityHandler.bind(this));
+        entity.get('/:id/:eid', this.queryEntityHandler.bind(this));
+        entity.post('/file', this.checkUploadsFSHandler.bind(this), upload.single('photo'), this.uploadFileHandler.bind(this));
+        entity.delete('/:id', jsonparser, this.deleteEntityHandler.bind(this));
+        entity.post('/:id', jsonparser, this.createEntityHandler.bind(this));
+
+        return entity;
     }
 }
