@@ -299,11 +299,15 @@ export class EntityEngine {
     getEntities(key: string, hash: string, req: Request): Observable<Entity[]> {
         const searchKey: SectionKeys = entities[req.params.id].searchKey;
 
-        const ids = this.searchEngine.getEntitiesIDByHash(searchKey, hash);
-        return ids ?
-            ids.pipe(
-                switchMap(_ => this.getEntitiesByIds(_, key, req)),
-            ) : this.getEntityPortion(key, req);
+        if(hash){
+            const ids$ = this.searchEngine.getEntitiesIDByHash(searchKey, hash);
+            return ids$ ?
+                ids$.pipe(
+                    switchMap(_ => this.getEntitiesByIds(_, key, req))) :
+                null;
+        }
+
+        return this.getEntityPortion(key, req);
     }
 
     queryEntityHandler(req, res, next) {
@@ -326,6 +330,13 @@ export class EntityEngine {
             }
 
             let provider = this.getEntities(entKey, hash, req);
+
+            if(!provider) {
+                res.status(500);
+                res.send({error: 'Hash unknown'});
+                return;
+            }
+
             provider = this.metanizer(provider, fields, calc);
 
             provider.subscribe(
