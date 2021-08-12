@@ -26,7 +26,7 @@ type TypeSection<T = any> = {
     [k in SectionKeys]: Hashed<T>;
 }
 
-export interface SearchStore extends TypeSection<StoredIds> {}
+export interface SearchStore extends TypeSection<string> {}
 export interface SummaryStore extends TypeSection<Summary> {}
 export interface FilterStore extends TypeSection<FilterSection> {}
 
@@ -107,7 +107,10 @@ export class SearchEngine {
 
         // проверяем кеш
         const stored = this.getSearchStore(key, hash);
-        if(stored)return of(stored);
+        if(stored){
+            // console.log('cached: hash', hash, stored, this.searchStore);
+            return of(stored);
+        }
 
         // забираем фильтры по хешу
         const filters = this.getFilterStore(key, hash);
@@ -142,8 +145,9 @@ export class SearchEngine {
         return forkJoin(pipes).pipe(
             map(data => data.filter(d => !!d)),
             map(data => data.reduce((acc, cur) => acc ? this.intersector(acc, cur) : cur, null)),
-            tap(ids => this.setSearchStore(key, hash, ids)),
             // tap(data => console.log('getEntitiesIDByHash, forkJoin', data)),
+            tap(ids => this.setSearchStore(key, hash, ids)),
+
         )
     }
 
@@ -166,7 +170,7 @@ export class SearchEngine {
             }
         });
 
-        console.log('tick validator:', result, valid);
+        // console.log('tick validator:', result, valid);
 
         if (valid){
             const hash = md5Encript(result);
@@ -192,7 +196,7 @@ export class SearchEngine {
             res.status(201);
             res.send({hash, input: body, result: this.getFilterStore(section, hash)});
 
-            console.log('createVector', this.filterStore);
+            // console.log('createVector', this.filterStore);
         } else {
             res.status(500);
             res.send({error: 'not valid query', body, section});
@@ -207,15 +211,19 @@ export class SearchEngine {
     }
 
     setSearchStore(section: SectionKeys, hash: string, data: any): void {
+        // console.log('set cache: ', hash, data, this.searchStore);
         if (!this.checkSectionExist(section)) {
+            // console.log('non searchStore.... created');
             this.searchStore[section] = {};
         }
-        this.searchStore[section][hash] = data;
+        this.searchStore[section][hash] = JSON.stringify(data);
+        // console.log('set searchStore.... created', this.searchStore);
     }
 
     getSearchStore(section: SectionKeys, hash: string): StoredIds {
         if (this.checkSearchSectionExist(section)) {
-            return this.searchStore[section][hash];
+            // console.log('getSearchStore, ', section, hash, this.searchStore[section][hash]);
+            return this.searchStore[section][hash] ? JSON.parse(this.searchStore[section][hash]) : null;
         }
         return null;
     }
@@ -266,7 +274,7 @@ export class SearchEngine {
             const f$ = conf.map(k => k.fetcher$);
             zip(...f$).pipe(
                 map((data: SearchFilter[][]): SearchSection[] => {
-                    console.log('tick', data)
+                    // console.log('tick', data)
                     return data.map((filters, idx) => (
                         {
                             key: keys[idx],
@@ -277,7 +285,7 @@ export class SearchEngine {
                     ));
                 }),
             ).subscribe((results: SearchSection[]) => {
-                console.log('search results:', results);
+                // console.log('search results:', results);
                 res.send({index: 'search section', results});
             });
         } else {

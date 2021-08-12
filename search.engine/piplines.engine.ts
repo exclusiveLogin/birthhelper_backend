@@ -34,7 +34,8 @@ export class PipelineEngine {
         return this.getEntitiesByDBOrCache<Clinic>(q, cacheKey)
             .pipe(
                 map(clinics => clinics.map(clinic => clinic.id)),
-                tap(ids => console.log('clinic_active_pipeline: ', ids.toString())));
+                // tap(ids => console.log('clinic_active_pipeline: ', ids.toString())),
+            );
     }
 
     clinic_facilities_birth_section(facilityId: number): Observable<StoredIds> {
@@ -93,7 +94,7 @@ export class PipelineEngine {
                     AND service_type = 1
                     GROUP BY contragent_id`;
 
-        console.log('clinic_personal_birth_section: ', q, cacheKey);
+        // console.log('clinic_personal_birth_section: ', q, cacheKey);
         return of(null).pipe(
             switchMap(() => this.getEntitiesByDBOrCache<Summary>(q, cacheKey)),
             map(data => data.map(c => c.id)),
@@ -191,10 +192,10 @@ export class PipelineEngine {
 
         return this.ce.checkCache(cacheKey) ?
             this.ce.getCachedByKey<T[]>(cacheKey).pipe(
-                tap(data => console.error('getEntitiesByDBOrCache CACHE log', cacheKey, data.length)),
+                // tap(data => console.log('getEntitiesByDBOrCache CACHE log', cacheKey, data.length)),
             ) :
             this.query<T>(q).pipe(
-                tap(data => console.error('getEntitiesByDBOrCache DB log', cacheKey, data.length)),
+                // tap(data => console.log('getEntitiesByDBOrCache DB log', q, cacheKey, data.length)),
                 catchError(err => {
                     console.error('getEntitiesByDBOrCache error', q, cacheKey, err);
                     return [];

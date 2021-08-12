@@ -106,7 +106,7 @@ function simpleSaveContainer(containerParams, id_container, ids){
 
             // delete exist container store and write new
 
-            console.log("DEV containerParams:", containerParams);
+            // console.log("DEV containerParams:", containerParams);
             removeContainerItems( containerParams.name, id_container )
                 .then((result)=>{
                     console.log(result);

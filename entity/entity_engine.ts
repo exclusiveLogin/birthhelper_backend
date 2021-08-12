@@ -222,10 +222,10 @@ export class EntityEngine {
         const cacheKey = cacheKeyGenerator(key, 'hash', ids);
         const skip = req.query.skip ? Number(req.query.skip) : 0;
         ids = ids.splice(skip, 20);
-        const whereStr = `${ids.map(id => 'id = ' + id).join(' OR ')}`;
+        const whereStr = ids.length ? `${ids.map(id => 'id = ' + id).join(' OR ')}` : null;
 
         // default query
-        let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : ''}`;
+        let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : 'WHERE 0'}`;
 
         // console.log('getEntityByIds q: ', q);
         return of(cacheKey)
