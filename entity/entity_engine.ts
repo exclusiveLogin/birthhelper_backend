@@ -1,4 +1,5 @@
 import * as express from "express";
+
 const bodyParser = require('body-parser');
 import validator from 'validator';
 import {Request, Router} from 'express';
@@ -8,7 +9,7 @@ import {CacheEngine} from "../cache.engine/cache_engine";
 import {entityRepo} from './entity_repo';
 import {SearchEngine} from "../search.engine/engine";
 import {Context, SectionKeys} from "../search.engine/config";
-import {forkJoin, Observable, of} from "rxjs";
+import {forkJoin, Observable, of, throwError} from "rxjs";
 import {map, mapTo, switchMap, take, tap} from "rxjs/operators";
 import {concatFn, generateQStr} from "../db/sql.helper";
 import {EntityCalc, EntityField} from "../entity/entity_repo.model";
@@ -41,6 +42,7 @@ const entity = express.Router();
 
 interface Entity {
     [key: string]: any;
+
     id: number;
 }
 
@@ -65,9 +67,8 @@ export class EntityEngine {
         this.cacheEngine = context.cacheEngine;
     }
 
-    entitySetHandler(req, res): void {
+    getSetFromDB(req): Observable<number> {
         if (!!entities[req.params.id] && !!entities[req.params.id].db_name) {
-
             const likeStr = [...generateQStr(req, 'string'), ...generateQStr(req, 'flag')].join(' AND ');
             const whereStr = [...generateQStr(req, 'id')].join(' AND ');
 
@@ -76,20 +77,37 @@ export class EntityEngine {
                         ${(whereStr) ? 'WHERE ' + whereStr : ''} 
                         ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} `;
 
-            pool.query(q, (err, result) => {
-                const lenSet = result && result.length || 0;
-                const con = entities[req.params.id].container || null;
-                const slot = entities[req.params.id].slot || null;
-                res.send({
-                    total: lenSet,
-                    fields: entities[req.params.id].fields || [],
-                    container: con ? containers[con] : null,
-                    slot: slot ? slots[slot] : null,
-                    links: entities[req.params.id].links || [],
+            return this.query<Entity>(q).pipe(
+                    map(result => result.length || 0))
+        }
+
+        console.log('что то пошло не так... Сущность сета не определена');
+        return throwError('Сущность сета не определена');
+    }
+
+    entitySetHandler(req, res): void {
+        if (!!entities[req.params.id] && !!entities[req.params.id].db_name) {
+            const hash = req.query.hash;
+            const searchKey: SectionKeys = entities[req.params.id].searchKey;
+            const con = entities[req.params.id].container || null;
+            const slot = entities[req.params.id].slot || null;
+
+            const ids$ = this.searchEngine.getEntitiesIDByHash(searchKey, hash)
+                ?.pipe(
+                    map(result => result.length || 0));
+            const provider = hash ? ids$ : this.getSetFromDB(req);
+
+            provider.subscribe(result =>
+                    res.send({
+                        total: result,
+                        fields: entities[req.params.id].fields || [],
+                        container: con ? containers[con] : null,
+                        slot: slot ? slots[slot] : null,
+                        links: entities[req.params.id].links || [],
+                    }),
+                () => {
+                    res.send([]);
                 });
-            });
-        } else {
-            res.send([]);
         }
     }
 
@@ -285,7 +303,7 @@ export class EntityEngine {
     getEntities(key: string, hash: string, req: Request): Observable<Entity[]> {
         const searchKey: SectionKeys = entities[req.params.id].searchKey;
 
-        if(hash){
+        if (hash) {
             const ids$ = this.searchEngine.getEntitiesIDByHash(searchKey, hash);
             return ids$ ?
                 ids$.pipe(
@@ -317,7 +335,7 @@ export class EntityEngine {
 
             let provider = this.getEntities(entKey, hash, req);
 
-            if(!provider) {
+            if (!provider) {
                 res.status(500);
                 res.send({error: 'Hash unknown'});
                 return;
@@ -404,7 +422,7 @@ export class EntityEngine {
             }),
             // CALC
             switchMap((data: Entity[]) => {
-                if(!calc) return of(data);
+                if (!calc) return of(data);
                 console.log('CALC tick', data.length);
                 const qs: Observable<CalcEntity>[] = []
                 data.forEach(row => {
