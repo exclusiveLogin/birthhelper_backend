@@ -3,6 +3,7 @@ import {DictionaryEngine, DictionaryItem} from "../dictionary/dictionary_engine"
 import {SearchEngine} from "../search.engine/engine";
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {filter, map, switchMap} from "rxjs/operators";
+import {AuthorizationEngine} from "../auth/auth.engine";
 
 export type SearchConfig = {
     [section in SectionKeys]: { [key in typeof sectionConfig[section][number]]?: SearchSectionConfig};
@@ -46,6 +47,7 @@ export interface Context {
     dictionaryEngine: DictionaryEngine;
     searchEngine: SearchEngine;
     cacheEngine: CacheEngine;
+    authorizationEngine: AuthorizationEngine;
 }
 export const getSearchConfig = (context: Context): SearchConfig => {
     const searchConfig: SearchConfig = {

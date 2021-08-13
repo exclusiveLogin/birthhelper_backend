@@ -73,7 +73,7 @@ export class SearchEngine {
     pipeliner = new PipelineEngine(this._ce);
 
     constructor(private _ce: CacheEngine, private _de: DictionaryEngine) {
-        const context: Context = {cacheEngine: this._ce, searchEngine: this, dictionaryEngine: this._de};
+        const context: Context = {cacheEngine: this._ce, searchEngine: this, dictionaryEngine: this._de, authorizationEngine: null};
         this.searchConfig = getSearchConfig(context);
 
         // const mock = {
