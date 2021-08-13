@@ -186,6 +186,7 @@ export class EntityEngine {
 
                 pool.query(qf, (err, result) => {
                     if (err) {
+                        console.log('create ent error ', err);
                         res.status(500);
                         res.send(err);
                         return;
@@ -194,7 +195,6 @@ export class EntityEngine {
                         result,
                         data
                     }));
-                    next();
                 });
 
             } else {
