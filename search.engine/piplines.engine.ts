@@ -1,11 +1,9 @@
 import {forkJoin, Observable, of} from "rxjs";
-import {sectionConfig, SectionKeys} from "./config";
-import {CacheEngine} from "../cache.engine/cache_engine";
+import {Context, sectionConfig, SectionKeys} from "./config";
 import {StoredIds, Summary} from "../search.engine/engine";
 import {catchError, map, switchMap, tap} from "rxjs/operators";
 import {cacheKeyGenerator} from "../search.engine/sections.handler";
 import {Clinic} from "../models/clinic.interface";
-const pool = require('../db/sql');
 
 type ChapterKeys = typeof sectionConfig[SectionKeys]
 type keys = ChapterKeys[number];
@@ -170,37 +168,22 @@ export class PipelineEngine {
         clinic: this.clinic_active_pipeline.bind(this),
     }
 
-    constructor(
-        private ce: CacheEngine,
-    ) {
-    }
-
-    query<T>(q: string): Observable<T[]> {
-        return new Observable<T[]>(observer => {
-           pool.query(q, (err, result) => {
-               // console.log('query raw: ', err, result, q);
-               if(err){
-                   observer.error(err);
-               }
-               observer.next(result);
-               observer.complete();
-           });
-        });
+    constructor(private context: Context) {
     }
 
     getEntitiesByDBOrCache<T>(q: string, cacheKey: string): Observable<T[]> {
 
-        return this.ce.checkCache(cacheKey) ?
-            this.ce.getCachedByKey<T[]>(cacheKey).pipe(
+        return this.context.cacheEngine.checkCache(cacheKey) ?
+            this.context.cacheEngine.getCachedByKey<T[]>(cacheKey).pipe(
                 // tap(data => console.log('getEntitiesByDBOrCache CACHE log', cacheKey, data.length)),
             ) :
-            this.query<T>(q).pipe(
+            this.context.dbe.query<T>(q).pipe(
                 // tap(data => console.log('getEntitiesByDBOrCache DB log', q, cacheKey, data.length)),
                 catchError(err => {
                     console.error('getEntitiesByDBOrCache error', q, cacheKey, err);
                     return [];
                 }),
-                tap(data => this.ce.saveCacheData(cacheKey, data)),
+                tap(data => this.context.cacheEngine.saveCacheData(cacheKey, data)),
             )
     }
 

@@ -62,7 +62,13 @@ export class EntityEngine {
     cacheEngine: CacheEngine;
     searchEngine: SearchEngine;
 
-    constructor(context: Context, admin?: boolean) {
+    constructor(private context: Context, admin?: boolean) {
+        if (admin){
+            context.entityEngineAdmin = this;
+        } else {
+            context.entityEngine = this;
+        }
+
         this.searchEngine = context.searchEngine;
         this.cacheEngine = context.cacheEngine;
     }
@@ -77,7 +83,7 @@ export class EntityEngine {
                         ${(whereStr) ? 'WHERE ' + whereStr : ''} 
                         ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} `;
 
-            return this.query<Entity>(q).pipe(
+            return this.context.dbe.query<Entity>(q).pipe(
                     map(result => result.length || 0))
         }
 
@@ -129,20 +135,7 @@ export class EntityEngine {
         res.end();
     }
 
-    query<T>(q: string): Observable<T[]> {
-        return new Observable<T[]>(observer => {
-            pool.query(q, (err, result) => {
-                // console.log('query raw: ', err, result, q);
-                if (err) {
-                    observer.error(err);
-                }
-                observer.next(result);
-                observer.complete();
-            });
-        });
-    }
-
-    createEntityHandler(req, res, next) {
+    createEntityHandler(req, res) {
         console.log('createEntity body:', req.body);
         if (req.body) {
             //проверка наличия сущности в системе
@@ -250,7 +243,7 @@ export class EntityEngine {
             .pipe(
                 switchMap(key => this.cacheEngine.checkCache(key) ?
                     this.cacheEngine.getCachedByKey<Entity[]>(key) :
-                    this.query<Entity>(q).pipe(tap(data => this.cacheEngine.saveCacheData(key, data)))));
+                    this.context.dbe.query<Entity>(q).pipe(tap(data => this.cacheEngine.saveCacheData(key, data)))));
     }
 
     getEntityPortion(key: string, req: Request): Observable<Entity[]> {
@@ -297,7 +290,7 @@ export class EntityEngine {
                 ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} 
                 ${limstr}`;
 
-        return this.query<Entity>(q);
+        return this.context.dbe.query<Entity>(q);
     }
 
     getEntities(key: string, hash: string, req: Request): Observable<Entity[]> {
@@ -314,8 +307,8 @@ export class EntityEngine {
         return this.getEntityPortion(key, req);
     }
 
-    queryEntityHandler(req, res, next) {
-        // console.log('ent req search: ', req.query, ' url params: ', req.params, ' cache: ', ce);
+    queryEntityHandler(req, res) {
+        // console.log('ent req search: ', req.query, ' url params: ', req.params, this);
         if (!!entities[req.params.id]) {
             const entKey = req.params.id;
             const hash = req.query.hash;
@@ -383,7 +376,7 @@ export class EntityEngine {
                                                 WHERE \`images\`.\`id\` = ${row[k]}`;
 
                                 qs.push(
-                                    this.query<Entity>(q).pipe(
+                                    this.context.dbe.query<Entity>(q).pipe(
                                         map(a_result => ({key: targetReq.key, value: a_result, id: row.id})))
                                 );
                             }
@@ -394,7 +387,7 @@ export class EntityEngine {
                                     const q = `SELECT * FROM \`${db}\` WHERE \`id\` = ${row[k]}`;
 
                                     qs.push(
-                                        this.query<Entity>(q).pipe(
+                                        this.context.dbe.query<Entity>(q).pipe(
                                             map(a_result => ({key: targetReq.key, value: a_result, id: row.id})))
                                     );
                                 }
@@ -431,7 +424,7 @@ export class EntityEngine {
                         switch (clc.type) {
                             case 'count':
                                 const aq = `SELECT * FROM \`${ clc.db_name }\` WHERE \`${ clc.id_key }\`='${id}'`;
-                                qs.push(this.query(aq).pipe(map(a_result => ({
+                                qs.push(this.context.dbe.query(aq).pipe(map(a_result => ({
                                     key: clc.key,
                                     value: a_result.length,
                                     id
@@ -475,7 +468,7 @@ export class EntityEngine {
         next();
     }
 
-    uploadFileHandler(req, res, next) {
+    uploadFileHandler(req, res) {
         if (
             (req.file && req.file.mimetype === 'image/jpeg') ||
             (req.file && req.file.mimetype === 'image/jpg')
@@ -525,7 +518,7 @@ export class EntityEngine {
         }
     }
 
-    downloadFileHandler(req, res, next) {
+    downloadFileHandler(req, res) {
         const id = req.params.id;
 
         //SELECT `images`.*, files.id as fid, files.filename FROM `images`, files WHERE images.id = 2 AND files.id = images.file_id

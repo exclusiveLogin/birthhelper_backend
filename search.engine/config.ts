@@ -4,6 +4,8 @@ import {SearchEngine} from "../search.engine/engine";
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {filter, map, switchMap} from "rxjs/operators";
 import {AuthorizationEngine} from "../auth/auth.engine";
+import {DataBaseService} from "../db/sql";
+import {EntityEngine} from "../entity/entity_engine";
 
 export type SearchConfig = {
     [section in SectionKeys]: { [key in typeof sectionConfig[section][number]]?: SearchSectionConfig};
@@ -48,6 +50,9 @@ export interface Context {
     searchEngine: SearchEngine;
     cacheEngine: CacheEngine;
     authorizationEngine: AuthorizationEngine;
+    dbe: DataBaseService;
+    entityEngine: EntityEngine;
+    entityEngineAdmin: EntityEngine;
 }
 export const getSearchConfig = (context: Context): SearchConfig => {
     const searchConfig: SearchConfig = {

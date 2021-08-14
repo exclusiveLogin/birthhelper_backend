@@ -3,6 +3,7 @@ const pool = require('../db/sql');
 import uuid = require('uuid');
 import {IUser} from '../models/user.interface';
 import bodyParser = require('body-parser');
+import {Context} from "../search.engine/config";
 const jsonparser = bodyParser.json();
 
 
@@ -10,7 +11,9 @@ export class AuthorizationEngine {
 
     auth = express.Router();
 
-    constructor() {
+    constructor(context: Context) {
+        context.authorizationEngine = this;
+
         this.auth.get('/uuid', this.uuidHandler);
 
         this.auth.delete('/', jsonparser, this.deleteHandler);
