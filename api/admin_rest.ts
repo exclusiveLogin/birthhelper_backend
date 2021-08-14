@@ -1,7 +1,6 @@
 import {Router} from 'express';
 import * as express from "express";
 import {Context} from "../search.engine/config";
-const container = require('../container/container_engine');
 const slot = require('../slot/slot_engine');
 
 let admin = express.Router();
@@ -14,7 +13,7 @@ function adminRootHandler(req, res){
 function getAdminMiddleware(context: Context): Router {
     admin.use('/dict', context.dictionaryEngine.getRouter());
     admin.use('/entity', context.entityEngineAdmin.getRouter());
-    admin.use('/containers', container);
+    admin.use('/containers', context.containerEngine.getRouter());
     admin.use('/slots', slot);
 
     return admin;

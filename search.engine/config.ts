@@ -6,6 +6,7 @@ import {filter, map, switchMap} from "rxjs/operators";
 import {AuthorizationEngine} from "../auth/auth.engine";
 import {DataBaseService} from "../db/sql";
 import {EntityEngine} from "../entity/entity_engine";
+import {ContainerEngine} from "../container/container_engine";
 
 export type SearchConfig = {
     [section in SectionKeys]: { [key in typeof sectionConfig[section][number]]?: SearchSectionConfig};
@@ -53,6 +54,8 @@ export interface Context {
     dbe: DataBaseService;
     entityEngine: EntityEngine;
     entityEngineAdmin: EntityEngine;
+    containerEngine: ContainerEngine;
+    slotEngine: null;
 }
 export const getSearchConfig = (context: Context): SearchConfig => {
     const searchConfig: SearchConfig = {

@@ -10,6 +10,7 @@ import {Context} from "./search.engine/config";
 import {AuthorizationEngine} from "./auth/auth.engine";
 import {DataBaseService} from "./db/sql";
 import {EntityEngine} from "./entity/entity_engine";
+import {ContainerEngine} from "./container/container_engine";
 
 
 // context
@@ -21,6 +22,8 @@ const context: Context = {
     dbe: null,
     entityEngine: null,
     entityEngineAdmin: null,
+    containerEngine: null,
+    slotEngine: null,
 }
 
 // providers
@@ -31,6 +34,7 @@ const SE = new SearchEngine(context);
 const AE = new AuthorizationEngine(context);
 const EE: EntityEngine = new EntityEngine(context);
 const EEA: EntityEngine = new EntityEngine(context, true);
+const CNE: ContainerEngine = new ContainerEngine(context);
 
 let app = express();
 
