@@ -7,15 +7,14 @@ import fs from "fs";
 import multer from 'multer';
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {entityRepo} from './entity_repo';
+import {Entity as EntityConfig} from './entity_repo.model';
 import {SearchEngine} from "../search.engine/engine";
 import {Context, SectionKeys} from "../search.engine/config";
-import {forkJoin, Observable, of, throwError} from "rxjs";
+import {config, forkJoin, Observable, of, throwError} from "rxjs";
 import {map, mapTo, switchMap, take, tap} from "rxjs/operators";
 import {concatFn, generateQStr} from "../db/sql.helper";
 import {EntityCalc, EntityField} from "../entity/entity_repo.model";
 import {cacheKeyGenerator} from "../search.engine/sections.handler";
-
-const pool = require('../db/sql');
 const jsonparser = bodyParser.json();
 
 const containers = require('../container/container_repo');
@@ -40,7 +39,7 @@ const fileFilter = (req, file, cb) => file && file.mimetype === 'image/jpeg' ? c
 const upload = multer({storage: storage, fileFilter});
 const entity = express.Router();
 
-interface Entity {
+export interface Entity {
     [key: string]: any;
 
     id: number;
@@ -71,6 +70,14 @@ export class EntityEngine {
 
         this.searchEngine = context.searchEngine;
         this.cacheEngine = context.cacheEngine;
+    }
+
+    getEntityParams(name: string): EntityConfig {
+        return entities[name];
+    }
+
+    hasEntity(name: string): boolean {
+        return !!entities[name];
     }
 
     getSetFromDB(req): Observable<number> {
@@ -135,96 +142,86 @@ export class EntityEngine {
         res.end();
     }
 
-    createEntityHandler(req, res) {
+    async createEntity(name, data) {
+        if(!data) return Promise.reject('Нет данных для создания или изменеиня сущности');
+        const config = this.getEntityParams(name);
+        if(!config) return Promise.reject('Нет конфигурации для сущности: ' + name);
+
+        const db = config.db_name;
+        const reqKeys = config.fields.filter(f => !!f.required);
+        const fields = config.fields;
+        const calc = config.calculated;
+
+        //убираем пересечения
+        calc && calc.forEach(c => delete data[c.key]);
+
+        if (!reqKeys.every(r => !!data[r.key])) {
+            console.log('не полные данные в запросе');
+            return Promise.reject('не полные данные в запросе');
+        }
+
+        if (!Object.keys(data).every(r => !!fields.find(f => f.key === r))) {
+            console.log('в запросе присутствут неизвестные поля');
+            return Promise.reject('в запросе присутствут неизвестные поля');
+        }
+
+        let valArr = Object.keys(data).map(datakey => {
+            const targetReq = fields.find(r => r.key === datakey);
+            if (!targetReq) return;
+            `"${sanitizer((data[datakey]).toString())}"`;
+            return targetReq.type === 'string' || targetReq.type === 'text' ? `"${sanitizer((data[datakey]).toString())}"` : data[datakey];
+        });
+
+        let existArr = concatFn(Object.keys(data), valArr);
+        //console.log('existArr: ', existArr);
+
+        const q = `INSERT INTO \`${ db }\` (\`${ Object.keys(data).join('\`, \`') }\`) VALUES ( ${ valArr.join(',') } )`;
+        const qi = existArr.join(', ');
+        const qf = q + ' ON DUPLICATE KEY UPDATE ' + qi;
+
+        return  this.context.dbe.query(qf).pipe(mapTo('Данные обновлены')).toPromise();
+    }
+
+    async createEntityHandler(req, res) {
         console.log('createEntity body:', req.body);
-        if (req.body) {
-            //проверка наличия сущности в системе
-            if (!!entities[req.params.id] && !!entities[req.params.id].db_name) {
-                const db = entities[req.params.id].db_name;
-                const reqKeys = entities[req.params.id].fields.filter(f => !!f.required);
-                const fields = entities[req.params.id].fields;
-                const calc = entities[req.params.id].calculated;
-                const data = req.body;
+        const data = req.body;
+        const name = req.params.id;
 
-                //убираем пересечения
-                calc && calc.forEach(c => delete data[c.key]);
+        try {
+            const result = await this.createEntity(name, data);
+            res.send(JSON.stringify({
+                result,
+                data
+            }));
 
-                if (!reqKeys.every(r => !!data[r.key])) {
-                    res.end('не полные данные в запросе');
-                    console.log('не полные данные в запросе');
-                    return;
-                }
-
-                if (!Object.keys(data).every(r => !!fields.find(f => f.key === r))) {
-                    res.end('в запросе присутствут неизвестные поля');
-                    console.log('в запросе присутствут неизвестные поля');
-                    return;
-                }
-
-                let valArr = Object.keys(data).map(datakey => {
-                    const targetReq = fields.find(r => r.key === datakey);
-                    if (!targetReq) return;
-                    `"${sanitizer((data[datakey]).toString())}"`;
-                    return targetReq.type === 'string' || targetReq.type === 'text' ? `"${sanitizer((data[datakey]).toString())}"` : data[datakey];
-                });
-
-                let existArr = concatFn(Object.keys(data), valArr);
-                //console.log('existArr: ', existArr);
-
-                const q = `INSERT INTO \`${ db }\` (\`${ Object.keys(data).join('\`, \`') }\`) VALUES ( ${ valArr.join(',') } )`;
-                const qi = existArr.join(', ');
-                const qf = q + ' ON DUPLICATE KEY UPDATE ' + qi;
-                console.log('qf: ', qf);
-
-
-                pool.query(qf, (err, result) => {
-                    if (err) {
-                        console.log('create ent error ', err);
-                        res.status(500);
-                        res.send(err);
-                        return;
-                    }
-                    res.send(JSON.stringify({
-                        result,
-                        data
-                    }));
-                });
-
-            } else {
-                res.end('не удалось определить сущность');
-                console.log('не удалось определить сущность');
-            }
+        } catch (e) {
+            res.status(500);
+            res.send('не удалось определить сущность');
+            console.log('не удалось определить сущность');
         }
     }
 
-    deleteEntityHandler(req, res, next) {
+    async deleteEntity(name: string, id: string) {
+        const config = this.getEntityParams(name);
+        if (!config) return Promise.reject('не удалось определить сущность');
+        const db = config.db_name;
+
+        const qd = `DELETE FROM \`${ db }\` WHERE id=${id}`;
+
+        return this.context.dbe.query(qd).pipe(mapTo(`Запись с id = ${id} удалена`)).toPromise();
+    }
+
+    async deleteEntityHandler(req, res) {
         console.log('delete middle', req.body);
-        if (req.body) {
-            //проверка наличия сущности в системе
-            if (!!entities[req.params.id] && !!entities[req.params.id].db_name) {
-                const db = entities[req.params.id].db_name;
-                const id = req.body && req.body.id;
+        const id = req?.body?.id;
+        const name = req.params.id;
 
-                const qd = `DELETE FROM \`${ db }\` WHERE id=${id}`;
-
-                pool.query(qd, (err, result) => {
-                    if (err) {
-                        res.status(500);
-                        res.send(err);
-                        return;
-                    }
-                    res.send(JSON.stringify({
-                        result,
-                        text: `Запись с id = ${id} удалена`
-                    }));
-
-                    next();
-
-                });
-
-            } else {
-                res.end('не удалось определить сущность');
-            }
+        try {
+            const result = await this.deleteEntity(name, id);
+            res.send({result});
+        } catch (e) {
+            res.status(500);
+            res.send({error: e});
         }
     }
 
@@ -468,7 +465,7 @@ export class EntityEngine {
         next();
     }
 
-    uploadFileHandler(req, res) {
+    async uploadFileHandler(req, res) {
         if (
             (req.file && req.file.mimetype === 'image/jpeg') ||
             (req.file && req.file.mimetype === 'image/jpg')
@@ -485,32 +482,25 @@ export class EntityEngine {
             let q = `INSERT INTO \`${ 'files' }\` (\`${ fields.join('\`, \`') }\`) VALUES ( ${ values.join(',') } )`;
 
             console.log('save file in db: ', q);
-            pool.query(q, (error, result) => {
-                if (error) {
-                    res.status(500);
-                    res.send(error);
-                    return;
-                }
-                if (result && result.insertId) {
-                    let qi = `INSERT INTO \`${ 'images' }\` ( \`file_id\`, \`title\`, \`description\`) VALUES ( ${result.insertId}, "${title}", "${description}" )`;
-                    console.log('qi:', qi);
-                    pool.query(qi, (err, _result) => {
-                        if (err) {
-                            res.status(500);
-                            res.send(err);
-                            return;
-                        }
 
-                        res.status(201);
-                        res.send({
-                            status: 'Файл загружен успешно, id: ' + result.insertId,
-                            file: {id: _result.insertId}
-                        });
-                    });
-                }
-            });
+            try {
+                const result = await this.context.dbe.query(q).toPromise();
+                const insertedId = (result as any as {[key: string]: any, insertId: number}).insertId;
 
+                const qi = `INSERT INTO \`${ 'images' }\` ( \`file_id\`, \`title\`, \`description\`) VALUES ( ${insertedId}, "${title}", "${description}" )`;
 
+                const _result = await this.context.dbe.query(qi).toPromise();
+
+                res.status(201);
+                res.send({
+                    status: 'Файл загружен успешно, id: ' + insertedId,
+                    file: {id: (_result as any as {[key: string]: any, insertId: number}).insertId}
+                });
+            } catch (e) {
+                res.status(500);
+                res.send({error: e});
+                return;
+            }
         } else {
             console.error('error: ', 'Ошибка типа файла. Поддерживаются только: jpeg', 'file: ', req.file);
             res.status(500);
@@ -518,7 +508,7 @@ export class EntityEngine {
         }
     }
 
-    downloadFileHandler(req, res) {
+    async downloadFileHandler(req, res) {
         const id = req.params.id;
 
         //SELECT `images`.*, files.id as fid, files.filename FROM `images`, files WHERE images.id = 2 AND files.id = images.file_id
@@ -530,18 +520,14 @@ export class EntityEngine {
         }
 
         let q = `SELECT * FROM \`files\` WHERE \`id\` = ${id}`;
-        console.log('dl file: ', id, 'q: ', q);
 
-
-        pool.query(q, function (error, result) {
-            if (error) {
-                res.status(500);
-                res.end({error});
-            }
-
-            res.send(result);
-        });
-
+        try {
+            const result = this.context.dbe.query(q).toPromise();
+            res.send({result});
+        } catch (e) {
+            res.status(500);
+            res.end({error: e});
+        }
     }
 
     getRouter(): Router {

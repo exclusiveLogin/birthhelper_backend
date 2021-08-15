@@ -11,6 +11,7 @@ import {AuthorizationEngine} from "./auth/auth.engine";
 import {DataBaseService} from "./db/sql";
 import {EntityEngine} from "./entity/entity_engine";
 import {ContainerEngine} from "./container/container_engine";
+import {SlotEngine} from "./slot/slot_engine";
 
 
 // context
@@ -35,6 +36,7 @@ const AE = new AuthorizationEngine(context);
 const EE: EntityEngine = new EntityEngine(context);
 const EEA: EntityEngine = new EntityEngine(context, true);
 const CNE: ContainerEngine = new ContainerEngine(context);
+const SLE: SlotEngine = new SlotEngine(context);
 
 let app = express();
 

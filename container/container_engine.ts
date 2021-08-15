@@ -15,7 +15,7 @@ export class ContainerEngine {
     }
 
     // функция возвращающая список существующих в системе контейнеров
-    getContainersList(res) {
+    getContainersList(req, res) {
         res.send(Object.keys(containers).map(k => containers[k]));
     }
 
