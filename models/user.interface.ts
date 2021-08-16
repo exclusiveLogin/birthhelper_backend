@@ -6,3 +6,13 @@ export interface IUser {
     datetime_create: string;
     datetime_update: string;
 }
+
+export interface UserRole {
+    id: number;
+    slug: string;
+    title: string;
+    description: string;
+    rank: number;
+    datetime_create: string;
+    datetime_update: string;
+}

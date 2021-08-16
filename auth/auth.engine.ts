@@ -1,9 +1,10 @@
 import express = require('express');
 const pool = require('../db/sql');
 import uuid = require('uuid');
-import {IUser} from '../models/user.interface';
+import {IUser, UserRole} from '../models/user.interface';
 import bodyParser = require('body-parser');
 import {Context} from "../search.engine/config";
+import {map} from "rxjs/operators";
 const jsonparser = bodyParser.json();
 
 
@@ -11,8 +12,8 @@ export class AuthorizationEngine {
 
     auth = express.Router();
 
-    constructor(context: Context) {
-        context.authorizationEngine = this;
+    constructor(private context: Context) {
+        this.context.authorizationEngine = this;
 
         this.auth.get('/uuid', this.uuidHandler);
 
@@ -43,7 +44,29 @@ export class AuthorizationEngine {
         })
     }
 
-    async getUserIdByCredencial(login: string, password: string): Promise<number> {
+    async getRoleByUserId(user_id: number): Promise<UserRole> {
+        const q = `SELECT * FROM \`roles\`, \`users\` as user_id WHERE users.id = ${user_id} AND users.role = roles.id`;
+        return this.context.dbe.query<UserRole>(q).pipe(
+            map((result: UserRole[]) => result[0] ? result[0] : null)).toPromise();
+    }
+
+    async hasPermissionByToken(token: string, target: number): Promise<boolean> {
+        const user = await this.getUserIdByToken(token);
+        if(!user) return Promise.reject('Пользователь не найден');
+        const role = await this.getRoleByUserId(user);
+        if(!role) return Promise.reject('Роль не найдена');
+
+        return (target - role.rank) >= 0;
+    }
+
+    async hasPermissionByUser(user_id: number, target: number): Promise<boolean> {
+        const role = await this.getRoleByUserId(user_id);
+        if(!role) return Promise.reject('Роль не найдена');
+
+        return (target - role.rank) >= 0;
+    }
+
+    async getUserIdByCredential(login: string, password: string): Promise<number> {
         return new Promise((resolve, reject) => {
             const q = `SELECT * FROM \`users\` WHERE \`login\` = "${login}" AND password = "${password}"`;
             pool.query(q, (err, result: IUser) => {
@@ -173,7 +196,7 @@ export class AuthorizationEngine {
         const userPassword: string = req.body['password'];
         if(userLogin && userPassword){
             // получаем id юзера
-            const userId= await this.getUserIdByCredencial(userLogin, userPassword);
+            const userId= await this.getUserIdByCredential(userLogin, userPassword);
             if(userId) {
                 await this.changePasswordForUser(userLogin, userPassword);
                 await this.cleanOldTokens(userId);
@@ -239,7 +262,7 @@ export class AuthorizationEngine {
         const userPassword: string = req.body['password'];
         if(userLogin && userPassword){
             // получаем id юзера
-            const userId = await this.getUserIdByCredencial(userLogin, userPassword);
+            const userId = await this.getUserIdByCredential(userLogin, userPassword);
             console.log('login', userLogin, ' id: ', userId);
             if(userId) {
                 const token = await this.createNewSession(userId);
