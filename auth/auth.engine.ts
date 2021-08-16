@@ -1,10 +1,11 @@
 import express = require('express');
-const pool = require('../db/sql');
 import uuid = require('uuid');
-import {IUser, UserRole} from '../models/user.interface';
+import {IUser, UserRole, UserSession} from '../models/user.interface';
 import bodyParser = require('body-parser');
 import {Context} from "../search.engine/config";
-import {map} from "rxjs/operators";
+import {map, mapTo} from "rxjs/operators";
+import {OkPacket} from "mysql";
+
 const jsonparser = bodyParser.json();
 
 
@@ -17,31 +18,25 @@ export class AuthorizationEngine {
 
         this.auth.get('/uuid', this.uuidHandler);
 
-        this.auth.delete('/', jsonparser, this.deleteHandler);
+        this.auth.delete('/', jsonparser, this.deleteHandler.bind(this));
 
-        this.auth.patch('/', jsonparser, this.patchHandler);
+        this.auth.patch('/', jsonparser, this.patchHandler.bind(this));
 
-        this.auth.put('/', jsonparser, this.putHandler);
+        this.auth.put('/', jsonparser, this.putHandler.bind(this));
 
-        this.auth.post('/', jsonparser, this.postHandler);
+        this.auth.post('/', jsonparser, this.postHandler.bind(this));
     }
 
     getToken = (req: any): string => {
         return req?.headers?.['token'];
     }
 
-    async getUserIdByToken(token: string): Promise<number>  {
-        return new Promise((resolve, reject) => {
-            const q = `SELECT * FROM \`sessions\` WHERE \`token\` = "${token}"`;
-            pool.query(q, (err, result: IUser) => {
-                if(err){
-                    reject(err);
-                } else {
-                    console.log('user id RAW: ', result);
-                    resolve(result[0]?.user_id);
-                }
-            });
-        })
+    async getUserIdByToken(token: string): Promise<number> {
+        const q = `SELECT * FROM \`sessions\` WHERE \`token\` = "${token}"`;
+
+        return this.context.dbe.query(q).pipe(
+            map(result => (result as any as UserSession)?.[0]?.user_id),
+        ).toPromise();
     }
 
     async getRoleByUserId(user_id: number): Promise<UserRole> {
@@ -52,119 +47,76 @@ export class AuthorizationEngine {
 
     async hasPermissionByToken(token: string, target: number): Promise<boolean> {
         const user = await this.getUserIdByToken(token);
-        if(!user) return Promise.reject('Пользователь не найден');
+        if (!user) return Promise.reject('Пользователь не найден');
         const role = await this.getRoleByUserId(user);
-        if(!role) return Promise.reject('Роль не найдена');
+        if (!role) return Promise.reject('Роль не найдена');
 
         return (target - role.rank) >= 0;
     }
 
     async hasPermissionByUser(user_id: number, target: number): Promise<boolean> {
         const role = await this.getRoleByUserId(user_id);
-        if(!role) return Promise.reject('Роль не найдена');
+        if (!role) return Promise.reject('Роль не найдена');
 
         return (target - role.rank) >= 0;
     }
 
     async getUserIdByCredential(login: string, password: string): Promise<number> {
-        return new Promise((resolve, reject) => {
-            const q = `SELECT * FROM \`users\` WHERE \`login\` = "${login}" AND password = "${password}"`;
-            pool.query(q, (err, result: IUser) => {
-                if(err){
-                    reject(err);
-                } else {
-                    console.log('user id RAW: ', result);
-                    resolve(result[0]?.id);
-                }
-            });
-        })
+        const q = `SELECT * FROM \`users\` WHERE \`login\` = "${login}" AND password = "${password}"`;
+
+        return this.context.dbe.query(q).pipe(
+            map(result => (result as any as IUser)?.[0]?.id),
+        ).toPromise();
     }
 
     async checkUserExist(login: string): Promise<boolean> {
-        return new Promise((resolve, reject) => {
-            const q = `SELECT * FROM \`users\` WHERE \`login\` = "${login}"`;
-            console.log('q: ', q);
-            pool.query(q, (err, result: IUser) => {
-                if(err){
-                    reject(err);
-                } else {
-                    console.log('check user id RAW: ', result);
-                    resolve(!!result[0]);
-                }
-            });
-        })
+        const q = `SELECT * FROM \`users\` WHERE \`login\` = "${login}"`;
+        console.log('q: ', q);
+
+        return this.context.dbe.query(q).pipe(
+            map(result => !!(result as any as IUser)?.[0]?.id),
+        ).toPromise();
     }
 
     async cleanOldTokens(userId: number): Promise<null> {
-        return new Promise((resolve, reject) => {
-            const q = `DELETE FROM \`sessions\` WHERE \`user_id\` = ${userId}`;
-            pool.query(q, (err, result) => {
-                if(err){
-                    reject(err);
-                } else {
-                    console.log('clean RAW: ', result);
-                    resolve(null);
-                }
-            });
-        });
+        const q = `DELETE FROM \`sessions\` WHERE \`user_id\` = ${userId}`;
+
+        return this.context.dbe.query(q).pipe(
+            mapTo(null)
+        ).toPromise();
     }
 
     async cleanCurrentSession(token: string): Promise<null> {
-        return new Promise((resolve, reject) => {
-            const q = `DELETE FROM \`sessions\` WHERE \`token\` = "${token}"`;
-            pool.query(q, (err, result) => {
-                if(err){
-                    reject(err);
-                } else {
-                    console.log('clean token RAW: ', result);
-                    resolve(null);
-                }
-            });
-        });
+        const q = `DELETE FROM \`sessions\` WHERE \`token\` = "${token}"`;
+
+        return this.context.dbe.query(q).pipe(
+            mapTo(null)
+        ).toPromise();
     }
 
     async createNewSession(userId): Promise<string> {
-        return new Promise((resolve, reject) => {
-            const token = uuid.v4();
-            const q = `INSERT INTO \`sessions\` (\`token\`, \`user_id\`) VALUES("${token}",${userId})`;
-            pool.query(q, (err, result) => {
-                if(err){
-                    reject(err);
-                } else {
-                    console.log('clean RAW: ', result);
-                    resolve(token);
-                }
-            });
-        });
+        const token: string = uuid.v4();
+        const q = `INSERT INTO \`sessions\` (\`token\`, \`user_id\`) VALUES("${token}",${userId})`;
+
+        return this.context.dbe.query(q).pipe(
+            map(result => (result as any as OkPacket)?.insertId ? token : null),
+        ).toPromise();
     }
 
     async createNewUser(userLogin: string, userPassword: string): Promise<number> {
-        return new Promise((resolve, reject) => {
-            const token = uuid.v4();
-            const q = `INSERT INTO \`users\` (\`login\`, \`password\`) VALUES("${userLogin}", "${userPassword}")`;
-            pool.query(q, (err, result) => {
-                if(err){
-                    reject(err);
-                } else {
-                    console.log('create user RAW: ', result);
-                    resolve(result.insertId);
-                }
-            });
-        });
+        const q = `INSERT INTO \`users\` (\`login\`, \`password\`) VALUES("${userLogin}", "${userPassword}")`;
+
+        return this.context.dbe.query(q).pipe(
+            map(result => (result as any as OkPacket)?.insertId),
+        ).toPromise();
     }
 
     async changePasswordForUser(userLogin: string, userPassword: string): Promise<null> {
-        return new Promise((resolve, reject) => {
-            const q = `UPDATE \`users\` SET \`password\` = "${userPassword}" WHERE \`login\` = "${userLogin}"`;
-            pool.query(q, (err, result) => {
-                if(err){
-                    reject(err);
-                } else {
-                    console.log('change pass user RAW: ', result);
-                    resolve(null);
-                }
-            });
-        });
+        const q = `UPDATE \`users\` SET \`password\` = "${userPassword}" WHERE \`login\` = "${userLogin}"`;
+
+        return this.context.dbe.query(q).pipe(
+            mapTo(null)
+        ).toPromise();
     }
 
     async uuidHandler(req, res) {
@@ -174,7 +126,7 @@ export class AuthorizationEngine {
     async deleteHandler(req, res) {
         console.log('delete auth', req.headers);
         const token: string = req?.headers?.token as string;
-        if(token){
+        if (token) {
             await this.cleanCurrentSession(token);
             res.send(JSON.stringify({
                 exit: true,
@@ -194,10 +146,10 @@ export class AuthorizationEngine {
         console.log('patch auth', req.body);
         const userLogin: string = req.body['login'];
         const userPassword: string = req.body['password'];
-        if(userLogin && userPassword){
+        if (userLogin && userPassword) {
             // получаем id юзера
-            const userId= await this.getUserIdByCredential(userLogin, userPassword);
-            if(userId) {
+            const userId = await this.getUserIdByCredential(userLogin, userPassword);
+            if (userId) {
                 await this.changePasswordForUser(userLogin, userPassword);
                 await this.cleanOldTokens(userId);
                 const token = await this.createNewSession(userId);
@@ -224,10 +176,10 @@ export class AuthorizationEngine {
         console.log('put auth', req.body);
         const userLogin: string = req.body['login'];
         const userPassword: string = req.body['password'];
-        if(userLogin && userPassword){
+        if (userLogin && userPassword) {
             // получаем id юзера
-            const userExist= await this.checkUserExist(userLogin);
-            if(!userExist) {
+            const userExist = await this.checkUserExist(userLogin);
+            if (!userExist) {
                 const id = await this.createNewUser(userLogin, userPassword);
                 const token = await this.createNewSession(id);
                 res.send(JSON.stringify({
@@ -260,11 +212,11 @@ export class AuthorizationEngine {
         console.log('post auth', req.body);
         const userLogin: string = req.body['login'];
         const userPassword: string = req.body['password'];
-        if(userLogin && userPassword){
+        if (userLogin && userPassword) {
             // получаем id юзера
             const userId = await this.getUserIdByCredential(userLogin, userPassword);
             console.log('login', userLogin, ' id: ', userId);
-            if(userId) {
+            if (userId) {
                 const token = await this.createNewSession(userId);
                 res.send(JSON.stringify({
                     auth: true,
