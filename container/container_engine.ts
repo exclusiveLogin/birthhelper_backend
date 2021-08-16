@@ -15,7 +15,7 @@ export class ContainerEngine {
     }
 
     // функция возвращающая список существующих в системе контейнеров
-    getContainersList(req, res) {
+    async getContainersList(req, res) {
         res.send(Object.keys(containers).map(k => containers[k]));
     }
 
@@ -200,11 +200,23 @@ export class ContainerEngine {
     }
 
     getRouter(): Router {
-        this.container.get('/', this.getContainersList);
-        this.container.get('/:name', this.getContainerHandler.bind(this));
-        this.container.get('/:name/:cid', this.getContainerHandler.bind(this));
-        this.container.post('/:name/:cid', jsonparser, this.saveContainerHandler.bind(this));
-        this.container.delete('/:name/:cid', this.deleteContainerHandler.bind(this));
+        this.container.get('/',
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.getContainersList);
+
+        this.container.get('/:name',
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.getContainerHandler.bind(this));
+        this.container.get('/:name/:cid',
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.getContainerHandler.bind(this));
+        this.container.post('/:name/:cid',
+            jsonparser,
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, 7),
+            this.saveContainerHandler.bind(this));
+        this.container.delete('/:name/:cid',
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, 7),
+            this.deleteContainerHandler.bind(this));
 
         return this.container;
     }

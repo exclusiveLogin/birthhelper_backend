@@ -225,11 +225,29 @@ export class SlotEngine {
     }
 
     getRouter(): Router {
-        this.slot.get('/', this.getSlotListHandler);
-        this.slot.get('/:name', this.getSlotHandler.bind(this));
-        this.slot.post('/:name/', jsonparser, this.saveSlotHandler.bind(this));
-        this.slot.post('/:name/:sid', jsonparser, this.saveSlotHandler.bind(this));
-        this.slot.delete('/:name/:sid', this.deleteSlotHandler.bind(this));
+
+        this.slot.get('/',
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.getSlotListHandler);
+
+        this.slot.get('/:name',
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.getSlotHandler.bind(this));
+
+        this.slot.post('/:name/',
+            jsonparser,
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, 7),
+            this.saveSlotHandler.bind(this));
+
+        this.slot.post('/:name/:sid',
+            jsonparser,
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, 7),
+            this.saveSlotHandler.bind(this));
+
+        this.slot.delete('/:name/:sid',
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, 7),
+            this.deleteSlotHandler.bind(this));
+
         return this.slot;
     }
 }

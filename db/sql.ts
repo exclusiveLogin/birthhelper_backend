@@ -1,16 +1,14 @@
 import {sqlConfig} from "./sql.config";
 import {Observable} from "rxjs";
 import {Context} from "../search.engine/config";
-
-let mysql = require('mysql');
-
+import { createPool } from "mysql";
 
 export class DataBaseService {
     constructor(context: Context) {
         context.dbe = this;
     }
 
-    pool = mysql.createPool(sqlConfig);
+    pool = createPool(sqlConfig);
 
     query<T>(q: string): Observable<T[]> {
         return new Observable<T[]>(observer => {
@@ -19,7 +17,7 @@ export class DataBaseService {
                 if (err) {
                     observer.error(err);
                 }
-                observer.next(result);
+                observer.next(result as T[]);
                 observer.complete();
             });
         });

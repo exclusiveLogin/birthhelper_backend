@@ -10,7 +10,7 @@ import {entityRepo} from './entity_repo';
 import {Entity as EntityConfig} from './entity_repo.model';
 import {SearchEngine} from "../search.engine/engine";
 import {Context, SectionKeys} from "../search.engine/config";
-import {config, forkJoin, Observable, of, throwError} from "rxjs";
+import {forkJoin, Observable, of, throwError} from "rxjs";
 import {map, mapTo, switchMap, take, tap} from "rxjs/operators";
 import {concatFn, generateQStr} from "../db/sql.helper";
 import {EntityCalc, EntityField} from "../entity/entity_repo.model";
@@ -531,15 +531,46 @@ export class EntityEngine {
     }
 
     getRouter(): Router {
-        entity.get('/', this.rootHandler.bind(this));
-        entity.get('/:id/filters', this.entityFilterHandler.bind(this));
-        entity.get('/:id/set', this.entitySetHandler.bind(this));
-        entity.get('/file/:id', this.downloadFileHandler.bind(this));
-        entity.get('/:id', this.queryEntityHandler.bind(this));
-        entity.get('/:id/:eid', this.queryEntityHandler.bind(this));
-        entity.post('/file', this.checkUploadsFSHandler.bind(this), upload.single('photo'), this.uploadFileHandler.bind(this));
-        entity.delete('/:id', jsonparser, this.deleteEntityHandler.bind(this));
-        entity.post('/:id', jsonparser, this.createEntityHandler.bind(this));
+
+        entity.get('/',
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.rootHandler.bind(this));
+
+        entity.get('/:id/filters',
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.entityFilterHandler.bind(this));
+
+        entity.get('/:id/set',
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.entitySetHandler.bind(this));
+
+        entity.get('/file/:id',
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.downloadFileHandler.bind(this));
+
+        entity.get('/:id',
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.queryEntityHandler.bind(this));
+
+        entity.get('/:id/:eid',
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.queryEntityHandler.bind(this));
+
+        entity.post('/file',
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.checkUploadsFSHandler.bind(this),
+            upload.single('photo'),
+            this.uploadFileHandler.bind(this));
+
+        entity.delete('/:id',
+            jsonparser,
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, 7),
+            this.deleteEntityHandler.bind(this));
+
+        entity.post('/:id',
+            jsonparser,
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, 7),
+            this.createEntityHandler.bind(this));
 
         return entity;
     }

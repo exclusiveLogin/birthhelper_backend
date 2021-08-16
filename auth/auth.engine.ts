@@ -5,6 +5,7 @@ import bodyParser = require('body-parser');
 import {Context} from "../search.engine/config";
 import {map, mapTo} from "rxjs/operators";
 import {OkPacket} from "mysql";
+import {Request, Response} from "express";
 
 const jsonparser = bodyParser.json();
 
@@ -12,6 +13,31 @@ const jsonparser = bodyParser.json();
 export class AuthorizationEngine {
 
     auth = express.Router();
+
+    async checkAccess(target = 1, req: Request, res: Response, next: Function) {
+        const token = this.getToken(req);
+        try {
+            const permitted: boolean = await this.hasPermissionByToken(token, target);
+            if(!permitted) {
+                this.sendNotPermitted(res);
+                return;
+            }
+        } catch (e) {
+            this.sendNotPermitted(res, e);
+            return;
+        }
+        next();
+    }
+
+    sendNotPermitted(response: Response, reason?: string) {
+        response.status(403);
+        response.send({auth: false, error: reason ? reason : 'Запрошенное действие не разрешено'});
+    }
+
+    header(req, res, next) {
+        res.contentType('json');
+        next();
+    }
 
     constructor(private context: Context) {
         this.context.authorizationEngine = this;
@@ -24,11 +50,11 @@ export class AuthorizationEngine {
 
         this.auth.put('/', jsonparser, this.putHandler.bind(this));
 
-        this.auth.post('/', jsonparser, this.postHandler.bind(this));
+        this.auth.post('/', jsonparser, this.header, this.postHandler.bind(this));
     }
 
-    getToken = (req: any): string => {
-        return req?.headers?.['token'];
+    getToken(req: Request): string {
+        return req.headers?.['token'] as string;
     }
 
     async getUserIdByToken(token: string): Promise<number> {
@@ -40,7 +66,7 @@ export class AuthorizationEngine {
     }
 
     async getRoleByUserId(user_id: number): Promise<UserRole> {
-        const q = `SELECT * FROM \`roles\`, \`users\` as user_id WHERE users.id = ${user_id} AND users.role = roles.id`;
+        const q = `SELECT \`roles\`.*, \`users\`.\`id\` as user_id FROM users, roles WHERE users.id = ${user_id} AND users.role = roles.id`;
         return this.context.dbe.query<UserRole>(q).pipe(
             map((result: UserRole[]) => result[0] ? result[0] : null)).toPromise();
     }
@@ -50,8 +76,7 @@ export class AuthorizationEngine {
         if (!user) return Promise.reject('Пользователь не найден');
         const role = await this.getRoleByUserId(user);
         if (!role) return Promise.reject('Роль не найдена');
-
-        return (target - role.rank) >= 0;
+        return (role.rank - target || 0) >= 0;
     }
 
     async hasPermissionByUser(user_id: number, target: number): Promise<boolean> {
