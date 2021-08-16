@@ -75,19 +75,19 @@ export class ContainerEngine {
 
             // console.log("DEV containerParams:", containerParams);
 
-            const promisesList = ids.map(cur_id => {
+            const promisesList = () => ids.map(cur_id => {
                 const q = `INSERT INTO \`${links_db}\` (\`container_id\`, \`${id_key}\` ) VALUES(${id_container}, ${cur_id})`;
                 console.log('simpleSaveContainer promisesList q:', q);
 
                 return this.context.dbe.query(q)
                     .pipe(
-                        tap(() => console.log('запись о контейнере с id ', cur_id, 'добавлена в БД')))
-                    .toPromise();
+                        tap(() => console.log('запись о контейнере с id ', cur_id, 'добавлена в БД')),
+                    ).toPromise();
             });
 
             try {
                 await this.removeContainerItems(containerParams.name, id_container);
-                await Promise.all(promisesList);
+                await Promise.all(promisesList());
                 return Promise.resolve('все записи по контейнеру сохранены в БД');
             } catch (e) {
                 return Promise.reject(e);
@@ -97,7 +97,7 @@ export class ContainerEngine {
     }
 
     async saveContainerHandler(req, res) {
-        console.log(req.body, req.params);
+        console.log('saveContainerHandler ', req.body, req.params);
         //проверка валидности ключа сущности для контейнера
         const data = req.body;
         if (!!containers[req.params.name] && data.ids) {
@@ -141,7 +141,10 @@ export class ContainerEngine {
             //  удаляем связив блоке контейнеров
             let qdd = `DELETE FROM \`${ db_cont }\` WHERE container_id=${id}`;
 
-            return this.context.dbe.query<null>(qdd).pipe(mapTo(`Записи контейнеров с id = ${id} удалены`)).toPromise();
+            return this.context.dbe.query<null>(qdd)
+                .pipe(
+                    tap(result => console.log('removeContainerItems result', qdd, result)),
+                    mapTo(`Записи контейнеров с id = ${id} удалены`)).toPromise();
 
         } else return Promise.reject('Контейнер не найден');
     }
