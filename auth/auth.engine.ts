@@ -34,11 +34,6 @@ export class AuthorizationEngine {
         response.send({auth: false, error: reason ? reason : 'Запрошенное действие не разрешено'});
     }
 
-    header(req, res, next) {
-        res.contentType('json');
-        next();
-    }
-
     constructor(private context: Context) {
         this.context.authorizationEngine = this;
 
@@ -50,7 +45,7 @@ export class AuthorizationEngine {
 
         this.auth.put('/', jsonparser, this.putHandler.bind(this));
 
-        this.auth.post('/', jsonparser, this.header, this.postHandler.bind(this));
+        this.auth.post('/', jsonparser, this.postHandler.bind(this));
     }
 
     getToken(req: Request): string {
@@ -88,6 +83,14 @@ export class AuthorizationEngine {
 
     async getUserIdByCredential(login: string, password: string): Promise<number> {
         const q = `SELECT * FROM \`users\` WHERE \`login\` = "${login}" AND password = "${password}"`;
+
+        return this.context.dbe.query(q).pipe(
+            map(result => (result as any as IUser)?.[0]?.id),
+        ).toPromise();
+    }
+
+    async getGuestID(): Promise<number> {
+        const q = `SELECT * FROM \`users\` WHERE \`login\` = "guest" AND password IS NULL`;
 
         return this.context.dbe.query(q).pipe(
             map(result => (result as any as IUser)?.[0]?.id),
@@ -148,6 +151,7 @@ export class AuthorizationEngine {
         res.send({uuid: uuid.v4()});
     }
 
+    // выход из сессии
     async deleteHandler(req, res) {
         console.log('delete auth', req.headers);
         const token: string = req?.headers?.token as string;
@@ -167,6 +171,7 @@ export class AuthorizationEngine {
         }
     }
 
+    // смена пароля
     async patchHandler(req, res) {
         console.log('patch auth', req.body);
         const userLogin: string = req.body['login'];
@@ -197,6 +202,7 @@ export class AuthorizationEngine {
         }
     }
 
+    // регистрация ... новый юзверь
     async putHandler(req, res) {
         console.log('put auth', req.body);
         const userLogin: string = req.body['login'];
@@ -233,35 +239,30 @@ export class AuthorizationEngine {
         }
     }
 
+    // авторизация ... создание сессии
     async postHandler(req, res) {
         console.log('post auth', req.body);
         const userLogin: string = req.body['login'];
         const userPassword: string = req.body['password'];
-        if (userLogin && userPassword) {
-            // получаем id юзера
-            const userId = await this.getUserIdByCredential(userLogin, userPassword);
-            console.log('login', userLogin, ' id: ', userId);
-            if (userId) {
-                const token = await this.createNewSession(userId);
-                res.send(JSON.stringify({
-                    auth: true,
-                    token,
-                    login: userLogin,
-                    id: userId,
-                }))
-            } else {
-                res.status(401);
-                res.send(JSON.stringify({
-                    auth: false,
-                    login: userLogin,
-                }));
-            }
-        } else {
-            res.status(500);
 
+        const userId =  (userLogin && userPassword) ?
+            await this.getUserIdByCredential(userLogin, userPassword) :
+            await this.getGuestID();
+
+        if (userId) {
+            const token = await this.createNewSession(userId);
+            res.send(JSON.stringify({
+                auth: true,
+                token,
+                login: userLogin,
+                id: userId,
+            }))
+        } else {
+            res.status(401);
             res.send(JSON.stringify({
                 auth: false,
-                error: 'Не переданы необходимые данные для авторизации',
+                login: userLogin,
+                error: 'Логин и пароль не совпадают',
             }));
         }
     }

@@ -39,8 +39,11 @@ const CNE: ContainerEngine = new ContainerEngine(context);
 const SLE: SlotEngine = new SlotEngine(context);
 
 let app = express();
-
-app.use(cors());
+function jsonHeaders(req, res, next) {
+    res.contentType('json');
+    next();
+}
+app.use(cors(), jsonHeaders);
 app.use('/search', context.searchEngine.getRouter());
 app.use('/admin', admin(context));
 app.use('/api', api(context));
