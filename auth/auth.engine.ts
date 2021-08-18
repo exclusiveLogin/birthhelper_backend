@@ -15,14 +15,15 @@ export class AuthorizationEngine {
     auth = express.Router();
 
     async checkAccess(target = 1, req: Request, res: Response, next: Function) {
-        const token = this.getToken(req);
         try {
+            const token = await this.getToken(req);
             const permitted: boolean = await this.hasPermissionByToken(token, target);
             if(!permitted) {
                 this.sendNotPermitted(res);
                 return;
             }
         } catch (e) {
+            console.log('checkAccess error', e);
             this.sendNotPermitted(res, e);
             return;
         }
@@ -39,6 +40,10 @@ export class AuthorizationEngine {
 
         this.auth.get('/uuid', this.uuidHandler);
 
+        this.auth.get('/role', this.roleHandler.bind(this));
+
+        this.auth.get('/user', this.userHandler.bind(this));
+
         this.auth.delete('/', jsonparser, this.deleteHandler.bind(this));
 
         this.auth.patch('/', jsonparser, this.patchHandler.bind(this));
@@ -48,8 +53,18 @@ export class AuthorizationEngine {
         this.auth.post('/', jsonparser, this.postHandler.bind(this));
     }
 
-    getToken(req: Request): string {
-        return req.headers?.['token'] as string;
+    async getToken(req: Request): Promise<string> {
+        const token = req.headers?.['token'] as string;
+        if(!token) return Promise.reject('Токен не передан');
+        return token;
+    }
+
+    async getUserById(id: number): Promise<IUser> {
+        const q = `SELECT * FROM \`users\` WHERE \`id\` = ${id}`;
+
+        return this.context.dbe.query(q).pipe(
+            map(result => (result as any as IUser)?.[0]),
+        ).toPromise();
     }
 
     async getUserIdByToken(token: string): Promise<number> {
@@ -67,11 +82,18 @@ export class AuthorizationEngine {
     }
 
     async hasPermissionByToken(token: string, target: number): Promise<boolean> {
+        const role = await this.getRoleByToken(token);
+        return (role.rank - target || 0) >= 0;
+    }
+
+    async getRoleByToken(token: string): Promise<UserRole> {
         const user = await this.getUserIdByToken(token);
         if (!user) return Promise.reject('Пользователь не найден');
         const role = await this.getRoleByUserId(user);
         if (!role) return Promise.reject('Роль не найдена');
-        return (role.rank - target || 0) >= 0;
+        delete role['user_id'];
+
+        return role;
     }
 
     async hasPermissionByUser(user_id: number, target: number): Promise<boolean> {
@@ -149,6 +171,30 @@ export class AuthorizationEngine {
 
     async uuidHandler(req, res) {
         res.send({uuid: uuid.v4()});
+    }
+
+    async roleHandler(req, res) {
+        try {
+            const token = await this.getToken(req);
+            const role = await this.getRoleByToken(token);
+            res.send(role);
+            
+        } catch (e) {
+            this.sendNotPermitted(res, e);
+        }
+    }
+
+    async userHandler(req, res) {
+        try {
+            const token = await this.getToken(req);
+            const user_id = await this.getUserIdByToken(token);
+            const user = await this.getUserById(user_id);
+            delete user.password;
+            res.send(user);
+        } catch (e) {
+            console.log('userHandler', e);
+            this.sendNotPermitted(res, e);
+        }
     }
 
     // выход из сессии
@@ -251,12 +297,12 @@ export class AuthorizationEngine {
 
         if (userId) {
             const token = await this.createNewSession(userId);
-            res.send(JSON.stringify({
+            res.send({
                 auth: true,
                 token,
                 login: userLogin,
                 id: userId,
-            }))
+            })
         } else {
             res.status(401);
             res.send(JSON.stringify({
