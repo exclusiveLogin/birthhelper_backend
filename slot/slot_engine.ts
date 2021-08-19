@@ -1,26 +1,45 @@
 import * as express from "express";
 import bodyParser from "body-parser";
+import {Context} from "../search.engine/config";
+import {Router} from "express";
+import {Entity} from "../entity/entity_engine";
+import {Slot} from "../slot/slot_repo";
+import {mapTo} from "rxjs/operators";
+
 const jsonparser = bodyParser.json();
-const pool = require('../db/sql');
 const slots = require('../slot/slot_repo');
 
-// функция возвращающая список существующих в системе контейнеров
-function getSlotList(req, res, next){
-    res.send(Object.keys( slots ).map(k => slots[k]));
-}
+export class SlotEngine {
+    slot = express.Router();
 
-// получение entity или контейнера слота
-function getSlotItems(slotParams, r){
-    return new Promise((resolve, reject) => {
-        const id = r.id;
+    constructor(private context: Context) {
+        this.context.slotEngine = this;
+    }
+
+    getSlotParams(name: string): Slot {
+        return !!slots[name] ? slots[name] : null;
+    }
+
+    hasSlotParams(name: string): boolean {
+        return !!slots[name];
+    }
+
+    // функция возвращающая список существующих в системе контейнеров
+    getSlotListHandler(req, res) {
+        res.send(Object.keys(slots).map(k => slots[k]));
+    }
+
+    // получение entity или контейнера слота
+    async getSlotItems(slotParams, r): Promise<Entity[]> {
+        const id = r[slotParams.entity_id_key];
         let qi = null;
-        switch(r.type){
+        switch (r.type) {
             case 'entity':
                 qi = `SELECT 'id',
                     ${slotParams.entity_fields.map(f => `\`${slotParams.db_entity}\`.\`${f}\``).join(', ')} 
                     FROM \`${slotParams.db_entity}\`
-                    WHERE \`id\`= ${r[slotParams.entity_id_key]}`;
-                    break;
+                    WHERE \`id\`= ${id}`;
+                break;
             case 'container':
                 qi = `SELECT 
                     \`${slotParams.db_entity}\`.\`id\`,
@@ -28,244 +47,209 @@ function getSlotItems(slotParams, r){
                     FROM \`${slotParams.db_container}\`
                     LEFT JOIN \`${slotParams.db_entity}\`
                     ON \`${slotParams.db_container}\`.\`${slotParams.entity_id_key}\` = \`${slotParams.db_entity}\`.\`id\`
-                    WHERE \`${slotParams.db_container}\`.\`container_id\`=${r[slotParams.entity_id_key]}`;
-                    break;
+                    WHERE \`${slotParams.db_container}\`.\`container_id\`=${id}`;
+                break;
         }
 
         console.log('qi: ', qi);
-        if(qi){
-            pool.query(qi, (err_i, result_i) => {
-                if(err_i){
-                    reject(err_i);
-                }
+        return qi ? this.context.dbe.query<Entity>(qi).toPromise() : [];
 
-                resolve(result_i);
-            });
-        } else resolve(null);
-        
+    }
 
-    });
-}
-
-function getSlotContainer( slotParams, r ){
-    return new Promise((resolve, reject) => {
+    async getSlotContainer(slotParams, r): Promise<any[]> {
         let qr;
-        if(r.type === 'container'){
+        if (r.type === 'container') {
             qr = `SELECT 
             \`${slotParams.db_repo}\`.\`id\`,
             ${slotParams.container_fields.map(f => `\`${slotParams.db_repo}\`.\`${f}\``).join(', ')} 
             FROM \`${slotParams.db_repo}\`
             WHERE \`${slotParams.db_repo}\`.\`id\`=${r[slotParams.entity_id_key]}`;
-        } 
+        }
 
         console.log('query getSlotContainer: ', qr);
 
-        if(qr) {
-            pool.query(qr, (err_i, result_i) => {
-            if(err_i){
-                reject(err_i);
-            }
-
-            resolve(result_i);
-            });
-        } else resolve(null);
-        
-    });
-}
-
-// функция возвращающая слот по id
-function getSlot(req, res, next){
-    console.log('getSlot', req.params);
-    if(!req.params.name) {
-        res.status(500);
-        res.end(JSON.stringify({error: 'ошибка доступа : не указан slot'}));
-        console.warn('ошибка доступа : не указан slot');
-            
-        return;
+        return qr ? this.context.dbe.query(qr).toPromise() : [];
     }
-    let name = req.params.name;
-    if( !!slots[name] && 
-        ( !!slots[name].db_entity && !!slots[name].db_links )){
 
-        let slotParams = slots[name];
-        let cid = req.params.cid;
+    // Функция возвращающая список слотов или слот по id
+    async getSlotRepo(name: string, cid?: string) {
+        const params: Slot = this.getSlotParams(name);
+        const whereStr = cid ? `WHERE \`id\`=${cid}` : '';
+        const q = 'SELECT * FROM `' + params.db_links + '`' + whereStr;
 
-        const whereStr = cid ? `WHERE \`id\`=${ cid }` : '';
-
-        console.log('Запрошенный slot существует:', slotParams);
-
-        const q = 'SELECT * FROM `' + slotParams.db_links + '`' + whereStr;
-
-        pool.query(q, (err, result) => {
-            if(err){
-                res.status(500);
-                res.send(err);
-                return;
-            }
-            
-            result.forEach( r => {
-                if(!r.id) return;
-
-                r.queryContainerRepo = getSlotContainer(slotParams, r);
-
-                r.queryContainerRepo.then(resultRepo => {
-                    r.container = resultRepo;
-                })
-                
-                r.q = getSlotItems(slotParams, r);
-
-                r.q.then( (ent) => {
-                    r.entities = [...ent];
-                    console.log('entity: ', r);
-                } );
-                
-            });
-
-            let prs = [];
-            result.forEach(ri => prs.push(...[ri.q, ri.queryContainerRepo]));
-
-            console.log('prs: ', prs);
-            Promise.all(prs).then(() => {
-                res.send(result);
-            });
-        });
-    } else {
-        res.status(500);
-        res.send(JSON.stringify({error: 'ошибка доступа : Запрошенный slot не существует'}));
-        console.warn('ошибка доступа : Запрошенный slot не существует');
+        return this.context.dbe.query(q).toPromise();
     }
-}
 
-function concatFn(arrA, arrB){
-    console.log('A:', arrA, 'B:', arrB);
-    if( arrA && arrA.length && arrB && arrB.length ){
-        let fine = [];
-        for(let i = 0; i < arrA.length; i++){
-            fine.push(`${arrA[i]} = ${arrB[i]}`);
+    // функция возвращающая слот по id с наполнением
+    async getSlot(name: string, cid?: string): Promise<any[]> {
+        const params: Slot = this.getSlotParams(name);
+        try {
+            const repo = await this.getSlotRepo(name, cid);
+            await Promise.all(repo.map(async r => {
+                r['container'] = await this.getSlotContainer(params, r);
+                r['entities'] = await this.getSlotItems(params, r);
+            }));
+
+            return repo;
+
+        } catch (e) {
+            return Promise.reject(e);
         }
-        return fine;
     }
-    return [];
-}
 
-function saveSlot(params, slot_id, data){
+    async getSlotHandler(req, res) {
+        console.log('getSlot', req.params);
+        const name = req.params.name;
+        const slotParams = slots[name];
+        const cid = req.params.cid;
 
-    console.log('save slot:', params, slot_id, data);
+        if (!slotParams) {
+            res.status(500);
+            res.end(JSON.stringify({error: 'ошибка доступа : не указан slot'}));
+            console.warn('ошибка доступа : не указан slot');
+            return;
+        }
 
-    const db = params.db_links;
-    let valArr = !slot_id ?
-        Object.keys(data).map( datakey => {
-            const targetType = params.required_fields_type && params.required_fields_type[datakey];
-            if(!targetType) return `"${data[datakey]}"`;
-            return targetType === 'string' ? `"${data[datakey]}"` : data[datakey];
-    }) :
-        Object.keys(data).map( datakey => {
-            const targetType = params.required_fields_type && params.required_fields_type[datakey];
-            if(!targetType) return `"${data[datakey]}"`;
-            return targetType === 'string' ? `\`${ datakey }\` = "${data[datakey]}"` : `\`${ datakey }\` = ${ data[ datakey ] }`;
-    });
 
-    console.log('valArr: ', valArr, 'slot_id: ', slot_id);
 
-    let q = !slot_id ?
-        `INSERT INTO \`${ db }\` (\`${ Object.keys(data).join('\`, \`') }\`) VALUES ( ${ valArr.join(',') } )` :
-        `UPDATE \`${ db }\` SET ${ valArr.join(', ') } WHERE \`id\` = ${slot_id}` ;
-
-    console.log('q: ', q);
-
-    return new Promise((rs, rj) => {
-        pool.query(q, function(err, result){
-            if(err) {
-                rj({error: err});
+        if (slotParams?.db_entity && slotParams?.db_links) {
+            try {
+                res.send(await this.getSlot(slotParams, cid));
+            } catch (e) {
+                res.status(500);
+                res.send(JSON.stringify({error: e}));
             }
-            rs(`${slot_id ? 'слот с id ' + slot_id + ' изменен' : 'добавлен новый слот'}`);
-            console.log(`${slot_id ? 'слот с id ' + slot_id + ' изменен' : 'добавлен новый слот'}`);
-        })
-    });
-}
 
-function saveSlotHandler(req, res, next){
-    console.log(req.body, req.params);
-    //проверка валидности ключа сущности для контейнера
-    if( !!slots[req.params.name] ){
-        let slotParams = slots[req.params.name];
+        } else {
+            res.status(500);
+            res.send(JSON.stringify({error: 'ошибка доступа : Запрошенный slot не существует'}));
+            console.warn('ошибка доступа : Запрошенный slot не существует');
+        }
+    }
+
+    async saveSlot(name, data, slot_id?: string) {
+        const params: Slot = this.getSlotParams(name);
+        console.log('save slot:', params, name, data);
+
+        const db = params.db_links;
+
+        let valArr = !slot_id ?
+            Object.keys(data).map(datakey => {
+                const targetType = params.required_fields_type && params.required_fields_type[datakey];
+                if (!targetType) return `"${data[datakey]}"`;
+                return targetType === 'string' ? `"${data[datakey]}"` : data[datakey];
+            }) :
+            Object.keys(data).map(datakey => {
+                const targetType = params.required_fields_type && params.required_fields_type[datakey];
+                if (!targetType) return `"${data[datakey]}"`;
+                return targetType === 'string' ? `\`${datakey}\` = "${data[datakey]}"` : `\`${datakey}\` = ${data[datakey]}`;
+            });
+
+        console.log('valArr: ', valArr, 'slot_id: ', name);
+
+        let q = !slot_id ?
+            `INSERT INTO \`${ db }\` (\`${ Object.keys(data).join('\`, \`') }\`) VALUES ( ${ valArr.join(',') } )` :
+            `UPDATE \`${ db }\` SET ${ valArr.join(', ') } WHERE \`id\` = ${slot_id}`;
+
+        console.log('saveSlot q: ', q);
+
+        return this.context.dbe.query(q)
+            .pipe(
+                mapTo(`${slot_id ? 'слот с id ' + slot_id + ' изменен' : 'добавлен новый слот'}`))
+            .toPromise();
+    }
+
+    async saveSlotHandler(req, res) {
+        console.log('saveSlotHandler body: ', req.body, ' params: ', req.params);
+        const slotName = req.params.name;
+        //проверка валидности ключа сущности для контейнера
         const slot_id = req.params.sid;
         const data = req.body;
 
-        if(data &&
-            validator(data, slotParams)
-        ) {
-            saveSlot(slotParams, slot_id, data).then((result) => {
-                console.log(result);
+        if (this.validator(data, slotName)) {
+
+            try {
+                const result = await this.saveSlot(slot_id, data);
                 res.send({status: result});
-            }).catch((error) => {
-                console.error(error);
+            } catch (e) {
                 res.status(500);
-                res.send({error: JSON.stringify(error)});
-            });
+                res.send({error: e});
+            }
+
         } else {
             res.status(500);
             res.send({error: 'Ошибка в переданных данных, уточните запрос'});
-        }
-    } else{
-        res.status(500);
-        res.send({error: 'Контейнер не найден'});
+            }
     }
-}
 
-function validator(data, params){ // все ли поля необходимые пришли на бек
-    console.log('validator: ', data, params.required_fields);
-    const reqFields = params.required_fields;
-    return reqFields.every(rf => !!data[rf]);
-}
+    validator(data, name) { // все ли поля необходимые пришли на бек
+        const params: Slot = this.getSlotParams(name);
+        if(!(data && params)) return false;
 
-function removeSlot(params, id){
-    return new Promise((resolve, reject) => {
+        console.log('validator: ', data, params.required_fields);
+        const reqFields = params.required_fields;
+        return reqFields.every(rf => !!data[rf]);
+    }
+
+    async deleteSlot(name: string, id: string) {
+        const params: Slot = this.getSlotParams(name);
         const db_repo = params.db_links;
         const qd = `DELETE FROM \`${ db_repo }\` WHERE id=${id}`;
-        console.log('qd: ', qd);
 
-        pool.query(qd, (err, result)=> {
-            if(err) {
-                reject({error: err});
-                return;
-            }
+        console.log('deleteSlot qd: ', qd);
 
-            resolve('Слот с name: ' + params.name + ' и id: ' + id + ' удален из репозитория');
-        });
-    });
-}
+        return this.context.dbe.query(qd)
+            .pipe(
+                mapTo('Слот с name: ' + params.name + ' и id: ' + id + ' удален из репозитория')).toPromise();
+    }
 
-function deleteSlotHandler(req, res){
-    if( req.params.sid && req.params.name ){
-        console.log('delete params:', req.params);
-        const id = req.params.sid;
-        const name = req.params.name;
+    async deleteSlotHandler(req, res) {
+        if (req.params.sid && req.params.name) {
+            console.log('delete params:', req.params);
+            const sid = req.params.sid;
+            const name = req.params.name;
 
-        if( !!slots[ name ] ){
-            let slotParams = slots[name];
-            removeSlot( slotParams, id )
-                .then(result => {
-                    res.send({status: result})
-            })
-                .catch( error => {
+            if (this.hasSlotParams(name)) {
+                try {
+                    const result = await this.deleteSlot(name, sid);
+                    res.send({status: result});
+                } catch (e) {
                     res.status(500);
-                    res.send({error: error.error});
-            });
-
-        } else {
-            res.status(500);
-            res.send({error: 'слот не найден'});
+                    res.send({error: e});
+                }
+            } else {
+                res.status(500);
+                res.send({error: 'слот не найден'});
+            }
         }
+    }
+
+    getRouter(): Router {
+
+        this.slot.get('/',
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.getSlotListHandler);
+
+        this.slot.get('/:name',
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.getSlotHandler.bind(this));
+
+        this.slot.post('/:name/',
+            jsonparser,
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, 7),
+            this.saveSlotHandler.bind(this));
+
+        this.slot.post('/:name/:sid',
+            jsonparser,
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, 7),
+            this.saveSlotHandler.bind(this));
+
+        this.slot.delete('/:name/:sid',
+            this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, 7),
+            this.deleteSlotHandler.bind(this));
+
+        return this.slot;
     }
 }
 
 
-const slot = express.Router();
-slot.get('/', getSlotList);
-slot.get('/:name', getSlot);
-slot.post('/:name/', jsonparser, saveSlotHandler);
-slot.post('/:name/:sid', jsonparser, saveSlotHandler);
-slot.delete('/:name/:sid', deleteSlotHandler);
-
-module.exports = slot;

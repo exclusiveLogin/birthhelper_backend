@@ -2,8 +2,10 @@ import * as express from "express";
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {Response, Router} from "express";
 import {Observable, throwError} from "rxjs";
-import {generateFilterQStr, generateQStr} from "../db/sql.helper";
-const pool = require('../db/sql');
+import {generateFilterQStr} from "../db/sql.helper";
+import {DataBaseService} from "../db/sql";
+import {Context} from "../search.engine/config";
+import {tap} from "rxjs/operators";
 const dicts = require('../dictionary/dictionary_repo');
 
 
@@ -17,7 +19,13 @@ export interface DictionaryItem {
 
 export class DictionaryEngine {
     private dict = express.Router();
-    constructor(private ce: CacheEngine) {}
+    ce: CacheEngine;
+    dbe: DataBaseService;
+    constructor(context: Context) {
+        context.dictionaryEngine = this;
+        this.ce = context.cacheEngine;
+        this.dbe = context.dbe;
+    }
 
     getDict(id: string, limit = '200', skip = '0'): Observable<DictionaryItem[]> {
         const dict = dicts[id];
@@ -25,7 +33,7 @@ export class DictionaryEngine {
             return throwError(`Словарь ${id} не найден`);
         }
 
-        const fetchFromDB = new Observable<any[]>((subscriber) => {
+        const fetchFromDB = (): Observable<DictionaryItem[]> => {
             let limstr = `${ !!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip  : '' }`;
 
             let likeStr = [...generateFilterQStr(dict?.filters || [], 'string'), ...generateFilterQStr(dict?.filters || [], 'flag')].join(' AND ');
@@ -38,28 +46,23 @@ export class DictionaryEngine {
                 ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} 
                 ${limstr}`;
 
-            pool.query(q, (err, result)=> {
-                if (err){
-                    subscriber.error(err);
-                }
-
-                this.ce.saveCacheData(`${id}`, result);
-
-                if( dict.titleMap || dict.titleAddMap ){
-                    result && result.forEach( r => {
-                        r.title = dict.titleMap.map(f => r[f]).join(', ');
-                        r.title = dict.titleAddMap ? r.title + ` ( ${dict.titleAddMap.map(f => r[f]).join(', ')} )` : r.title;
-                    })
-                }
-                subscriber.next(result);
-                subscriber.complete();
-            });
-        });
+            return this.dbe.query<DictionaryItem>(q).pipe(
+                tap(data => this.ce.saveCacheData(`${id}`, data)),
+                tap(result => {
+                    if( dict.titleMap || dict.titleAddMap ){
+                        result && result.forEach( r => {
+                            r.title = dict.titleMap.map(f => r[f]).join(', ');
+                            r.title = dict.titleAddMap ? r.title + ` ( ${dict.titleAddMap.map(f => r[f]).join(', ')} )` : r.title;
+                        })
+                    }
+                }),
+            );
+        };
 
         if(this.ce.checkCache(id)) {
             return this.ce.getCachedByKey(id);
         } else {
-            return fetchFromDB
+            return fetchFromDB()
         }
     }
 
@@ -69,12 +72,9 @@ export class DictionaryEngine {
         res.end({err});
     }
 
-    getRouter(_: CacheEngine): Router {
-        this.ce = _;
+    getRouter(): Router {
         return this.dict.get('/:id', (req, res) => {
-
             const id = req.params.id;
-
             if (!!id) this.getDict(id).subscribe((data) => res.send(data),  error => this.sendError(res, error));
         });
     }

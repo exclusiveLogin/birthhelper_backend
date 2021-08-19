@@ -1,6 +1,5 @@
 import {Router} from 'express';
 import * as express from "express";
-import {EntityEngine} from "../entity/entity_engine";
 
 const filter = require('../filter/filter_engine');
 import {Context} from "../search.engine/config";
@@ -13,10 +12,9 @@ function apiRootHandler(req, res){
 }
 
 function getAPIMiddleware(context: Context): Router {
-    let EE: EntityEngine = new EntityEngine(context);
     api.use('/filter', filter);
-    api.use('/dict', context.dictionaryEngine.getRouter(context.cacheEngine));
-    api.use('/', EE.getRouter());
+    api.use('/dict', context.dictionaryEngine.getRouter());
+    api.use('/', context.entityEngine.getRouter());
     return api;
 }
 

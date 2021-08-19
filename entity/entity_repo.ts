@@ -119,7 +119,7 @@ export const entityRepo: EntityRepo = {
         fields: [
             { key: 'id', title: 'ID клиники', type: 'id', readonly: true, showOnTable: false }, 
             { key: 'title', type: 'string', title: 'Название клиники', required: true, showOnTable: true }, 
-            { key: 'description', title: 'Описание клиники', type: 'text', showOnTable: true },
+            { key: 'description', title: 'Описание клиники', type: 'text', showOnTable: false },
             { key: 'image_id', title: 'Главное фото', type: 'img', showOnTable: false, loadEntity: true },
             { key: 'active', title: 'Активная', type: 'flag', showOnTable: false  },
             { key: 'status_iho', title: 'Статус ВОЗ', type: 'flag', showOnTable: false  },

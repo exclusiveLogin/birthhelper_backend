@@ -1,4 +1,5 @@
 import {Observable, of, throwError} from "rxjs";
+import {Context} from "../search.engine/config";
 
 interface CacheStore {
     [key: string]: any;
@@ -7,7 +8,8 @@ interface CacheStore {
 export class CacheEngine {
     store: CacheStore;
 
-    constructor() {
+    constructor(context: Context) {
+        context.cacheEngine = this;
         this.store = {};
     }
 

@@ -1,7 +1,5 @@
-import {DictionaryEngine} from "../dictionary/dictionary_engine";
 import * as express from "express";
 import {Router} from "express";
-import {CacheEngine} from "../cache.engine/cache_engine";
 import {
     Context,
     getSearchConfig,
@@ -12,7 +10,7 @@ import {
     SectionKeys
 } from "./config";
 import {forkJoin, from, Observable, of, zip} from "rxjs";
-import {filter, map, tap} from "rxjs/operators";
+import {map, tap} from "rxjs/operators";
 import {md5Encript} from "./sections.handler";
 import {PipelineEngine} from "../search.engine/piplines.engine";
 const bodyParser = require('body-parser');
@@ -70,31 +68,11 @@ export class SearchEngine {
         clinic: {}
     };
 
-    pipeliner = new PipelineEngine(this._ce);
+    pipeliner = new PipelineEngine(this.context);
 
-    constructor(private _ce: CacheEngine, private _de: DictionaryEngine) {
-        const context: Context = {cacheEngine: this._ce, searchEngine: this, dictionaryEngine: this._de};
+    constructor(private context: Context) {
+        context.searchEngine = this;
         this.searchConfig = getSearchConfig(context);
-
-        // const mock = {
-        //     clinic_facilities_birth_section: {14: true,},
-        //     clinic_placement_birth_section: {3: true},
-        //     clinic_personal_birth_section: {},
-        //     clinic_type_birth_section: {1: true}
-        // }
-
-        // this.setFilterStore("clinic", '_', mock);
-        // console.log('setFilterStore result:', this.filterStore);
-
-        // this.pipeliner.clinic_facilities_birth_section(14).subscribe((result) => console.log('clinic_facilities_birth_section result:', result));
-        // this.pipeliner.clinic_placement_birth_section(3).subscribe((result) => console.log('clinic_placement_birth_section result:', result));
-        // this.pipeliner.clinic_personal_birth_section(1).subscribe((result) => console.log('clinic_personal_birth_section result:', result));
-        // this.pipeliner.clinic_type_birth_section(1).subscribe((result) => console.log('clinic_type_birth_section result:', result));
-
-        // this.getEntitiesIDByHash("clinic", '_').subscribe(
-        //     result => console.log('getEntitiesIDByHash result:', result),
-        //     (err) => console.error('getEntitiesIDByHash error: ', err)
-        // );
     }
 
     intersector(a: Array<number>, b: Array<number>): number[] {
