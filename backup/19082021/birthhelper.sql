@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.0
+-- version 5.1.1
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 185.178.46.248
--- Время создания: Авг 19 2021 г., 17:07
--- Версия сервера: 5.7.35-0ubuntu0.18.04.1
--- Версия PHP: 7.4.18
+-- Время создания: Июл 13 2021 г., 12:21
+-- Версия сервера: 5.7.34-0ubuntu0.18.04.1
+-- Версия PHP: 7.4.20
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -163,7 +163,7 @@ CREATE TABLE `clinics` (
 --
 
 INSERT INTO `clinics` (`id`, `active`, `address_id`, `phone_container_id`, `title`, `description`, `image_id`, `license`, `status_iho`, `has_oms`, `has_dms`, `has_reanimation`, `has_consultation`, `stat_male`, `stat_female`, `foreign_service`, `mom_with_baby`, `free_meets`, `facilities_type`, `specialities_type`) VALUES
-(1, 1, 1, 1, 'Родильный дом №20 филиал ГКБ им. Д.Д.Плетнёва', 'Родильный дом городской клинической больницы имени Д.Д. Плетнёва – одно из ведущих медицинских учреждений столицы, где получают помощь женщины и новорожденные малыши.nnПосле полной реконструкции роддома, которая длилась целых девять лет, клинику можно по праву назвать современной, комфортной и отлично оснащенной.nnВедение беременности и роды проходят здесь под наблюдением опытных врачей акушеров-гинекологов. В КДО ведут консультации терапевт, офтальмолог, оториноларинголог, кардиолог, эндокринолог, стоматолог.n', 80, NULL, NULL, 1, 1, 1, 1, 1225, 667, NULL, 1, 0, 1, 1),
+(1, 1, 1, 1, 'Родильный дом №20 филиал ГКБ им. Д.Д.Плетнёва', 'Родильный дом городской клинической больницы имени Д.Д. Плетнёва – одно из ведущих медицинских учреждений столицы, где получают помощь женщины и новорожденные малыши.\n\nПосле полной реконструкции роддома, которая длилась целых девять лет, клинику можно по праву назвать современной, комфортной и отлично оснащенной.\n\nВедение беременности и роды проходят здесь под наблюдением опытных врачей акушеров-гинекологов. В КДО ведут консультации терапевт, офтальмолог, оториноларинголог, кардиолог, эндокринолог, стоматолог.\n', 80, NULL, NULL, 1, 1, 1, 1, 1225, 667, NULL, 1, 0, 1, 1),
 (2, 1, 2, 1, 'Родильный дом ГКБ №15 им. О.М. Филатова', 'Родильный дом ГКБ №15 им. О.М. Филатова – неотъемлемая часть крупнейшей многопрофильной больницы Москвы с ее возможностями: специалистами различных профилей и доступностью ультразвукового, рентгенологического обследований и лабораторных исследований.\n\nРоддом славится современными подходами в акушерстве и гинекологии. Например, именно здесь впервые была внедрена практика совместного пребывания матери и ребенка.\n\nПосле того, как в 2010 году роддом ГКБ №15 был открыт после масштабной реконструкции, это прекрасно оснащенный акушерский стационар, где женщины и их малыши получают плановую и экстренную акушерскую помощь.', 81, NULL, NULL, 1, 1, 1, 1, 645, 666, NULL, 1, 1, 1, 1),
 (3, 1, 3, 1, 'Родильный дом ГКБ №36 им. Ф.И. Иноземцева', 'Полностью обновленный Акушерско-гинекологический центр ГКБ имени Ф.И. Иноземцева был открыт после капитального ремонта 1 апреля 2015 года. Будущих мам ждут уютные палаты, опытные и доброжелательные специалисты, современное оборудование, позволяющее принимать роды любой сложности.\n\nВ индивидуальных родильных боксах, оснащенных по всем стандартам акушерской помощи, вы будете чувствовать себя спокойно и уверенно, а потрясающий вид на Москву из послеродового отделения сделает дни, проведенные здесь, незабываемыми.', 82, NULL, 1, 1, 1, NULL, 1, 777, 666, NULL, 1, NULL, 1, 2),
 (4, 1, 4, 1, 'Перинатальный центр ГКБ №70 им. Е.О. Мухина ', 'Перинатальный центр московской больницы № 70 им. Е.О. Мухина – современный медицинский центр, где женщины и дети могут получить весь спектр услуг в области как акушерства, гинекологии и педиатрии, так и диагностики, реабилитации.\n\nВ Центре специализируются на помощи женщинам с проблемой невынашивания беременности и сердечно-сосудистыми патологиями.\n\nМать и дитя здесь круглосуточно находятся вместе, за исключением случаев, когда ребенку требуется особая забота врачей. В отделении реабилитации проводится дополнительное обследование детей первого года жизни, а мамы обучаются навыкам помощи своим малышам.', 83, NULL, NULL, 1, 1, NULL, 1, 777, 666, NULL, 1, NULL, 1, 1),
@@ -468,16 +468,46 @@ CREATE TABLE `facilities_containers` (
 --
 
 INSERT INTO `facilities_containers` (`id`, `container_id`, `facility_id`, `overrided_title`, `overrided_description`, `comment`) VALUES
-(147, 1, 1, NULL, NULL, NULL),
-(148, 1, 2, NULL, NULL, NULL),
-(149, 1, 3, NULL, NULL, NULL),
-(150, 1, 4, NULL, NULL, NULL),
-(151, 1, 5, NULL, NULL, NULL),
-(152, 1, 6, NULL, NULL, NULL),
-(153, 1, 10, NULL, NULL, NULL),
-(154, 1, 12, NULL, NULL, NULL),
-(155, 1, 14, NULL, NULL, NULL),
-(156, 2, 14, NULL, NULL, NULL);
+(7, 1, 5, NULL, NULL, NULL),
+(8, 1, 4, NULL, NULL, NULL),
+(9, 1, 6, NULL, NULL, NULL),
+(10, 1, 3, NULL, NULL, NULL),
+(35, 2, 14, NULL, NULL, NULL),
+(36, 2, 10, NULL, NULL, NULL),
+(37, 2, 2, NULL, NULL, NULL),
+(38, 2, 4, NULL, NULL, NULL),
+(39, 2, 3, NULL, NULL, NULL),
+(40, 2, 1, NULL, NULL, NULL),
+(41, 2, 6, NULL, NULL, NULL),
+(42, 2, 5, NULL, NULL, NULL),
+(43, 2, 12, NULL, NULL, NULL),
+(91, 5, 12, NULL, NULL, NULL),
+(92, 5, 1, NULL, NULL, NULL),
+(93, 5, 2, NULL, NULL, NULL),
+(94, 5, 3, NULL, NULL, NULL),
+(95, 5, 4, NULL, NULL, NULL),
+(96, 5, 5, NULL, NULL, NULL),
+(97, 5, 6, NULL, NULL, NULL),
+(98, 5, 10, NULL, NULL, NULL),
+(99, 4, 15, NULL, NULL, NULL),
+(100, 4, 10, NULL, NULL, NULL),
+(101, 4, 2, NULL, NULL, NULL),
+(102, 4, 3, NULL, NULL, NULL),
+(103, 4, 1, NULL, NULL, NULL),
+(104, 4, 5, NULL, NULL, NULL),
+(105, 4, 6, NULL, NULL, NULL),
+(106, 4, 4, NULL, NULL, NULL),
+(118, 3, 14, NULL, NULL, NULL),
+(119, 3, 5, NULL, NULL, NULL),
+(120, 3, 12, NULL, NULL, NULL),
+(121, 3, 1, NULL, NULL, NULL),
+(122, 3, 2, NULL, NULL, NULL),
+(123, 3, 3, NULL, NULL, NULL),
+(124, 3, 4, NULL, NULL, NULL),
+(125, 3, 10, NULL, NULL, NULL),
+(126, 3, 6, NULL, NULL, NULL),
+(127, 3, 11, NULL, NULL, NULL),
+(128, 3, 13, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -497,7 +527,7 @@ CREATE TABLE `facilities_containers_repo` (
 --
 
 INSERT INTO `facilities_containers_repo` (`id`, `title`, `description`, `comment`) VALUES
-(1, 'Полный пакет', 'Все удобства', 'null'),
+(1, 'Полный пакет', 'Все удобства', NULL),
 (2, 'VIP', 'Комфортабельная палата отвечает высочайшими требованиям комфорта и безопасности и идеальна для совместного пребывания мамы и ребенка. Светлый, наполненный воздухом интерьер располагает к спокойному отдыху и заботе о малыше.', NULL),
 (3, 'Семейный люкс', 'Просторные двухкомнатные люкс-апартаменты сочетают в себе безупречный дизайн и функциональность с высочайшим уровнем комфорта и безопасности. Чистота линий, обилие света и воздуха создают неповторимую атмосферу классической элегантности. Мы предусмотрели отдельные комнаты для мамы и ребенка и ваших близких, чтобы они могли разделить с вами счастливые моменты общения с малышом.', NULL),
 (4, 'Комфорт', 'Уютная студия обеспечит максимальный комфорт и удовольствие от пребывания,  возможность насладиться классической роскошью и элегантностью, станет приятным дополнением к долгожданному событию — рождению ребенка. В продуманном до мелочей интерьере гармонично объединены пространство для мамы и малыша и зона отдыха для ваших близких. ', NULL),
@@ -522,15 +552,18 @@ CREATE TABLE `facilities_type` (
 --
 
 INSERT INTO `facilities_type` (`id`, `icon`, `title`, `description`, `bg_color`) VALUES
-(1, NULL, 'WiFi', '', NULL),
-(2, NULL, 'Телевизор', '', NULL),
-(3, NULL, 'Холодильник', '', NULL),
-(4, NULL, 'Фен', '', NULL),
-(5, NULL, 'Санузел в палате', '', NULL),
-(6, NULL, 'Чайник', 'Электроприбор для подогревания воды', NULL),
+(1, NULL, 'wi-fi', NULL, NULL),
+(2, NULL, 'телевизор', NULL, NULL),
+(3, NULL, 'холодильник', NULL, NULL),
+(4, NULL, 'фен', NULL, NULL),
+(5, NULL, 'душ/туалет в палате', NULL, NULL),
+(6, NULL, 'чайник', NULL, NULL),
 (10, NULL, 'Кондиционер', 'Кондиционер', NULL),
-(12, NULL, 'Многофункциональная медицинская кровать', '', NULL),
-(14, NULL, 'Парковка для гостей', '', NULL);
+(11, NULL, 'Спальное место для гостей', NULL, NULL),
+(12, NULL, 'Многофункциональная медицинская кровать', NULL, NULL),
+(13, NULL, 'Гостевая комната в палате', NULL, NULL),
+(14, NULL, 'Парковка для гостей', '', NULL),
+(15, NULL, 'Двуместная палата', 'На 2 пацинетов', NULL);
 
 -- --------------------------------------------------------
 
@@ -857,35 +890,8 @@ CREATE TABLE `phone_containers` (
 INSERT INTO `phone_containers` (`id`, `container_id`, `phone_id`, `overrided_title`, `overrided_description`, `comment`) VALUES
 (69, 15, 1, NULL, NULL, NULL),
 (70, 15, 2, NULL, NULL, NULL),
-(79, 14, 2, NULL, NULL, NULL),
-(80, 14, 4, NULL, NULL, NULL);
-
--- --------------------------------------------------------
-
---
--- Структура таблицы `roles`
---
-
-CREATE TABLE `roles` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `description` text COLLATE utf8_unicode_ci,
-  `slug` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `rank` int(20) NOT NULL DEFAULT '0',
-  `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
---
--- Дамп данных таблицы `roles`
---
-
-INSERT INTO `roles` (`id`, `title`, `description`, `slug`, `rank`, `datetime_create`, `datetime_update`) VALUES
-(1, 'Гость', 'Доступ только на чтение', 'guest', 1, '2021-08-16 18:08:24', '2021-08-16 21:34:40'),
-(2, 'Пользователь', 'Те кто авторизован с фронта', 'user', 3, '2021-08-16 18:08:24', '2021-08-16 18:08:24'),
-(5, 'Модератор', 'Редактирование только своих клиник и услуг', 'moderator', 5, '2021-08-16 18:11:03', '2021-08-17 16:52:14'),
-(6, 'Администратор', 'Полный доступ к словарям и сущностям системы. \r\nЗа исключением системных SQL ', 'admin', 7, '2021-08-16 18:11:03', '2021-08-16 18:11:03'),
-(7, 'Супер админ', 'Владелец', 'master', 9, '2021-08-16 18:11:51', '2021-08-16 18:11:51');
+(73, 14, 2, NULL, NULL, NULL),
+(74, 14, 4, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -910,9 +916,9 @@ CREATE TABLE `services` (
 --
 
 INSERT INTO `services` (`id`, `title`, `description`, `image_id`, `article_id`, `category`, `trimester`, `type`, `adv`) VALUES
-(1, 'Палата Стандарт', '', 5, NULL, 2, NULL, 2, NULL),
+(1, 'Highcharts Demo', 'кке', 5, NULL, 2, NULL, NULL, NULL),
 (2, 'Highcharts Demof', NULL, 23, NULL, 1, NULL, 2, NULL),
-(3, 'VIP  Палата', 'Палата для богатых девах', 0, NULL, 2, NULL, 2, NULL);
+(3, 'VIP  Палата', 'Палата для богатых девах', 24, NULL, 2, NULL, 2, NULL);
 
 -- --------------------------------------------------------
 
@@ -933,8 +939,7 @@ CREATE TABLE `services_containers_repo` (
 
 INSERT INTO `services_containers_repo` (`id`, `title`, `description`, `comment`) VALUES
 (4, 'Родовспоможение VIP', 'какое то описание пакета', 'null'),
-(5, 'Стандартные роды', 'аава', NULL),
-(6, 'Тест', 'Контейнер для отладки', NULL);
+(5, 'Стандартные роды', 'аава', NULL);
 
 -- --------------------------------------------------------
 
@@ -943,7 +948,7 @@ INSERT INTO `services_containers_repo` (`id`, `title`, `description`, `comment`)
 --
 
 CREATE TABLE `service_containers` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+  `id` int(11) NOT NULL,
   `container_id` int(11) NOT NULL,
   `service_id` int(11) NOT NULL,
   `overrided_title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -959,9 +964,7 @@ INSERT INTO `service_containers` (`id`, `container_id`, `service_id`, `overrided
 (12, 4, 21, NULL, NULL, NULL),
 (13, 4, 22, NULL, NULL, NULL),
 (14, 4, 24, NULL, NULL, NULL),
-(26, 5, 3, NULL, NULL, NULL),
-(48, 6, 2, NULL, NULL, NULL),
-(49, 6, 1, NULL, NULL, NULL);
+(26, 5, 3, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1030,75 +1033,7 @@ INSERT INTO `service_slot` (`id`, `title`, `service_id`, `price`, `benefit_price
 (55, 'Евромед', 3, 12000, NULL, NULL, 34, 1, 2, 4),
 (56, 'Евромед', 3, 18000, NULL, NULL, 34, 1, 2, 3),
 (57, 'Евромед', 3, 24000, NULL, NULL, 34, 1, 2, 2),
-(58, 'Сергунина Ольга', 1, 90000, NULL, NULL, 15, 1, 1, NULL),
-(61, 'Естественные роды', 1, 25000, NULL, NULL, 1, 1, 3, NULL),
-(62, 'Кесарево сечение', 2, 35000, NULL, NULL, 1, 1, 3, NULL),
-(63, 'Мягкие роды', 3, 31000, NULL, NULL, 1, 1, 3, NULL),
-(64, 'Партнерские роды', 4, 37000, NULL, NULL, 1, 1, 3, NULL),
-(65, 'Роды в воду', 5, 45000, NULL, NULL, 1, 1, 3, NULL),
-(66, 'Вертикальные роды', 7, 31500, NULL, NULL, 1, 1, 3, NULL),
-(67, 'Естественные роды', 1, 25000, NULL, NULL, 2, 1, 3, NULL),
-(68, 'Кесарево сечение', 2, 35000, NULL, NULL, 2, 1, 3, NULL),
-(69, 'Мягкие роды', 3, 31000, NULL, NULL, 2, 1, 3, NULL),
-(70, 'Партнерские роды', 4, 45000, NULL, NULL, 2, 1, 3, NULL),
-(71, 'Роды в воду', 5, 45000, NULL, NULL, 2, 1, 3, NULL),
-(72, 'Вертикальные роды', 7, 31500, NULL, NULL, 2, 1, 3, NULL),
-(73, 'Естественные роды', 1, 25000, NULL, NULL, 3, 1, 3, NULL),
-(74, 'Кесарево сечение', 2, 35000, NULL, NULL, 3, 1, 3, NULL),
-(75, 'Мягкие роды', 3, 31000, NULL, NULL, 3, 1, 3, NULL),
-(76, 'Партнерские роды', 4, 37000, NULL, NULL, 3, 1, 3, NULL),
-(77, 'Роды в воду', 5, 45000, NULL, NULL, 3, 1, 3, NULL),
-(78, 'Вертикальные роды', 7, 31500, NULL, NULL, 3, 1, 3, NULL),
-(79, 'Естественные роды', 1, 25000, NULL, NULL, 4, 1, 3, NULL),
-(80, 'Кесарево сечение', 2, 35000, NULL, NULL, 4, 1, 3, NULL),
-(81, 'Мягкие роды', 3, 31000, NULL, NULL, 4, 1, 3, NULL),
-(82, 'Партнерские роды', 4, 37000, NULL, NULL, 4, 1, 3, NULL),
-(83, 'Роды в воду', 5, 45000, NULL, NULL, 4, 1, 3, NULL),
-(84, 'Вертикальные роды', 7, 31500, NULL, NULL, 4, 1, 3, NULL),
-(85, 'Естественные роды', 1, 25000, NULL, NULL, 7, 1, 3, NULL),
-(86, 'Кесарево сечение', 2, 35000, NULL, NULL, 7, 1, 3, NULL),
-(87, 'Партнерские роды', 4, 37000, NULL, NULL, 7, 1, 3, NULL),
-(88, 'Мягкие роды', 3, 22541, NULL, NULL, 7, 1, 3, NULL),
-(89, 'Роды в воду', 5, 45000, NULL, NULL, 7, 1, 3, NULL),
-(90, 'Вертикальные роды', 7, 31500, NULL, NULL, 7, 1, 3, NULL),
-(91, 'Естественные роды', 1, 25000, NULL, NULL, 8, 1, 3, NULL),
-(92, 'Кесарево сечение', 2, 35000, NULL, NULL, 8, 1, 3, NULL),
-(93, 'Мягкие роды', 3, 22541, NULL, NULL, 8, 1, 3, NULL),
-(94, 'Партнерские роды', 4, 37000, NULL, NULL, 8, 1, 3, NULL),
-(95, 'Роды в воду', 5, 45000, NULL, NULL, 8, 1, 3, NULL),
-(96, 'Вертикальные роды', 7, 31500, NULL, NULL, 8, 1, 3, NULL),
-(97, 'Естественные роды', 1, 25000, NULL, NULL, 9, 1, 3, NULL),
-(98, 'Кесарево сечение', 2, 35000, NULL, NULL, 9, 1, 3, NULL),
-(99, 'Мягкие роды', 3, 31000, NULL, NULL, 9, 1, 3, NULL),
-(100, 'Партнерские роды', 4, 37000, NULL, NULL, 9, 1, 3, NULL),
-(101, 'Вертикальные роды', 7, 31500, NULL, NULL, 9, 1, 3, NULL),
-(102, 'Роды в воду', 5, 45000, NULL, NULL, 9, 1, 3, NULL),
-(103, 'Естественные роды', 1, 25000, NULL, NULL, 10, 1, 3, NULL),
-(104, 'Кесарево сечение', 2, 35000, NULL, NULL, 10, 1, 3, NULL),
-(105, 'Мягкие роды', 3, 31000, NULL, NULL, 10, 1, 3, NULL),
-(106, 'Партнерские роды', 4, 37000, NULL, NULL, 10, 1, 3, NULL),
-(107, 'Роды в воду', 5, 45000, NULL, NULL, 10, 1, 3, NULL),
-(108, 'Вертикальные роды', 7, 31500, NULL, NULL, 10, 1, 3, NULL),
-(109, 'Естественные роды', 1, 25000, NULL, NULL, 11, 1, 3, NULL),
-(110, 'Кесарево сечение', 2, 35000, NULL, NULL, 11, 1, 3, NULL),
-(111, 'Мягкие роды', 3, 31000, NULL, NULL, 11, 1, 3, NULL),
-(112, 'Партнерские роды', 4, 37000, NULL, NULL, 11, 1, 3, NULL),
-(113, 'Роды в воду', 5, 45000, NULL, NULL, 11, 1, 3, NULL),
-(114, 'Вертикальные роды', 7, 31500, NULL, NULL, 11, 1, 3, NULL);
-
--- --------------------------------------------------------
-
---
--- Структура таблицы `sessions`
---
-
-CREATE TABLE `sessions` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `token` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `user_id` bigint(20) UNSIGNED NOT NULL,
-  `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+(58, 'Сергунина Ольга', 1, 90000, NULL, NULL, 15, 1, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -1169,31 +1104,6 @@ INSERT INTO `trimester` (`id`, `name`, `title`, `description`, `icon`, `bg_color
 (1, 'first', 'Первый триместер', '', NULL, NULL, NULL),
 (2, 'second', 'Второй триместер', '', NULL, NULL, NULL),
 (3, 'third', 'Третий триметр', '', NULL, NULL, NULL);
-
--- --------------------------------------------------------
-
---
--- Структура таблицы `users`
---
-
-CREATE TABLE `users` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `login` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `password` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `role` bigint(20) UNSIGNED NOT NULL,
-  `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
---
--- Дамп данных таблицы `users`
---
-
-INSERT INTO `users` (`id`, `login`, `password`, `role`, `datetime_update`, `datetime_create`) VALUES
-(1, 'admin', '21232f297a57a5a743894a0e4a801fc3', 7, '2021-08-16 20:35:44', '2021-08-16 20:35:44'),
-(2, 'test_guest', '202cb962ac59075b964b07152d234b70', 1, '2021-08-16 22:35:32', '2021-08-16 22:35:32'),
-(3, 'guest', NULL, 1, '2021-08-17 12:52:34', '2021-08-17 12:52:34'),
-(4, 'oleg', 'd8578edf8458ce06fbc5bb76a58c5ca4', 6, '2021-08-19 13:53:38', '2021-08-19 13:53:38');
 
 --
 -- Индексы сохранённых таблиц
@@ -1321,14 +1231,6 @@ ALTER TABLE `phone_containers`
   ADD PRIMARY KEY (`id`);
 
 --
--- Индексы таблицы `roles`
---
-ALTER TABLE `roles`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `id` (`id`),
-  ADD UNIQUE KEY `slug` (`slug`);
-
---
 -- Индексы таблицы `services`
 --
 ALTER TABLE `services`
@@ -1345,8 +1247,7 @@ ALTER TABLE `services_containers_repo`
 -- Индексы таблицы `service_containers`
 --
 ALTER TABLE `service_containers`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `id` (`id`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Индексы таблицы `service_slot`
@@ -1354,14 +1255,6 @@ ALTER TABLE `service_containers`
 ALTER TABLE `service_slot`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id` (`id`);
-
---
--- Индексы таблицы `sessions`
---
-ALTER TABLE `sessions`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `id` (`id`),
-  ADD KEY `user_id` (`user_id`);
 
 --
 -- Индексы таблицы `slot_clinic_type`
@@ -1381,14 +1274,6 @@ ALTER TABLE `slot_entity_type`
 --
 ALTER TABLE `trimester`
   ADD PRIMARY KEY (`id`);
-
---
--- Индексы таблицы `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `id` (`id`),
-  ADD KEY `role` (`role`);
 
 --
 -- AUTO_INCREMENT для сохранённых таблиц
@@ -1458,13 +1343,13 @@ ALTER TABLE `doctor_category_type`
 -- AUTO_INCREMENT для таблицы `doctor_position_type`
 --
 ALTER TABLE `doctor_position_type`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT для таблицы `facilities_containers`
 --
 ALTER TABLE `facilities_containers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=157;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=129;
 
 --
 -- AUTO_INCREMENT для таблицы `facilities_containers_repo`
@@ -1476,7 +1361,7 @@ ALTER TABLE `facilities_containers_repo`
 -- AUTO_INCREMENT для таблицы `facilities_type`
 --
 ALTER TABLE `facilities_type`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT для таблицы `files`
@@ -1506,13 +1391,7 @@ ALTER TABLE `phones_containers_repo`
 -- AUTO_INCREMENT для таблицы `phone_containers`
 --
 ALTER TABLE `phone_containers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
-
---
--- AUTO_INCREMENT для таблицы `roles`
---
-ALTER TABLE `roles`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
 
 --
 -- AUTO_INCREMENT для таблицы `services`
@@ -1524,25 +1403,19 @@ ALTER TABLE `services`
 -- AUTO_INCREMENT для таблицы `services_containers_repo`
 --
 ALTER TABLE `services_containers_repo`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT для таблицы `service_containers`
 --
 ALTER TABLE `service_containers`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT для таблицы `service_slot`
 --
 ALTER TABLE `service_slot`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=118;
-
---
--- AUTO_INCREMENT для таблицы `sessions`
---
-ALTER TABLE `sessions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
 -- AUTO_INCREMENT для таблицы `slot_clinic_type`
@@ -1563,12 +1436,6 @@ ALTER TABLE `trimester`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT для таблицы `users`
---
-ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
 -- Ограничения внешнего ключа сохраненных таблиц
 --
 
@@ -1577,18 +1444,6 @@ ALTER TABLE `users`
 --
 ALTER TABLE `address_container`
   ADD CONSTRAINT `address_container_ibfk_1` FOREIGN KEY (`district`) REFERENCES `districts` (`id`);
-
---
--- Ограничения внешнего ключа таблицы `sessions`
---
-ALTER TABLE `sessions`
-  ADD CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
-
---
--- Ограничения внешнего ключа таблицы `users`
---
-ALTER TABLE `users`
-  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role`) REFERENCES `roles` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
