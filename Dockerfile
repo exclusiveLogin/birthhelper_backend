@@ -7,5 +7,5 @@ RUN mkdir dist && cd dist && mkdir upload
 ENV PM2_PUBLIC_KEY smyrbcl05x8u5yo
 ENV PM2_SECRET_KEY m84owwtipe5nhoa
 
-ENTRYPOINT yarn deploy:docker
+ENTRYPOINT npm run deploy:docker
 EXPOSE 3000
