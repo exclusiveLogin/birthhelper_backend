@@ -9,7 +9,6 @@ import {Request, Response} from "express";
 
 const jsonparser = bodyParser.json();
 
-
 export class AuthorizationEngine {
 
     auth = express.Router();
@@ -35,6 +34,11 @@ export class AuthorizationEngine {
         response.send({auth: false, error: reason ? reason : 'Запрошенное действие не разрешено'});
     }
 
+    sendServerError(response: Response, reason?: string) {
+        response.status(500);
+        response.send({error: reason ? reason : 'Произошла ошибка сервера'});
+    }
+
     constructor(private context: Context) {
         this.context.authorizationEngine = this;
 
@@ -43,6 +47,10 @@ export class AuthorizationEngine {
         this.auth.get('/role', this.roleHandler.bind(this));
 
         this.auth.get('/user', this.userHandler.bind(this));
+
+        this.auth.get('/url', this.urlHandler.bind(this));
+    
+        this.auth.get('/activation/:code', this.activationHandler.bind(this));
 
         this.auth.delete('/', jsonparser, this.deleteHandler.bind(this));
 
@@ -111,6 +119,16 @@ export class AuthorizationEngine {
         ).toPromise();
     }
 
+    async getUserIdByActivation(activation: string): Promise<number> {
+        const q = `SELECT * FROM \`users\` WHERE \`activation\` = "${activation}"`;
+
+        console.log('getUserIdByActivation: ', q);
+
+        return this.context.dbe.query(q).pipe(
+            map(result => (result as any as IUser)?.[0]?.id),
+        ).toPromise();
+    }
+
     async getGuestID(): Promise<number> {
         const q = `SELECT * FROM \`users\` WHERE \`login\` = "guest" AND password IS NULL`;
 
@@ -153,12 +171,31 @@ export class AuthorizationEngine {
         ).toPromise();
     }
 
-    async createNewUser(userLogin: string, userPassword: string): Promise<number> {
-        const q = `INSERT INTO \`users\` (\`login\`, \`password\`) VALUES("${userLogin}", "${userPassword}")`;
+    async createNewUser(userLogin: string, userPassword: string): Promise<{id: number, activation: string}> {
+        const token: string = uuid.v4();
+        const q = `INSERT INTO \`users\` (\`login\`, \`password\`, \`role\`, \`activation\`) 
+        VALUES("${userLogin}", "${userPassword}", 1, "${token}")`;
 
         return this.context.dbe.query(q).pipe(
             map(result => (result as any as OkPacket)?.insertId),
+            map(id => ({ id, activation: token})),
         ).toPromise();
+    }
+
+    async activateNewUser(activation: string): Promise<null> {
+        if(!activation) return Promise.reject('Нет токена активации');
+        try {
+            const userId = await this.getUserIdByActivation(activation);
+            const q = `UPDATE \`users\` SET \`active\` = 1 WHERE \`id\` = ${userId}`;
+            return this.context.dbe.query(q).pipe(
+                mapTo(null)
+            ).toPromise();
+
+        } catch (e) {
+            return Promise.reject('Пользователя с таким кодом активации не найден');
+        }
+
+        
     }
 
     async changePasswordForUser(userLogin: string, userPassword: string): Promise<null> {
@@ -200,21 +237,42 @@ export class AuthorizationEngine {
     // выход из сессии
     async deleteHandler(req, res) {
         console.log('delete auth', req.headers);
-        const token: string = req?.headers?.token as string;
-        if (token) {
+        try {
+            const token = await this.getToken(req);
             await this.cleanCurrentSession(token);
             res.send(JSON.stringify({
                 exit: true,
                 msg: 'Сессия завершениа',
                 token,
             }));
-        } else {
-            res.status(500);
-            res.send(JSON.stringify({
-                exit: false,
-                error: 'Токен не передан',
-            }));
+        } catch (e) {
+            console.log('userHandler', e);
+            this.sendNotPermitted(res, e);
         }
+    }
+
+    // активация пользователя
+    async activationHandler(req, res) {
+        console.log('activation', req.params);
+        try {
+            const code: string = req.params['code'];
+            await this.activateNewUser(code);
+            res.send(JSON.stringify({
+                activation: true,
+                msg: 'Активация пользователя прошла успешно',
+            }));
+        } catch (e) {
+            console.log('activationHandler', e);
+            this.sendServerError(res, e);
+        }
+    }
+
+    // активация пользователя
+    async urlHandler(req, res) {
+        console.log("url: ", req.protocol, req.headers);
+        res.send(JSON.stringify({
+            url: `${req.headers}`,
+        }));
     }
 
     // смена пароля
@@ -257,13 +315,13 @@ export class AuthorizationEngine {
             // получаем id юзера
             const userExist = await this.checkUserExist(userLogin);
             if (!userExist) {
-                const id = await this.createNewUser(userLogin, userPassword);
-                const token = await this.createNewSession(id);
+                const newUser = await this.createNewUser(userLogin, userPassword);
                 res.send(JSON.stringify({
                     signup: true,
                     login: userLogin,
-                    token,
-                    id,
+                    password: userPassword,
+                    url: `${req.protocol}://${req.headers.host}/auth/activation/${newUser.activation}`,
+                    id: newUser.id
                 }))
 
             } else {
