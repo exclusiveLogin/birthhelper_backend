@@ -186,7 +186,7 @@ export class AuthorizationEngine {
         if(!activation) return Promise.reject('Нет токена активации');
         try {
             const userId = await this.getUserIdByActivation(activation);
-            const q = `UPDATE \`users\` SET \`active\` = 1 WHERE \`id\` = ${userId} AND \`role\`= 2`;
+            const q = `UPDATE \`users\` SET \`active\` = 1 AND \`role\`= 2 WHERE \`id\` = ${userId}`;
             return this.context.dbe.query(q).pipe(
                 mapTo(null)
             ).toPromise();
