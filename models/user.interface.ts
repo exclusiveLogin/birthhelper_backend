@@ -1,8 +1,10 @@
 export interface IUser {
     id: number;
+    active: boolean;
     login: string;
     password: string;
     image: string;
+    activation: string;
     datetime_create: string;
     datetime_update: string;
 }

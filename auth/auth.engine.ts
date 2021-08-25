@@ -316,8 +316,10 @@ export class AuthorizationEngine {
             const userExist = await this.checkUserExist(userLogin);
             if (!userExist) {
                 const newUser = await this.createNewUser(userLogin, userPassword);
+                
                 res.send(JSON.stringify({
                     signup: true,
+                    activated: false,
                     login: userLogin,
                     password: userPassword,
                     url: `${req.protocol}://${req.headers.host}/auth/activation/${newUser.activation}`,
@@ -328,10 +330,15 @@ export class AuthorizationEngine {
             } else {
                 res.status(500);
 
+                const userID = await this.getUserIdByCredential(userLogin, userPassword);
+                const user = await this.getUserById(userID);
+
                 res.send(JSON.stringify({
                     signup: false,
+                    activated: !!user.active,
                     error: 'Пользователь с таким логином уже существует',
                     login: userLogin,
+                    activation: user.activation,
                 }));
             }
         } else {
