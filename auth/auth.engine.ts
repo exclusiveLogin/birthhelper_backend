@@ -321,6 +321,7 @@ export class AuthorizationEngine {
                     login: userLogin,
                     password: userPassword,
                     url: `${req.protocol}://${req.headers.host}/auth/activation/${newUser.activation}`,
+                    activation: newUser.activation,
                     id: newUser.id
                 }))
 
