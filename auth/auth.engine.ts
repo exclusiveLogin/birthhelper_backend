@@ -54,6 +54,8 @@ export class AuthorizationEngine {
 
         this.auth.delete('/', jsonparser, this.deleteHandler.bind(this));
 
+        this.auth.delete('/all', jsonparser, this.deleteEverywhereHandler.bind(this));
+
         this.auth.patch('/', jsonparser, this.patchHandler.bind(this));
 
         this.auth.put('/', jsonparser, this.putHandler.bind(this));
@@ -244,6 +246,30 @@ export class AuthorizationEngine {
                 exit: true,
                 msg: 'Сессия завершениа',
                 token,
+            }));
+        } catch (e) {
+            console.log('userHandler', e);
+            this.sendNotPermitted(res, e);
+        }
+    }
+
+    // выход из устройств
+    async deleteEverywhereHandler(req, res) {
+        console.log('delete auth', req.headers);
+        try {
+            const token = await this.getToken(req);
+            const user_id = await this.getUserIdByToken(token);
+            const guest = await this.getGuestID();
+
+            if(guest !== user_id) {
+                await this.cleanOldTokens(user_id);
+            }
+            
+            res.send(JSON.stringify({
+                exit: true,
+                msg: 'Все сесси текущего пользователя завершены',
+                token,
+                user: user_id
             }));
         } catch (e) {
             console.log('userHandler', e);
