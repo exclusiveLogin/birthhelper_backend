@@ -9,10 +9,11 @@ import {
     sectionConfig,
     SectionKeys
 } from "./config";
-import {forkJoin, from, Observable, of, zip} from "rxjs";
+import {forkJoin, Observable, of, zip} from "rxjs";
 import {map, tap} from "rxjs/operators";
 import {md5Encript} from "./sections.handler";
 import {PipelineEngine} from "../search.engine/piplines.engine";
+import { OkPacket } from "mysql";
 const bodyParser = require('body-parser');
 const jsonparser = bodyParser.json();
 
@@ -45,6 +46,20 @@ export interface SummaryRate {
     count_votes: number;
 }
 
+export interface SearchMemo {
+    hash: string;
+    section: string;
+    filters: FilterSection
+}
+
+export interface SearchMemoSrc {
+    hash: string;
+    filters: string;
+    section: string;
+    datetime_create: string;
+    datetime_update: string;
+}
+
 type SectionConfigType = typeof sectionConfig;
 type FilterSectionKeys = SectionConfigType[SectionKeys][number];
 
@@ -73,6 +88,57 @@ export class SearchEngine {
     constructor(private context: Context) {
         context.searchEngine = this;
         this.searchConfig = getSearchConfig(context);
+
+        this.initFiltersFromDB();
+    }
+
+    initFiltersFromDB(): void {
+
+    }
+
+    saveFiltersToDb(section: SectionKeys, hash: string, filters: FilterSection): Promise<number> {
+        const q = `INSERT INTO \`search\` 
+        (hash, section, filters) 
+        VALUES ('${hash}', '${section}', '${JSON.stringify(filters)}') 
+        ON DUPLICATE KEY UPDATE 
+        section = 'section',
+        filters = '${JSON.stringify(filters)}'`;
+
+
+        console.log('saveFiltersToDb', q);
+        return this.context.dbe.query(q).pipe(
+            map((result: any) => (result as OkPacket).insertId),
+            ).toPromise();
+    }
+
+    loadFiltersFromDbByHash(section: SectionKeys, hash: string): Promise<FilterSection> {
+        const q = `SELECT FROM \`search\` WHERE section = "${section}" AND hash = "${hash}"`;
+        return this.context.dbe.query<SearchMemoSrc>(q)
+            .pipe(
+                map(result => {
+                    if(!result.length){
+                        throw new Error('Не найдена запить в БД по хешу')
+                    }
+                    return JSON.parse(result[0].filters) as FilterSection;
+                }),
+            ).toPromise();
+    }
+
+    loadFiltersFrom(): Promise<SearchMemo[]> {
+        const q = `SELECT FROM \`search\``;
+        return this.context.dbe.query<SearchMemoSrc>(q)
+            .pipe(
+                map(result => {
+                    const compile: SearchMemo[] = result.map((item) => {
+                        const _item = item as SearchMemo;
+                        const _f = JSON.parse(item.filters) as FilterSection;
+                        _item.filters = _f
+                        return _item;
+                    });
+
+                    return compile;
+                }),
+            ).toPromise();
     }
 
     intersector(a: Array<number>, b: Array<number>): number[] {
@@ -223,6 +289,8 @@ export class SearchEngine {
             this.filterStore[section] = {};
         }
         this.filterStore[section][hash] = data;
+
+        this.saveFiltersToDb(section, hash, data);
     }
 
     getFilterStore(section: SectionKeys, hash: string): FilterSection {
@@ -239,6 +307,26 @@ export class SearchEngine {
 
     checkSearchSectionExist(section: SectionKeys): boolean {
         return !!this.searchStore[section];
+    }
+
+    resetSearchStoreBySection(section?: SectionKeys): void {
+        if(!section) {
+            const keys = Object.keys(this.searchStore);
+            keys.forEach(k => this.searchStore[k] = {});
+            return;
+        }
+
+        this.searchStore[section] = {};
+    }
+
+    resetSummaryStoreBySection(section?: SectionKeys): void {
+        if(!section) {
+            const keys = Object.keys(this.summaryStore);
+            keys.forEach(k => this.summaryStore[k] = {});
+            return;
+        }
+
+        this.summaryStore[section] = {};
     }
 
     sendFiltersHandler(req, res): void {
