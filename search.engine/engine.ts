@@ -129,7 +129,7 @@ export class SearchEngine {
         )
     }
 
-    validator<T extends SectionKeys>(json: SearchConfigResponse<T>, section: SectionKeys): string {
+    validator<T extends SectionKeys>(json: SearchConfigResponse<T>, section: SectionKeys): [boolean, SearchConfigResponse<T>] {
 
         let valid = false;
         const config = this.searchConfig[section];
@@ -148,15 +148,7 @@ export class SearchEngine {
             }
         });
 
-        // console.log('tick validator:', result, valid);
-
-        if (valid){
-            const hash = md5Encript(result);
-            this.setFilterStore(section, hash, result);
-            return hash;
-        }
-
-        return null;
+        return [valid, result];
     }
 
     createVector(req, res, next): void {
@@ -167,8 +159,13 @@ export class SearchEngine {
         let searchKey: SectionKeys;
 
         if(section === 'clinic') searchKey = section;
-
-        if(searchKey) hash = this.validator<typeof searchKey>(body || {}, searchKey)
+        if(searchKey) {
+            const valid = this.validator<typeof searchKey>(body || {}, searchKey);
+            if(valid[0]) {
+                hash = md5Encript(valid[1]);
+                this.setFilterStore(section, hash, valid[1]);
+            }
+        }
 
         if(hash){
             res.status(201);
