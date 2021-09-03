@@ -117,7 +117,7 @@ export const entityRepo: EntityRepo = {
             },
         ],
         fields: [
-            { key: 'id', title: 'ID клиники', type: 'id', readonly: true, showOnTable: false }, 
+            { key: 'id', title: 'ID клиники', type: 'id', readonly: true, showOnTable: true }, 
             { key: 'title', type: 'string', title: 'Название клиники', required: true, showOnTable: true }, 
             { key: 'description', title: 'Описание клиники', type: 'text', showOnTable: false },
             { key: 'image_id', title: 'Главное фото', type: 'img', showOnTable: false, loadEntity: true },
@@ -127,8 +127,8 @@ export const entityRepo: EntityRepo = {
             { key: 'has_reanimation', title: 'Имеет реанимацию', type: 'flag', showOnTable: false  },
             { key: 'has_oms', title: 'Имеет поддержку ОМС', type: 'flag', required: false, showOnTable: false  },
             { key: 'has_dms', title: 'Имеет поддержку ДМС', type: 'flag', required: false, showOnTable: false  },
-            { key: 'stat_male', type: 'number', title: 'Рождено мальчиков', required: false, showOnTable: true }, 
-            { key: 'stat_female', type: 'number', title: 'Рождено девочек', required: false, showOnTable: true }, 
+            { key: 'stat_male', type: 'number', title: 'Рождено мальчиков', required: false, showOnTable: false }, 
+            { key: 'stat_female', type: 'number', title: 'Рождено девочек', required: false, showOnTable: false }, 
             { key: 'mom_with_baby', type: 'flag', title: 'Совместное пребывание матери и ребенка', required: false, showOnTable: false },
             { key: 'free_meets', type: 'flag', title: 'Свободное посещение', required: false, showOnTable: false },
             { 
