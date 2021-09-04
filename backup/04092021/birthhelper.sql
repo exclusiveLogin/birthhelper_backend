@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.0
+-- version 5.1.1
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 185.178.46.248
--- Время создания: Авг 19 2021 г., 17:07
+-- Время создания: Сен 04 2021 г., 16:09
 -- Версия сервера: 5.7.35-0ubuntu0.18.04.1
--- Версия PHP: 7.4.18
+-- Версия PHP: 7.4.23
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -890,6 +890,27 @@ INSERT INTO `roles` (`id`, `title`, `description`, `slug`, `rank`, `datetime_cre
 -- --------------------------------------------------------
 
 --
+-- Структура таблицы `search`
+--
+
+CREATE TABLE `search` (
+  `hash` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `section` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `filters` text COLLATE utf8_unicode_ci NOT NULL,
+  `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Дамп данных таблицы `search`
+--
+
+INSERT INTO `search` (`hash`, `section`, `filters`, `datetime_create`, `datetime_update`) VALUES
+('5624f1f1b8224109e15d6304fc91bfb4', 'section', '{\"clinic_type_birth_section\":{\"1\":true}}', '2021-09-03 14:38:52', '2021-09-03 14:40:45');
+
+-- --------------------------------------------------------
+
+--
 -- Структура таблицы `services`
 --
 
@@ -1084,7 +1105,19 @@ INSERT INTO `service_slot` (`id`, `title`, `service_id`, `price`, `benefit_price
 (111, 'Мягкие роды', 3, 31000, NULL, NULL, 11, 1, 3, NULL),
 (112, 'Партнерские роды', 4, 37000, NULL, NULL, 11, 1, 3, NULL),
 (113, 'Роды в воду', 5, 45000, NULL, NULL, 11, 1, 3, NULL),
-(114, 'Вертикальные роды', 7, 31500, NULL, NULL, 11, 1, 3, NULL);
+(114, 'Вертикальные роды', 7, 31500, NULL, NULL, 11, 1, 3, NULL),
+(118, 'Естественные роды', 1, 25000, NULL, NULL, 12, 1, 3, NULL),
+(119, 'Кесарево сечение', 2, 35000, NULL, NULL, 12, 1, 3, NULL),
+(120, 'Мягкие роды', 3, 31000, NULL, NULL, 12, 1, 3, NULL),
+(121, 'Партнерские роды', 4, 37000, NULL, NULL, 12, 1, 3, NULL),
+(122, 'Роды в воду', 5, 45000, NULL, NULL, 12, 1, 3, NULL),
+(123, 'Вертикальные роды', 7, 31500, NULL, NULL, 12, 1, 3, NULL),
+(124, 'Естественные роды', 1, 25000, NULL, NULL, 13, 1, 3, NULL),
+(126, 'Кесарево сечение', 2, 35000, NULL, NULL, 13, 1, 3, NULL),
+(127, 'Мягкие роды', 3, 31000, NULL, NULL, 13, 1, 3, NULL),
+(128, 'Партнерские роды', 4, 37000, NULL, NULL, 13, 1, 3, NULL),
+(129, 'Роды в воду', 5, 45000, NULL, NULL, 13, 1, 3, NULL),
+(130, 'Вертикальные роды', 7, 31500, NULL, NULL, 13, 1, 3, NULL);
 
 -- --------------------------------------------------------
 
@@ -1099,6 +1132,49 @@ CREATE TABLE `sessions` (
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Дамп данных таблицы `sessions`
+--
+
+INSERT INTO `sessions` (`id`, `token`, `user_id`, `datetime_create`, `datetime_update`) VALUES
+(8, '317b1d88-39ff-402d-9973-58672928253b', 3, '2021-08-26 08:03:24', '2021-08-26 08:03:24'),
+(9, '6fdde198-2b5b-4fdd-8e05-72a840a5f08d', 3, '2021-08-26 08:03:40', '2021-08-26 08:03:40'),
+(11, '993e5de9-9091-4139-803a-b41c5b8e847d', 19, '2021-08-26 08:18:28', '2021-08-26 08:18:28'),
+(12, '167ffb84-2d2d-487f-b0d2-61974ecb6e78', 3, '2021-08-26 08:40:39', '2021-08-26 08:40:39'),
+(13, 'b28fdd04-a4b4-488c-bdb5-b83ac4aed88e', 3, '2021-08-26 08:44:35', '2021-08-26 08:44:35'),
+(14, 'b64ce044-35ba-435f-a66f-988a5c4680d2', 3, '2021-08-26 09:14:00', '2021-08-26 09:14:00'),
+(15, 'c4078962-ebfe-446b-bd6d-e8652423d210', 3, '2021-08-29 22:22:21', '2021-08-29 22:22:21'),
+(16, 'b9b43576-335b-4486-ac10-e977de433d42', 3, '2021-08-30 06:21:53', '2021-08-30 06:21:53'),
+(18, '66087fca-4aee-4ce0-a12e-c6270c5c34fe', 3, '2021-08-30 07:12:18', '2021-08-30 07:12:18'),
+(20, 'a21a43db-09bb-4915-9705-1aaa89e728a0', 3, '2021-08-30 07:12:46', '2021-08-30 07:12:46'),
+(23, '638e91ce-e7ee-4ec2-8732-f911d0d884cd', 3, '2021-08-30 07:14:31', '2021-08-30 07:14:31'),
+(26, 'c2c830f0-7bcf-48f0-92d2-55e84c8030bb', 3, '2021-08-30 07:16:02', '2021-08-30 07:16:02'),
+(29, '522ffed9-6d0b-4d88-8aed-9387422b9469', 3, '2021-08-30 09:30:20', '2021-08-30 09:30:20'),
+(33, 'c6f194df-8078-4d64-abb4-c0a3777815a7', 3, '2021-08-30 09:40:26', '2021-08-30 09:40:26'),
+(38, '42b03ddf-bdc2-4ae5-8b71-8e184c24c22e', 3, '2021-08-30 10:01:58', '2021-08-30 10:01:58'),
+(39, 'dfece4c6-5275-4249-aec8-56ef66fcff17', 3, '2021-08-30 10:01:59', '2021-08-30 10:01:59'),
+(43, '500f8aac-d882-418b-b0f6-76c827137470', 3, '2021-08-30 10:06:42', '2021-08-30 10:06:42'),
+(45, 'e7e069c0-5caa-4a8a-ad15-806f633c94bd', 3, '2021-08-30 10:07:09', '2021-08-30 10:07:09'),
+(47, '73cbc66c-2251-43c8-baa5-a62d92f78059', 3, '2021-08-30 10:11:06', '2021-08-30 10:11:06'),
+(49, 'd87412bd-076e-407d-88ca-b4f55f6916f7', 3, '2021-08-30 10:13:16', '2021-08-30 10:13:16'),
+(50, '1ed523ce-ae8d-49ab-bbba-d812f5b2dd75', 1, '2021-08-30 10:13:51', '2021-08-30 10:13:51'),
+(51, '5fe9860b-131c-4476-80fe-bf02949b05af', 3, '2021-08-30 10:27:12', '2021-08-30 10:27:12'),
+(53, '19577e6c-3619-4e04-b77e-b08bed02d320', 3, '2021-08-30 10:27:47', '2021-08-30 10:27:47'),
+(55, '0afc28d3-b6d1-4f75-b6b9-c000f314c159', 3, '2021-08-30 10:32:08', '2021-08-30 10:32:08'),
+(57, '532bc1ee-128b-41ae-a8c0-9f9f1dc1bfb6', 3, '2021-08-30 17:13:33', '2021-08-30 17:13:33'),
+(59, '778399cc-c822-4035-a11d-a0c48562df4b', 3, '2021-08-31 05:11:55', '2021-08-31 05:11:55'),
+(60, 'ed9b7db1-13ed-482a-95be-9282301d16cc', 3, '2021-08-31 07:05:27', '2021-08-31 07:05:27'),
+(61, 'd7564dc9-ddd9-4bae-b53e-200a1129272c', 3, '2021-08-31 09:51:33', '2021-08-31 09:51:33'),
+(62, 'caa01e68-ca8c-44fd-a00e-b336b48f1949', 3, '2021-08-31 09:53:35', '2021-08-31 09:53:35'),
+(63, 'aef7517f-6d79-4b81-8baa-d2c93eed21fc', 3, '2021-08-31 09:59:50', '2021-08-31 09:59:50'),
+(64, '3df83ce3-3249-4c2b-9353-45370b33b2cd', 3, '2021-08-31 10:08:30', '2021-08-31 10:08:30'),
+(65, '54359cd2-21f6-4fdd-b19c-a9a4c2b3e3ee', 3, '2021-08-31 16:54:21', '2021-08-31 16:54:21'),
+(66, 'c1c42768-f72a-4eda-a337-9943af0c9c2d', 3, '2021-08-31 19:08:02', '2021-08-31 19:08:02'),
+(67, '9fa5e412-ad0a-4e8c-97aa-43b364c629e1', 3, '2021-09-02 14:40:39', '2021-09-02 14:40:39'),
+(68, 'd6c18ce3-0c8d-4c8e-b6bd-ccb9c156b5ab', 3, '2021-09-03 05:43:35', '2021-09-03 05:43:35'),
+(69, '85c490b6-165b-44dd-8be5-4c6fb4f0223b', 3, '2021-09-03 20:34:33', '2021-09-03 20:34:33'),
+(70, '2f8b1e54-a741-439e-a810-2c114426dac8', 3, '2021-09-04 10:29:32', '2021-09-04 10:29:32');
 
 -- --------------------------------------------------------
 
@@ -1178,9 +1254,11 @@ INSERT INTO `trimester` (`id`, `name`, `title`, `description`, `icon`, `bg_color
 
 CREATE TABLE `users` (
   `id` bigint(20) UNSIGNED NOT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '0',
   `login` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `password` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `role` bigint(20) UNSIGNED NOT NULL,
+  `activation` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -1189,11 +1267,10 @@ CREATE TABLE `users` (
 -- Дамп данных таблицы `users`
 --
 
-INSERT INTO `users` (`id`, `login`, `password`, `role`, `datetime_update`, `datetime_create`) VALUES
-(1, 'admin', '21232f297a57a5a743894a0e4a801fc3', 7, '2021-08-16 20:35:44', '2021-08-16 20:35:44'),
-(2, 'test_guest', '202cb962ac59075b964b07152d234b70', 1, '2021-08-16 22:35:32', '2021-08-16 22:35:32'),
-(3, 'guest', NULL, 1, '2021-08-17 12:52:34', '2021-08-17 12:52:34'),
-(4, 'oleg', 'd8578edf8458ce06fbc5bb76a58c5ca4', 6, '2021-08-19 13:53:38', '2021-08-19 13:53:38');
+INSERT INTO `users` (`id`, `active`, `login`, `password`, `role`, `activation`, `datetime_update`, `datetime_create`) VALUES
+(1, 1, 'admin', '21232f297a57a5a743894a0e4a801fc3', 7, NULL, '2021-08-23 16:55:02', '2021-08-16 20:35:44'),
+(3, 1, 'guest', NULL, 1, NULL, '2021-08-23 16:55:08', '2021-08-17 12:52:34'),
+(19, 1, 'EgorenkovOV', 'f9202cc7caf572f0c160379f17e325eb', 6, '55c6f51c-9992-4d77-9323-e6fa1562ad52', '2021-08-26 08:06:40', '2021-08-26 08:04:34');
 
 --
 -- Индексы сохранённых таблиц
@@ -1327,6 +1404,12 @@ ALTER TABLE `roles`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id` (`id`),
   ADD UNIQUE KEY `slug` (`slug`);
+
+--
+-- Индексы таблицы `search`
+--
+ALTER TABLE `search`
+  ADD UNIQUE KEY `hash` (`hash`);
 
 --
 -- Индексы таблицы `services`
@@ -1536,13 +1619,13 @@ ALTER TABLE `service_containers`
 -- AUTO_INCREMENT для таблицы `service_slot`
 --
 ALTER TABLE `service_slot`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=118;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
 
 --
 -- AUTO_INCREMENT для таблицы `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
 
 --
 -- AUTO_INCREMENT для таблицы `slot_clinic_type`
@@ -1566,7 +1649,7 @@ ALTER TABLE `trimester`
 -- AUTO_INCREMENT для таблицы `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- Ограничения внешнего ключа сохраненных таблиц
