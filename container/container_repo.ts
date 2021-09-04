@@ -1,4 +1,5 @@
 import {Cached} from "../cache.engine/cache.model";
+import { SectionKeys } from "../search.engine/config";
 
 export interface Container extends Cached{
     name: string;
@@ -10,9 +11,11 @@ export interface Container extends Cached{
     db_list: string; // БД списка существующих контейнеров данного типа
     db_links: string; // БД связей контейнеров
     entity_key: string; // ключ сущности
+    createAffectionSectionKeys?: SectionKeys[];
+    deleteAffectionSectionKeys?: SectionKeys[];
 }
 
-const containers: { [key: string]: Container } = {
+export const containers: { [key: string]: Container } = {
     container_phones: {
         name: 'container_phones',
         title: 'Контейнеры телефонов в системе',
@@ -23,6 +26,8 @@ const containers: { [key: string]: Container } = {
         db_list: 'phones_containers_repo', // БД списка существующих контейнеров данного типа
         db_links: 'phone_containers', // БД связей контейнеров
         entity_key: 'phones', // ключ сущности
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
     },
     container_services: {
         name: 'container_services',
@@ -34,6 +39,8 @@ const containers: { [key: string]: Container } = {
         db_list: 'services_containers_repo', // БД списка существующих контейнеров данного типа
         db_links: 'service_containers', // БД связей контейнеров
         entity_key: 'services', // ключ сущности
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
     },
     container_specialities: {
         name: 'container_specialities',
@@ -54,7 +61,7 @@ const containers: { [key: string]: Container } = {
         db_list: 'facilities_containers_repo', // БД списка существующих контейнеров данного типа
         db_links: 'facilities_containers', // БД связей контейнеров
         entity_key: 'facilities', // ключ сущности
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
     },
 };
-
-module.exports = containers;

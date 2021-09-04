@@ -185,11 +185,11 @@ export class EntityEngine {
         const qi = existArr.join(', ');
         const qf = q + ' ON DUPLICATE KEY UPDATE ' + qi;
 
-        const deleteSections = config.createAffectionSectionKeys ?? [];
+        const createSections = config.createAffectionSectionKeys ?? [];
 
         return  this.context.dbe.query(qf).pipe(
                 mapTo('Данные обновлены'),
-                tap(() => this.garbageHandler([config.db_name, name], deleteSections)),
+                tap(() => this.garbageHandler([config.db_name, name], createSections)),
             ).toPromise();
     }
 

@@ -1,10 +1,10 @@
 import * as express from "express";
 import bodyparser from 'body-parser';
 import {Router} from "express";
-import {Context} from "../search.engine/config";
-import {Container} from "./container_repo";
+import {Context, SectionKeys} from "../search.engine/config";
+import {Container, containers} from "./container_repo";
 import {mapTo, tap} from "rxjs/operators";
-const containers = require('../container/container_repo');
+
 const jsonparser = bodyparser.json();
 
 export class ContainerEngine {
@@ -70,6 +70,7 @@ export class ContainerEngine {
 
             const id_key = containerParams.container_id_key;
             const links_db = containerParams.db_links;
+            const createSections = containerParams.createAffectionSectionKeys ?? [];
 
             // delete exist container store and write new
 
@@ -88,6 +89,7 @@ export class ContainerEngine {
             try {
                 await this.removeContainerItems(containerParams.name, id_container);
                 await Promise.all(promisesList());
+                this.garbageHandler([name, containerParams.db_entity, containerParams.entity_key, ...createSections], createSections);
                 return Promise.resolve('все записи по контейнеру сохранены в БД');
             } catch (e) {
                 return Promise.reject(e);
@@ -121,12 +123,16 @@ export class ContainerEngine {
 
     async removeContainerFromRepo(name, id) {
         if (!!containers[name]) {
-            let containerParams = containers[name];
+            const containerParams = containers[name];
             const db_repo = containerParams.db_list;
             const qd = `DELETE FROM \`${ db_repo }\` WHERE id=${id}`;
+            const deleteSections = containerParams.deleteAffectionSectionKeys ?? [];
 
             return this.context.dbe.query(qd)
-                .pipe(mapTo('Контейнер с name: ' + name + ' и id: ' + id + ' удален из репозитория'))
+                .pipe(
+                    mapTo('Контейнер с name: ' + name + ' и id: ' + id + ' удален из репозитория'),
+                    tap(() => this.garbageHandler([name, containerParams.db_entity, containerParams.entity_key, ...deleteSections], deleteSections)),
+                    )
                 .toPromise();
         } else return Promise.reject('Удаляемый контейнер не найден');
     }
@@ -154,6 +160,7 @@ export class ContainerEngine {
             console.log('delete params:', req.params);
             const id = req.params.cid;
             const name = req.params.name;
+
 
             try {
                 await this.removeContainerItems(name, id);
@@ -198,6 +205,12 @@ export class ContainerEngine {
             console.warn('ошибка доступа : Запрошенный контейнер не существует');
         }
     }
+
+    garbageHandler(keys: string[], sections: SectionKeys[]): void {
+        keys.forEach(k => this.context.cacheEngine.softClearBykey(k));
+        sections.forEach(k => this.context.searchEngine.resetSearchStoreBySection(k));
+        sections.forEach(k => this.context.searchEngine.resetSummaryStoreBySection(k));
+    } 
 
     getRouter(): Router {
         this.container.get('/',
