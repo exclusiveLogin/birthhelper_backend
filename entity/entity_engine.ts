@@ -142,6 +142,12 @@ export class EntityEngine {
         res.end();
     }
 
+    garbageHandler(keys: string[], sections: SectionKeys[]): void {
+        keys.forEach(k => this.cacheEngine.softClearBykey(k));
+        sections.forEach(k => this.searchEngine.resetSearchStoreBySection(k));
+        sections.forEach(k => this.searchEngine.resetSummaryStoreBySection(k));
+    } 
+
     async createEntity(name, data) {
         if(!data) return Promise.reject('Нет данных для создания или изменеиня сущности');
         const config = this.getEntityParams(name);
@@ -179,7 +185,12 @@ export class EntityEngine {
         const qi = existArr.join(', ');
         const qf = q + ' ON DUPLICATE KEY UPDATE ' + qi;
 
-        return  this.context.dbe.query(qf).pipe(mapTo('Данные обновлены')).toPromise();
+        const deleteSections = config.createAffectionSectionKeys ?? [];
+
+        return  this.context.dbe.query(qf).pipe(
+                mapTo('Данные обновлены'),
+                tap(() => this.garbageHandler([config.db_name, name], deleteSections)),
+            ).toPromise();
     }
 
     async createEntityHandler(req, res) {
@@ -205,10 +216,14 @@ export class EntityEngine {
         const config = this.getEntityParams(name);
         if (!config) return Promise.reject('не удалось определить сущность');
         const db = config.db_name;
+        const deleteSections = config.deleteAffectionSectionKeys ?? [];
 
         const qd = `DELETE FROM \`${ db }\` WHERE id=${id}`;
 
-        return this.context.dbe.query(qd).pipe(mapTo(`Запись с id = ${id} удалена`)).toPromise();
+        return this.context.dbe.query(qd).pipe(
+                mapTo(`Запись с id = ${id} удалена`),
+                tap(() => this.garbageHandler([config.db_name, name], deleteSections)),
+            ).toPromise();
     }
 
     async deleteEntityHandler(req, res) {

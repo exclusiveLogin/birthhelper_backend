@@ -2,6 +2,8 @@ import {EntityRepo} from '../entity/entity_repo.model';
 export const entityRepo: EntityRepo = {
     ent_services: {
         db_name: 'services',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
         filters: [
             {
                 name: 'title',
@@ -59,6 +61,8 @@ export const entityRepo: EntityRepo = {
         db_name: 'doctors',
         filters: [],
         container: null,
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
         fields: [
             { key: 'id', title: 'ID специалиста', type: 'id', readonly: true, showOnTable: false },
             { key: 'image_id', title: 'Фото', type: 'img', showOnTable: false },
@@ -79,6 +83,8 @@ export const entityRepo: EntityRepo = {
         db_name: 'services_containers_repo',
         filters: [],
         container: 'container_services',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
         fields: [
             { key: 'id', title: 'ID контейнера', type: 'id', readonly: true, showOnTable: false }, 
             { key: 'title', type: 'string', title: 'Название', required: true, showOnTable: true }, 
@@ -97,6 +103,8 @@ export const entityRepo: EntityRepo = {
     ent_clinics: {
         db_name: 'clinics',
         searchKey: 'clinic',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
         filters: [
             {
                 name: 'id',
@@ -164,6 +172,7 @@ export const entityRepo: EntityRepo = {
             }
         ]
     },
+
     ent_districts: { 
         db_name: 'districts',
         filters: [],
@@ -171,6 +180,7 @@ export const entityRepo: EntityRepo = {
             
         ]
     },
+
     ent_phone_containers: { 
         db_name: 'phones_containers_repo',
         filters: [],
@@ -194,6 +204,8 @@ export const entityRepo: EntityRepo = {
         db_name: 'facilities_containers_repo',
         filters: [],
         container: 'container_facilities',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
         fields: [
             { key: 'id', title: 'ID контейнера', type: 'id', readonly: true, showOnTable: false }, 
             { key: 'title', type: 'string', title: 'Название', required: true, showOnTable: true }, 
@@ -213,6 +225,8 @@ export const entityRepo: EntityRepo = {
         db_name: 'clinic_specialities_containers_repo',
         filters: [],
         container: 'container_specialities',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
         fields: [
             { key: 'id', title: 'ID контейнера', type: 'id', readonly: true, showOnTable: false }, 
             { key: 'title', type: 'string', title: 'Название', required: true, showOnTable: true }, 
@@ -228,9 +242,10 @@ export const entityRepo: EntityRepo = {
         ]
     },
 
-
     ent_placement_slots: {
         db_name: 'service_slot',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
         filters: [
             {
                 name: 'service_type',
@@ -318,6 +333,8 @@ export const entityRepo: EntityRepo = {
 
     ent_birth_type_slots: {
         db_name: 'service_slot',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
         filters: [
             {
                 name: 'service_type',
@@ -386,6 +403,8 @@ export const entityRepo: EntityRepo = {
 
     ent_doctor_slots: {
         db_name: 'service_slot',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
         filters: [
             {
                 name: 'service_type',
@@ -510,6 +529,7 @@ export const entityRepo: EntityRepo = {
             },
         ],
     },
+
     ent_files: {
         db_name: 'files',
         filters: [],
@@ -521,8 +541,12 @@ export const entityRepo: EntityRepo = {
             { key: 'folder', title: 'Имя файлсервера', type: 'string', readonly: true, showOnTable: true },
         ]
     },
+
+    // Dicts
     ent_birthtype: {
         db_name: 'birth_clinic_type',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
         filters: [],
         container: null,
         fields: [
@@ -531,8 +555,11 @@ export const entityRepo: EntityRepo = {
             { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
         ]
     },
+
     ent_doctor_position: {
         db_name: 'doctor_position_type',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
         filters: [],
         container: null,
         fields: [
@@ -541,8 +568,11 @@ export const entityRepo: EntityRepo = {
             { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
         ]
     },
+
     ent_doctor_category: {
         db_name: 'doctor_category_type',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
         filters: [],
         container: null,
         fields: [
@@ -551,8 +581,11 @@ export const entityRepo: EntityRepo = {
             { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
         ]
     },
+
     ent_specialities_clinic: {
         db_name: 'clinic_specialities_type',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
         filters: [],
         container: null,
         fields: [
@@ -561,8 +594,11 @@ export const entityRepo: EntityRepo = {
             { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
         ]
     },
+
     ent_facilities: {
         db_name: 'facilities_type',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
         filters: [],
         container: null,
         fields: [
@@ -571,8 +607,11 @@ export const entityRepo: EntityRepo = {
             { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
         ]
     },
+    
     ent_slot_clinic_type: {
         db_name: 'slot_clinic_type',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
         filters: [],
         container: null,
         fields: [
