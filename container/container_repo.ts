@@ -11,8 +11,8 @@ export interface Container extends Cached{
     db_list: string; // БД списка существующих контейнеров данного типа
     db_links: string; // БД связей контейнеров
     entity_key: string; // ключ сущности
-    createAffectionSectionKeys?: SectionKeys[];
-    deleteAffectionSectionKeys?: SectionKeys[];
+    createAffectionSectionKeys?: SectionKeys[]; // ключи секций для сброса по удалению сущности
+    deleteAffectionSectionKeys?: SectionKeys[]; // ключи секций для сброса по созданию либо сохранению сущности
 }
 
 export const containers: { [key: string]: Container } = {

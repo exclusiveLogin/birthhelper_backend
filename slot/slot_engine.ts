@@ -1,13 +1,12 @@
 import * as express from "express";
 import bodyParser from "body-parser";
-import {Context} from "../search.engine/config";
+import {Context, SectionKeys} from "../search.engine/config";
 import {Router} from "express";
 import {Entity} from "../entity/entity_engine";
-import {Slot} from "../slot/slot_repo";
-import {mapTo} from "rxjs/operators";
+import {Slot, slots} from "../slot/slot_repo";
+import {mapTo, tap} from "rxjs/operators";
 
 const jsonparser = bodyParser.json();
-const slots = require('../slot/slot_repo');
 
 export class SlotEngine {
     slot = express.Router();
@@ -114,7 +113,7 @@ export class SlotEngine {
 
         if (slotParams?.db_entity && slotParams?.db_links) {
             try {
-                res.send(await this.getSlot(slotParams, cid));
+                res.send(await this.getSlot(slotParams.name, cid));
             } catch (e) {
                 res.status(500);
                 res.send(JSON.stringify({error: e}));
@@ -132,6 +131,7 @@ export class SlotEngine {
         console.log('save slot:', params, name, data);
 
         const db = params.db_links;
+        const createSections = params.createAffectionSectionKeys ?? [];
 
         let valArr = !slot_id ?
             Object.keys(data).map(datakey => {
@@ -155,8 +155,9 @@ export class SlotEngine {
 
         return this.context.dbe.query(q)
             .pipe(
-                mapTo(`${slot_id ? 'слот с id ' + slot_id + ' изменен' : 'добавлен новый слот'}`))
-            .toPromise();
+                mapTo(`${slot_id ? 'слот с id ' + slot_id + ' изменен' : 'добавлен новый слот'}`),
+                tap(() => this.garbageHandler([name, params.db_entity, params.entity_key, ...createSections], createSections))
+            ).toPromise();
     }
 
     async saveSlotHandler(req, res) {
@@ -194,13 +195,17 @@ export class SlotEngine {
     async deleteSlot(name: string, id: string) {
         const params: Slot = this.getSlotParams(name);
         const db_repo = params.db_links;
+        const deleteSections = params.deleteAffectionSectionKeys ?? [];
+
         const qd = `DELETE FROM \`${ db_repo }\` WHERE id=${id}`;
 
         console.log('deleteSlot qd: ', qd);
 
         return this.context.dbe.query(qd)
             .pipe(
-                mapTo('Слот с name: ' + params.name + ' и id: ' + id + ' удален из репозитория')).toPromise();
+                mapTo('Слот с name: ' + params.name + ' и id: ' + id + ' удален из репозитория'),
+                tap(() => this.garbageHandler([name, params.db_entity, params.entity_key, ...deleteSections], deleteSections))
+            ).toPromise();
     }
 
     async deleteSlotHandler(req, res) {
@@ -223,6 +228,12 @@ export class SlotEngine {
             }
         }
     }
+
+    garbageHandler(keys: string[], sections: SectionKeys[]): void {
+        keys.forEach(k => this.context.cacheEngine.softClearBykey(k));
+        sections.forEach(k => this.context.searchEngine.resetSearchStoreBySection(k));
+        sections.forEach(k => this.context.searchEngine.resetSummaryStoreBySection(k));
+    } 
 
     getRouter(): Router {
 

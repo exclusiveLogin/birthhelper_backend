@@ -1,4 +1,5 @@
 import {Cached} from "../cache.engine/cache.model";
+import { SectionKeys } from "../search.engine/config";
 
 export interface Slot extends Cached{
     name: string;
@@ -15,11 +16,13 @@ export interface Slot extends Cached{
     entity_key: string; // ключ сущности
     contragent_id_key: string; // название поля для хранения ссылки на КА
     entity_id_key: string; // название поля для хранения ссылки на сущность
+    createAffectionSectionKeys?: SectionKeys[]; // ключи секций для сброса по удалению сущности
+    deleteAffectionSectionKeys?: SectionKeys[]; // ключи секций для сброса по созданию либо сохранению сущности
 }
 
 export type FieldType = 'number' | 'string' | 'flag';
 
-const slots: { [key: string]: Slot } = {
+export const slots: { [key: string]: Slot } = {
     slot_placement: {
         name: 'slot_placement',
         title: 'Слоты для услуг размещения',
@@ -41,6 +44,8 @@ const slots: { [key: string]: Slot } = {
         entity_key: 'services', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
     },
     slot_doctors: {
         name: 'slot_doctors',
@@ -63,6 +68,8 @@ const slots: { [key: string]: Slot } = {
         entity_key: 'doctors', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
     },
     slot_birth_type: {
         name: 'slot_birth_type',
@@ -85,7 +92,7 @@ const slots: { [key: string]: Slot } = {
         entity_key: 'birthtype', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
     }
 };
-
-module.exports = slots;
