@@ -48,7 +48,7 @@ export interface SummaryRate {
 
 export interface SearchMemo {
     hash: string;
-    section: string;
+    section: SectionKeys;
     filters: FilterSection
 }
 
@@ -92,8 +92,14 @@ export class SearchEngine {
         this.initFiltersFromDB();
     }
 
-    initFiltersFromDB(): void {
-
+    async initFiltersFromDB(): Promise<void> {
+        try {
+            const filters = await this.loadFiltersFromDB();
+            filters?.forEach(f => this.setFilterStore(f.section, f.hash, f.filters))
+            console.error('initFiltersFromDB RESULT:', filters);
+        } catch(e) {
+            console.error('initFiltersFromDB ERR:', e)
+        }
     }
 
     saveFiltersToDb(section: SectionKeys, hash: string, filters: FilterSection): Promise<number> {
@@ -101,7 +107,7 @@ export class SearchEngine {
         (hash, section, filters) 
         VALUES ('${hash}', '${section}', '${JSON.stringify(filters)}') 
         ON DUPLICATE KEY UPDATE 
-        section = 'section',
+        section = '${section}',
         filters = '${JSON.stringify(filters)}'`;
 
 
@@ -111,8 +117,8 @@ export class SearchEngine {
             ).toPromise();
     }
 
-    loadFiltersFromDbByHash(section: SectionKeys, hash: string): Promise<FilterSection> {
-        const q = `SELECT FROM \`search\` WHERE section = "${section}" AND hash = "${hash}"`;
+    async loadFiltersFromDbByHash(section: SectionKeys, hash: string): Promise<FilterSection> {
+        const q = `SELECT * FROM \`search\` WHERE section = "${section}" AND hash = "${hash}"`;
         return this.context.dbe.query<SearchMemoSrc>(q)
             .pipe(
                 map(result => {
@@ -124,8 +130,8 @@ export class SearchEngine {
             ).toPromise();
     }
 
-    loadFiltersFrom(): Promise<SearchMemo[]> {
-        const q = `SELECT FROM \`search\``;
+    loadFiltersFromDB(): Promise<SearchMemo[]> {
+        const q = `SELECT * FROM \`search\``;
         return this.context.dbe.query<SearchMemoSrc>(q)
             .pipe(
                 map(result => {
@@ -290,6 +296,8 @@ export class SearchEngine {
         }
         this.filterStore[section][hash] = data;
 
+        console.log('setFilterStore', this.filterStore);
+
         this.saveFiltersToDb(section, hash, data);
     }
 
@@ -316,6 +324,7 @@ export class SearchEngine {
             return;
         }
 
+        console.log('resetSearchStoreBySection', section, this.searchStore);
         this.searchStore[section] = {};
     }
 
@@ -326,6 +335,7 @@ export class SearchEngine {
             return;
         }
 
+        console.log('resetSummaryStoreBySection', section, this.summaryStore);
         this.summaryStore[section] = {};
     }
 
