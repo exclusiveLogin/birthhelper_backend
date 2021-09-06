@@ -10,7 +10,7 @@ import {
     SectionKeys
 } from "./config";
 import {forkJoin, Observable, of, zip} from "rxjs";
-import {map, tap} from "rxjs/operators";
+import {map, mapTo, tap} from "rxjs/operators";
 import {md5Encript} from "./sections.handler";
 import {PipelineEngine} from "../search.engine/piplines.engine";
 import { OkPacket } from "mysql";
@@ -95,10 +95,16 @@ export class SearchEngine {
     async initFiltersFromDB(): Promise<void> {
         try {
             const filters = await this.loadFiltersFromDB();
-            filters?.forEach(f => this.setFilterStore(f.section, f.hash, f.filters))
+            filters?.forEach(f => {
+                if (this.validator(f.filters, f.section)[0]) {
+                    this.setFilterStore(f.section, f.hash, f.filters);
+                } else {
+                    this.deleteFiltersFromDb(f.hash);
+                }
+            })
             console.error('initFiltersFromDB RESULT:', filters);
         } catch(e) {
-            console.error('initFiltersFromDB ERR:', e)
+            console.error('initFiltersFromDB ERR:', e);
         }
     }
 
@@ -110,10 +116,21 @@ export class SearchEngine {
         section = '${section}',
         filters = '${JSON.stringify(filters)}'`;
 
-
         console.log('saveFiltersToDb', q);
         return this.context.dbe.query(q).pipe(
             map((result: any) => (result as OkPacket).insertId),
+            ).toPromise();
+    }
+
+    deleteFiltersFromDb(hash: string): Promise<null> {
+        const q = `DELETE FROM \`search\` 
+        WHERE
+        hash = '${hash}'`;
+        
+        console.log('deleteFiltersFromDb', q);
+
+        return this.context.dbe.query(q).pipe(
+            mapTo(null),
             ).toPromise();
     }
 
