@@ -397,7 +397,7 @@ export class SearchEngine {
             return;
         }
 
-        res.send({filters});
+        res.send(filters);
 
     }
 
