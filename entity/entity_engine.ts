@@ -108,7 +108,7 @@ export class EntityEngine {
             const ids$ = this.searchEngine.getEntitiesIDByHash(searchKey, hash)
                 ?.pipe(
                     map(result => result.length || 0));
-            const provider = hash ? ids$ : this.getSetFromDB(req);
+            const provider = hash && ids$ ? ids$ : this.getSetFromDB(req);
 
             provider.subscribe(result =>
                     res.send({
