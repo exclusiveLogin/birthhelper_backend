@@ -46,7 +46,7 @@ export class DictionaryEngine {
                 ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} 
                 ${limstr}`;
 
-            return this.dbe.query<DictionaryItem>(q).pipe(
+            return this.dbe.queryList<DictionaryItem>(q).pipe(
                 tap(data => this.ce.saveCacheData(`${id}`, data)),
                 tap(result => {
                     if( dict.titleMap || dict.titleAddMap ){

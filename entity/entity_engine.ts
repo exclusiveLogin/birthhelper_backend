@@ -85,13 +85,13 @@ export class EntityEngine {
             const likeStr = [...generateQStr(req, 'string'), ...generateQStr(req, 'flag')].join(' AND ');
             const whereStr = [...generateQStr(req, 'id')].join(' AND ');
 
-            const q = `SELECT * 
+            const q = `SELECT COUNT(*) as cnt 
                         FROM \`${ entities[req.params.id].db_name }\`
                         ${(whereStr) ? 'WHERE ' + whereStr : ''} 
                         ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} `;
 
             return this.context.dbe.query<Entity>(q).pipe(
-                    map(result => result.length || 0))
+                    map(result => result.cnt || 0))
         }
 
         console.log('что то пошло не так... Сущность сета не определена');
@@ -187,7 +187,7 @@ export class EntityEngine {
 
         const createSections = config.createAffectionSectionKeys ?? [];
 
-        return  this.context.dbe.query(qf).pipe(
+        return  this.context.dbe.queryList(qf).pipe(
                 mapTo('Данные обновлены'),
                 tap(() => this.garbageHandler([config.db_name, name], createSections)),
             ).toPromise();
@@ -220,7 +220,7 @@ export class EntityEngine {
 
         const qd = `DELETE FROM \`${ db }\` WHERE id=${id}`;
 
-        return this.context.dbe.query(qd).pipe(
+        return this.context.dbe.queryList(qd).pipe(
                 mapTo(`Запись с id = ${id} удалена`),
                 tap(() => this.garbageHandler([config.db_name, name], deleteSections)),
             ).toPromise();
@@ -255,7 +255,7 @@ export class EntityEngine {
             .pipe(
                 switchMap(key => this.cacheEngine.checkCache(key) ?
                     this.cacheEngine.getCachedByKey<Entity[]>(key) :
-                    this.context.dbe.query<Entity>(q).pipe(tap(data => this.cacheEngine.saveCacheData(key, data)))));
+                    this.context.dbe.queryList<Entity>(q).pipe(tap(data => this.cacheEngine.saveCacheData(key, data)))));
     }
 
     getEntityPortion(key: string, req: Request): Observable<Entity[]> {
@@ -302,7 +302,7 @@ export class EntityEngine {
                 ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} 
                 ${limstr}`;
 
-        return this.context.dbe.query<Entity>(q);
+        return this.context.dbe.queryList<Entity>(q);
     }
 
     getEntities(key: string, hash: string, req: Request): Observable<Entity[]> {
@@ -388,7 +388,7 @@ export class EntityEngine {
                                                 WHERE \`images\`.\`id\` = ${row[k]}`;
 
                                 qs.push(
-                                    this.context.dbe.query<Entity>(q).pipe(
+                                    this.context.dbe.queryList<Entity>(q).pipe(
                                         map(a_result => ({key: targetReq.key, value: a_result, id: row.id})))
                                 );
                             }
@@ -399,7 +399,7 @@ export class EntityEngine {
                                     const q = `SELECT * FROM \`${db}\` WHERE \`id\` = ${row[k]}`;
 
                                     qs.push(
-                                        this.context.dbe.query<Entity>(q).pipe(
+                                        this.context.dbe.queryList<Entity>(q).pipe(
                                             map(a_result => ({key: targetReq.key, value: a_result, id: row.id})))
                                     );
                                 }
@@ -436,7 +436,7 @@ export class EntityEngine {
                         switch (clc.type) {
                             case 'count':
                                 const aq = `SELECT * FROM \`${ clc.db_name }\` WHERE \`${ clc.id_key }\`='${id}'`;
-                                qs.push(this.context.dbe.query(aq).pipe(map(a_result => ({
+                                qs.push(this.context.dbe.queryList(aq).pipe(map(a_result => ({
                                     key: clc.key,
                                     value: a_result.length,
                                     id
@@ -499,12 +499,12 @@ export class EntityEngine {
             console.log('save file in db: ', q);
 
             try {
-                const result = await this.context.dbe.query(q).toPromise();
+                const result = await this.context.dbe.queryList(q).toPromise();
                 const insertedId = (result as any as {[key: string]: any, insertId: number}).insertId;
 
                 const qi = `INSERT INTO \`${ 'images' }\` ( \`file_id\`, \`title\`, \`description\`) VALUES ( ${insertedId}, "${title}", "${description}" )`;
 
-                const _result = await this.context.dbe.query(qi).toPromise();
+                const _result = await this.context.dbe.queryList(qi).toPromise();
 
                 res.status(201);
                 res.send({
@@ -537,7 +537,7 @@ export class EntityEngine {
         let q = `SELECT * FROM \`files\` WHERE \`id\` = ${id}`;
 
         try {
-            const result = this.context.dbe.query(q).toPromise();
+            const result = this.context.dbe.queryList(q).toPromise();
             res.send({result});
         } catch (e) {
             res.status(500);

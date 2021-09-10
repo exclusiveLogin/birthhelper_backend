@@ -177,7 +177,7 @@ export class PipelineEngine {
             this.context.cacheEngine.getCachedByKey<T[]>(cacheKey).pipe(
                 // tap(data => console.log('getEntitiesByDBOrCache CACHE log', cacheKey, data.length)),
             ) :
-            this.context.dbe.query<T>(q).pipe(
+            this.context.dbe.queryList<T>(q).pipe(
                 // tap(data => console.log('getEntitiesByDBOrCache DB log', q, cacheKey, data.length)),
                 catchError(err => {
                     console.error('getEntitiesByDBOrCache error', q, cacheKey, err);

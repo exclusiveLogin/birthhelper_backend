@@ -23,7 +23,7 @@ export class ContainerEngine {
         const whereStr = cid ? `WHERE \`id\`=${cid}` : '';
         const q = 'SELECT * FROM `' + containerParams.db_list + '`' + whereStr;
 
-        return this.context.dbe.query<{ id: number, items: any[], q: Promise<any> }>(q).toPromise();
+        return this.context.dbe.queryList<{ id: number, items: any[], q: Promise<any> }>(q).toPromise();
     }
 
     // функция возвращающая объекты контейнера по имени
@@ -44,7 +44,7 @@ export class ContainerEngine {
 
             console.log('qi: ', qi);
 
-            return this.context.dbe.query<{ entity: any }>(qi).toPromise().then((items) => {
+            return this.context.dbe.queryList<{ entity: any }>(qi).toPromise().then((items) => {
 
                 items.forEach(item => {
                     item.entity = {};
@@ -80,7 +80,7 @@ export class ContainerEngine {
                 const q = `INSERT INTO \`${links_db}\` (\`container_id\`, \`${id_key}\` ) VALUES(${id_container}, ${cur_id})`;
                 console.log('simpleSaveContainer promisesList q:', q);
 
-                return this.context.dbe.query(q)
+                return this.context.dbe.queryList(q)
                     .pipe(
                         tap(() => console.log('запись о контейнере с id ', cur_id, 'добавлена в БД')),
                     ).toPromise();
@@ -128,7 +128,7 @@ export class ContainerEngine {
             const qd = `DELETE FROM \`${ db_repo }\` WHERE id=${id}`;
             const deleteSections = containerParams.deleteAffectionSectionKeys ?? [];
 
-            return this.context.dbe.query(qd)
+            return this.context.dbe.queryList(qd)
                 .pipe(
                     mapTo('Контейнер с name: ' + name + ' и id: ' + id + ' удален из репозитория'),
                     tap(() => this.garbageHandler([name, containerParams.db_entity, containerParams.entity_key, ...deleteSections], deleteSections)),
@@ -147,7 +147,7 @@ export class ContainerEngine {
             //  удаляем связив блоке контейнеров
             let qdd = `DELETE FROM \`${ db_cont }\` WHERE container_id=${id}`;
 
-            return this.context.dbe.query<null>(qdd)
+            return this.context.dbe.queryList<null>(qdd)
                 .pipe(
                     tap(result => console.log('removeContainerItems result', qdd, result)),
                     mapTo(`Записи контейнеров с id = ${id} удалены`)).toPromise();

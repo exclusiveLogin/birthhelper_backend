@@ -10,7 +10,7 @@ export class DataBaseService {
 
     pool = createPool(sqlConfig);
 
-    query<T>(q: string): Observable<T[]> {
+    queryList<T>(q: string): Observable<T[]> {
         return new Observable<T[]>(observer => {
             this.pool.query(q, (err, result) => {
                 // console.log('query raw: ', err, result, q);
@@ -18,6 +18,19 @@ export class DataBaseService {
                     observer.error(err);
                 }
                 observer.next(result as T[]);
+                observer.complete();
+            });
+        });
+    }
+
+    query<T>(q: string): Observable<T> {
+        return new Observable<T>(observer => {
+            this.pool.query(q, (err, result) => {
+                // console.log('query raw: ', err, result, q);
+                if (err) {
+                    observer.error(err);
+                }
+                observer.next(result as T);
                 observer.complete();
             });
         });

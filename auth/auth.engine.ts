@@ -72,7 +72,7 @@ export class AuthorizationEngine {
     async getUserById(id: number): Promise<IUser> {
         const q = `SELECT * FROM \`users\` WHERE \`id\` = ${id}`;
 
-        return this.context.dbe.query(q).pipe(
+        return this.context.dbe.queryList(q).pipe(
             map(result => (result as any as IUser)?.[0]),
         ).toPromise();
     }
@@ -80,14 +80,14 @@ export class AuthorizationEngine {
     async getUserIdByToken(token: string): Promise<number> {
         const q = `SELECT * FROM \`sessions\` WHERE \`token\` = "${token}"`;
 
-        return this.context.dbe.query(q).pipe(
+        return this.context.dbe.queryList(q).pipe(
             map(result => (result as any as UserSession)?.[0]?.user_id),
         ).toPromise();
     }
 
     async getRoleByUserId(user_id: number): Promise<UserRole> {
         const q = `SELECT \`roles\`.*, \`users\`.\`id\` as user_id FROM users, roles WHERE users.id = ${user_id} AND users.role = roles.id`;
-        return this.context.dbe.query<UserRole>(q).pipe(
+        return this.context.dbe.queryList<UserRole>(q).pipe(
             map((result: UserRole[]) => result[0] ? result[0] : null)).toPromise();
     }
 
@@ -116,7 +116,7 @@ export class AuthorizationEngine {
     async getUserIdByCredential(login: string, password: string): Promise<number> {
         const q = `SELECT * FROM \`users\` WHERE \`login\` = "${login}" AND password = "${password}"`;
 
-        return this.context.dbe.query(q).pipe(
+        return this.context.dbe.queryList(q).pipe(
             map(result => (result as any as IUser)?.[0]?.id),
         ).toPromise();
     }
@@ -126,7 +126,7 @@ export class AuthorizationEngine {
 
         console.log('getUserIdByActivation: ', q);
 
-        return this.context.dbe.query(q).pipe(
+        return this.context.dbe.queryList(q).pipe(
             map(result => (result as any as IUser)?.[0]?.id),
         ).toPromise();
     }
@@ -134,7 +134,7 @@ export class AuthorizationEngine {
     async getGuestID(): Promise<number> {
         const q = `SELECT * FROM \`users\` WHERE \`login\` = "guest" AND password IS NULL`;
 
-        return this.context.dbe.query(q).pipe(
+        return this.context.dbe.queryList(q).pipe(
             map(result => (result as any as IUser)?.[0]?.id),
         ).toPromise();
     }
@@ -143,7 +143,7 @@ export class AuthorizationEngine {
         const q = `SELECT * FROM \`users\` WHERE \`login\` = "${login}"`;
         console.log('q: ', q);
 
-        return this.context.dbe.query(q).pipe(
+        return this.context.dbe.queryList(q).pipe(
             map(result => !!(result as any as IUser)?.[0]?.id),
         ).toPromise();
     }
@@ -151,7 +151,7 @@ export class AuthorizationEngine {
     async cleanOldTokens(userId: number): Promise<null> {
         const q = `DELETE FROM \`sessions\` WHERE \`user_id\` = ${userId}`;
 
-        return this.context.dbe.query(q).pipe(
+        return this.context.dbe.queryList(q).pipe(
             mapTo(null)
         ).toPromise();
     }
@@ -159,7 +159,7 @@ export class AuthorizationEngine {
     async cleanCurrentSession(token: string): Promise<null> {
         const q = `DELETE FROM \`sessions\` WHERE \`token\` = "${token}"`;
 
-        return this.context.dbe.query(q).pipe(
+        return this.context.dbe.queryList(q).pipe(
             mapTo(null)
         ).toPromise();
     }
@@ -168,8 +168,8 @@ export class AuthorizationEngine {
         const token: string = uuid.v4();
         const q = `INSERT INTO \`sessions\` (\`token\`, \`user_id\`) VALUES("${token}",${userId})`;
 
-        return this.context.dbe.query(q).pipe(
-            map(result => (result as any as OkPacket)?.insertId ? token : null),
+        return this.context.dbe.query<OkPacket>(q).pipe(
+            map(result => result?.insertId ? token : null),
         ).toPromise();
     }
 
@@ -178,8 +178,8 @@ export class AuthorizationEngine {
         const q = `INSERT INTO \`users\` (\`login\`, \`password\`, \`role\`, \`activation\`) 
         VALUES("${userLogin}", "${userPassword}", 1, "${token}")`;
 
-        return this.context.dbe.query(q).pipe(
-            map(result => (result as any as OkPacket)?.insertId),
+        return this.context.dbe.query<OkPacket>(q).pipe(
+            map(result => result?.insertId),
             map(id => ({ id, activation: token})),
         ).toPromise();
     }
@@ -189,7 +189,7 @@ export class AuthorizationEngine {
         try {
             const userId = await this.getUserIdByActivation(activation);
             const q = `UPDATE \`users\` SET \`active\` = 1, \`role\`= 2 WHERE \`id\` = ${userId}`;
-            return this.context.dbe.query(q).pipe(
+            return this.context.dbe.queryList(q).pipe(
                 mapTo(null)
             ).toPromise();
 
@@ -203,7 +203,7 @@ export class AuthorizationEngine {
     async changePasswordForUser(userLogin: string, userPassword: string): Promise<null> {
         const q = `UPDATE \`users\` SET \`password\` = "${userPassword}" WHERE \`login\` = "${userLogin}"`;
 
-        return this.context.dbe.query(q).pipe(
+        return this.context.dbe.queryList(q).pipe(
             mapTo(null)
         ).toPromise();
     }

@@ -117,8 +117,8 @@ export class SearchEngine {
         filters = '${JSON.stringify(filters)}'`;
 
         console.log('saveFiltersToDb', q);
-        return this.context.dbe.query(q).pipe(
-            map((result: any) => (result as OkPacket).insertId),
+        return this.context.dbe.query<OkPacket>(q).pipe(
+            map((result: any) => result?.insertId),
             ).toPromise();
     }
 
@@ -129,14 +129,14 @@ export class SearchEngine {
         
         console.log('deleteFiltersFromDb', q);
 
-        return this.context.dbe.query(q).pipe(
+        return this.context.dbe.queryList(q).pipe(
             mapTo(null),
             ).toPromise();
     }
 
     async loadFiltersFromDbByHash(section: SectionKeys, hash: string): Promise<FilterSection> {
         const q = `SELECT * FROM \`search\` WHERE section = "${section}" AND hash = "${hash}"`;
-        return this.context.dbe.query<SearchMemoSrc>(q)
+        return this.context.dbe.queryList<SearchMemoSrc>(q)
             .pipe(
                 map(result => {
                     if(!result.length){
@@ -149,7 +149,7 @@ export class SearchEngine {
 
     loadFiltersFromDB(): Promise<SearchMemo[]> {
         const q = `SELECT * FROM \`search\``;
-        return this.context.dbe.query<SearchMemoSrc>(q)
+        return this.context.dbe.queryList<SearchMemoSrc>(q)
             .pipe(
                 map(result => {
                     const compile: SearchMemo[] = result.map((item) => {

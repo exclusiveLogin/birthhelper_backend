@@ -51,7 +51,7 @@ export class SlotEngine {
         }
 
         console.log('qi: ', qi);
-        return qi ? this.context.dbe.query<Entity>(qi).toPromise() : [];
+        return qi ? this.context.dbe.queryList<Entity>(qi).toPromise() : [];
 
     }
 
@@ -67,7 +67,7 @@ export class SlotEngine {
 
         console.log('query getSlotContainer: ', qr);
 
-        return qr ? this.context.dbe.query(qr).toPromise() : [];
+        return qr ? this.context.dbe.queryList(qr).toPromise() : [];
     }
 
     // Функция возвращающая список слотов или слот по id
@@ -76,7 +76,7 @@ export class SlotEngine {
         const whereStr = cid ? `WHERE \`id\`=${cid}` : '';
         const q = 'SELECT * FROM `' + params.db_links + '`' + whereStr;
 
-        return this.context.dbe.query(q).toPromise();
+        return this.context.dbe.queryList(q).toPromise();
     }
 
     // функция возвращающая слот по id с наполнением
@@ -153,7 +153,7 @@ export class SlotEngine {
 
         console.log('saveSlot q: ', q);
 
-        return this.context.dbe.query(q)
+        return this.context.dbe.queryList(q)
             .pipe(
                 mapTo(`${slot_id ? 'слот с id ' + slot_id + ' изменен' : 'добавлен новый слот'}`),
                 tap(() => this.garbageHandler([name, params.db_entity, params.entity_key, ...createSections], createSections))
@@ -201,7 +201,7 @@ export class SlotEngine {
 
         console.log('deleteSlot qd: ', qd);
 
-        return this.context.dbe.query(qd)
+        return this.context.dbe.queryList(qd)
             .pipe(
                 mapTo('Слот с name: ' + params.name + ' и id: ' + id + ' удален из репозитория'),
                 tap(() => this.garbageHandler([name, params.db_entity, params.entity_key, ...deleteSections], deleteSections))
