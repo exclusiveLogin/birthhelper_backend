@@ -1,6 +1,7 @@
 FROM node:12.20.2
 COPY . /usr/src/app
 WORKDIR /usr/src/app
+RUN npm i -g npm
 RUN rm dist/ -rf
 RUN mkdir dist && cd dist && mkdir upload
 
