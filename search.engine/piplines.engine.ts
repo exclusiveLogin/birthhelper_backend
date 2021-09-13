@@ -1,9 +1,9 @@
-import {forkJoin, Observable, of} from "rxjs";
-import {Context, sectionConfig, SectionKeys} from "./config";
-import {StoredIds, Summary} from "../search.engine/engine";
-import {catchError, map, switchMap, tap} from "rxjs/operators";
-import {cacheKeyGenerator} from "../search.engine/sections.handler";
-import {Clinic} from "../models/clinic.interface";
+import { forkJoin, Observable, of } from "rxjs";
+import { Context, sectionConfig, SectionKeys } from "./config";
+import { StoredIds, Summary } from "../search.engine/engine";
+import { catchError, map, switchMap, tap } from "rxjs/operators";
+import { cacheKeyGenerator } from "../search.engine/sections.handler";
+import { Clinic } from "../models/clinic.interface";
 
 type ChapterKeys = typeof sectionConfig[SectionKeys]
 type keys = ChapterKeys[number];
@@ -36,19 +36,17 @@ export class PipelineEngine {
             );
     }
 
-    clinic_facilities_birth_section(facilityId: number): Observable<StoredIds> {
-        return of(null).pipe(
-            // тут получаем ids контейнеров в которых есть данное удобство
-            switchMap(container_ids => {
-                // определяем какие контейнеры содержат услугу
-                const cacheKey = cacheKeyGenerator(
-                    'ent_placement_slots',
-                    'ent_facilities',
-                    facilityId,
-                    'grouped',
-                    'contragent_id');
+    clinic_facilities_birth_section(facilityId: number): Observable<Summary[]> {
 
-                const q = `SELECT contragent_id as id, 
+        // определяем какие контейнеры содержат услугу
+        const cacheKey = cacheKeyGenerator(
+            'ent_placement_slots',
+            'ent_facilities',
+            facilityId,
+            'grouped',
+            'contragent_id');
+
+        const q = `SELECT contragent_id as id, 
                     COUNT(id) as count_slots, 
                     MAX(price) as max_price, 
                     MIN(price) as min_price, 
@@ -62,16 +60,13 @@ export class PipelineEngine {
                     )
                     GROUP BY contragent_id`;
 
-                // console.log('clinic_facilities_birth_section: ', q, cacheKey);
+        // console.log('clinic_facilities_birth_section: ', q, cacheKey);
 
-                return this.getEntitiesByDBOrCache<Summary>(q, cacheKey);
-            }),
-            map(data => data.map(c => c.id)),
-        )
+        return this.getEntitiesByDBOrCache<Summary>(q, cacheKey);
 
     }
 
-    clinic_personal_birth_section(positionId: number): Observable<StoredIds> {
+    clinic_personal_birth_section(positionId: number): Observable<Summary[]> {
 
         const cacheKey = cacheKeyGenerator(
             'ent_doctor_slots',
@@ -93,13 +88,10 @@ export class PipelineEngine {
                     GROUP BY contragent_id`;
 
         // console.log('clinic_personal_birth_section: ', q, cacheKey);
-        return of(null).pipe(
-            switchMap(() => this.getEntitiesByDBOrCache<Summary>(q, cacheKey)),
-            map(data => data.map(c => c.id)),
-        );
+        return this.getEntitiesByDBOrCache<Summary>(q, cacheKey);
     }
 
-    clinic_placement_birth_section(serviceId: number): Observable<StoredIds> {
+    clinic_placement_birth_section(serviceId: number): Observable<Summary[]> {
 
         const cacheKey = cacheKeyGenerator(
             'ent_placement_slots',
@@ -120,24 +112,11 @@ export class PipelineEngine {
                     GROUP BY contragent_id`;
 
         // console.log('clinic_placement_birth_section: ', q, cacheKey);
-        return of(null).pipe(
-            switchMap(() => this.getEntitiesByDBOrCache<Summary>(q, cacheKey)),
-            map(data => data.map(c => c.id)),
-        )
+        return this.getEntitiesByDBOrCache<Summary>(q, cacheKey);
+
     }
 
-    clinic_type_birth_section(birthTypeId: number): Observable<StoredIds> {
-        // Scoring по клиникам содержащим в виде слота данный тип родов с подготовкой сета
-        const q = `SELECT contragent_id as id, 
-                    COUNT(id) as count_slots, 
-                    MAX(price) as max_price, 
-                    MIN(price) as min_price, 
-                    AVG(price) as avg_price 
-                    FROM service_slot 
-                    WHERE service_id IN 
-                    (SELECT id FROM birth_clinic_type WHERE ${ birthTypeId ? 'id = ' + birthTypeId : 1 })
-                    AND service_type = 3
-                    GROUP BY contragent_id`;
+    clinic_type_birth_section(birthTypeId: number): Observable<Summary[]> {
 
         const cacheKey = cacheKeyGenerator(
             'ent_placement_slots',
@@ -146,14 +125,24 @@ export class PipelineEngine {
             'grouped',
             'contragent_id');
 
+        // Scoring по клиникам содержащим в виде слота данный тип родов с подготовкой сета
+        const q = `SELECT contragent_id as id, 
+                    COUNT(id) as count_slots, 
+                    MAX(price) as max_price, 
+                    MIN(price) as min_price, 
+                    AVG(price) as avg_price 
+                    FROM service_slot 
+                    WHERE service_id IN 
+                    (SELECT id FROM birth_clinic_type WHERE ${birthTypeId ? 'id = ' + birthTypeId : 1})
+                    AND service_type = 3
+                    GROUP BY contragent_id`;
+
         // console.log('clinic_placement_birth_section: ', q, cacheKey);
-        return of(null).pipe(
-            switchMap(() => this.getEntitiesByDBOrCache<Summary>(q, cacheKey)),
-            map(data => data.map(c => c.id)),
-        )
+        return this.getEntitiesByDBOrCache<Summary>(q, cacheKey);
+
     }
 
-    pipelines: { [key in keys]: (arg: any) => Observable<StoredIds> } = {
+    pipelines: { [key in keys]: (arg: any) => Observable<Summary[]> } = {
         clinic_facilities_birth_section: this.clinic_facilities_birth_section.bind(this),
         clinic_personal_birth_section: this.clinic_personal_birth_section.bind(this),
         clinic_placement_birth_section: this.clinic_placement_birth_section.bind(this),
@@ -188,14 +177,22 @@ export class PipelineEngine {
     }
 
     // эта штука должна сразу возвращить intersect массив клиник
-    getPipelineContext(key: keys, args: any[]): Observable<StoredIds[]>{
+    getPipelineContextIds(key: keys, args: any[]): Observable<StoredIds[]> {
         const pipe = this.pipelines[key];
+
         return pipe && args.length ?
-            forkJoin(args.map(arg => pipe(arg))) :
+            forkJoin(args.map(arg => pipe(arg).pipe(map(result => result.map(r => r.id))))) :
             of<StoredIds[]>(null);
     }
 
-    getSummaryPipelineContext<T>(key: string, ...args: any): Observable<T[]>{
+    getPipelineContextSummary(key: keys, args: any[]): Observable<Summary[][]> {
+        const pipe = this.pipelines[key];
+        return pipe && args.length ?
+            forkJoin(args.map(arg => pipe(arg))) :
+            of<Summary[][]>(null);
+    }
+
+    getSummaryPipelineContext<T>(key: string, ...args: any): Observable<T[]> {
         const pipe = this.summaryPipelines[key];
         return pipe ? pipe(...args) : of(null);
     }

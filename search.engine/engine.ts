@@ -26,7 +26,7 @@ type TypeSection<T = any> = {
 }
 
 export interface SearchStore extends TypeSection<string> {}
-export interface SummaryStore extends TypeSection<Summary> {}
+export interface SummaryStore extends TypeSection<Summary[]> {}
 export interface FilterStore extends TypeSection<FilterSection> {}
 
 // при сильных различиях расширить условным generic
@@ -168,6 +168,85 @@ export class SearchEngine {
         return [...new Set(a.filter(i => b.includes(i)))]
     }
 
+    intersectorSummary(a: Summary[], b: Summary[]): Summary[] {
+        const intersectedIds = this.intersector(a.map(_ => _.id), b.map(_ => _.id))
+        return intersectedIds.map(id => {
+            const aSummary = a.find(sum => sum.id === id);
+            const bSummary = b.find(sum => sum.id === id);
+
+            const summary: Summary = {
+                id,
+                count_slots: this.sumNum(aSummary.count_slots, bSummary.count_slots),
+                min_price: this.minNum(aSummary.min_price, bSummary.min_price),
+                max_price: this.minNum(aSummary.max_price, bSummary.max_price),
+                avg_price: this.minNum(aSummary.avg_price, bSummary.avg_price),
+            }
+
+            return summary;
+        });
+    }
+
+    averageNum(a: number, b: number): number {
+        return Math.floor(((a || 0) + (b || 0)) / 2);
+    }
+
+    minNum(a: number, b: number): number {
+        return Math.floor(Math.min((a || 0), (b || 0)));
+    }
+
+    maxNum(a: number, b: number): number {
+        return Math.floor(Math.max((a || 0), (b || 0), 0));
+    }
+
+    sumNum(a: number, b: number): number {
+        return Math.floor(Math.floor((a || 0) + (b || 0)));
+    }
+
+    getEntitiesSummaryByHash(key: SectionKeys, hash: string): Observable<Summary[]>{
+        const config = this.searchConfig[key];
+        if(!config) return null;
+
+        // проверяем кеш
+        const stored = this.getSummaryStore(key, hash);
+        if(stored){
+            // console.log('cached: hash', hash, stored, this.searchStore);
+            return of(stored);
+        }
+
+        // забираем фильтры по хешу
+        const filters = this.getFilterStore(key, hash);
+        if(!filters) return null;
+
+        // генерируем пайп поиска.
+        const keys = Object.keys(filters);
+
+        // valueKeys
+        const pipes = keys.map((k: FilterSectionKeys, idx) => {
+            const type = config[k].type;
+
+            const filterSection = filters[k];
+
+            let searchEnt = [];
+            if(type === "flag" || type === "select") {
+                searchEnt = Object.keys(filterSection)
+            }
+
+            // return of(searchEnt);
+            return this.pipeliner.getPipelineContextSummary(k, searchEnt).pipe(
+                map(data => data ? data.reduce((acc, cur) => acc ? this.intersectorSummary(acc, cur) : cur) : null),
+            );
+        });
+
+        // вертаем в зад только совпавшие ids сущностей
+        return forkJoin(pipes).pipe(
+            map(data => data.filter(d => !!d)),
+            map(data => data.reduce((acc, cur) => acc ? this.intersectorSummary(acc, cur) : cur, null)),
+            // tap(data => console.log('getEntitiesIDByHash, forkJoin', data)),
+            tap(summaries => this.setSummaryStore(key, hash, summaries)),
+
+        )
+    }
+
     getEntitiesIDByHash(key: SectionKeys, hash: string): Observable<StoredIds>{
         const config = this.searchConfig[key];
         if(!config) return null;
@@ -197,10 +276,8 @@ export class SearchEngine {
                 searchEnt = Object.keys(filterSection)
             }
 
-            // console.log('searchEnt ', searchEnt);
-
             // return of(searchEnt);
-            return this.pipeliner.getPipelineContext(k, searchEnt).pipe(
+            return this.pipeliner.getPipelineContextIds(k, searchEnt).pipe(
                 map(data => data ? data.reduce((acc, cur) => acc ? this.intersector(acc, cur) : cur) : null),
             );
         });
@@ -294,6 +371,14 @@ export class SearchEngine {
 
     checkSectionExist(section: SectionKeys): boolean {
         return !!this.searchStore[section];
+    }
+
+    getSummaryStore(section: SectionKeys, hash: string): Summary[] {
+        if (this.checkSummarySectionExist(section)) {
+            return this.summaryStore[section][hash];
+        }
+
+        return null;
     }
 
     setSummaryStore(section: SectionKeys, hash: string, data: any): void {
@@ -413,7 +498,23 @@ export class SearchEngine {
             return;
         }
 
-        this.getEntitiesIDByHash(section, hash).subscribe(ids => res.send({ids}));
+        hashProvider.subscribe(ids => res.send({ids}));
+
+    }
+
+    sendSummaryByHashHandler(req, res): void {
+        const section: SectionKeys = req.params.id;
+        const hash: SectionKeys = req.params.hash;
+
+        const hashProvider = this.getEntitiesSummaryByHash(section, hash);
+
+        if(!section || !hash || !hashProvider) {
+            res.status(500);
+            res.send({error: 'hash or section key invalid'});
+            return;
+        }
+
+        hashProvider.subscribe(ids => res.send({ids}));
 
     }
 
@@ -421,6 +522,7 @@ export class SearchEngine {
         this.router.get('/', this.rootHandler.bind(this));
         this.router.get('/:id', this.sendFiltersHandler.bind(this));
         this.router.get('/:id/:hash', this.sendIdsByHashHandler.bind(this));
+        this.router.get('/:id/summary/:hash', this.sendSummaryByHashHandler.bind(this));
         this.router.get('/:id/filters/:hash', this.hashFilterHandler.bind(this));
         this.router.post('/:id', jsonparser, this.createVector.bind(this));
 
