@@ -1,4 +1,4 @@
-FROM node:12.20.2
+FROM node:14.17.6
 COPY . /usr/src/app
 WORKDIR /usr/src/app
 RUN npm i -g npm
