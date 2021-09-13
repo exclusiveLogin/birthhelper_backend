@@ -116,7 +116,7 @@ export class SearchEngine {
         section = '${section}',
         filters = '${JSON.stringify(filters)}'`;
 
-        console.log('saveFiltersToDb', q);
+        // console.log('saveFiltersToDb', q);
         return this.context.dbe.query<OkPacket>(q).pipe(
             map((result: any) => result?.insertId),
             ).toPromise();
@@ -398,7 +398,7 @@ export class SearchEngine {
         }
         this.filterStore[section][hash] = data;
 
-        console.log('setFilterStore', this.filterStore);
+        // console.log('setFilterStore', this.filterStore);
 
         this.saveFiltersToDb(section, hash, data);
     }
@@ -492,6 +492,8 @@ export class SearchEngine {
 
         const hashProvider = this.getEntitiesIDByHash(section, hash);
 
+        console.log('sendIdsByHashHandler', section, hashProvider);
+
         if(!section || !hash || !hashProvider) {
             res.status(500);
             res.send({error: 'hash or section key invalid'});
@@ -506,9 +508,11 @@ export class SearchEngine {
         const section: SectionKeys = req.params.id;
         const hash: SectionKeys = req.params.hash;
 
-        const hashProvider = this.getEntitiesSummaryByHash(section, hash);
+        const hashProvider = hash ? this.getEntitiesSummaryByHash(section, hash) : this.pipeliner.getDefaultSummaryPipelineContext(section);
 
-        if(!section || !hash || !hashProvider) {
+        console.log('sendSummaryByHashHandler', section, hashProvider);
+
+        if(!section || !hashProvider) {
             res.status(500);
             res.send({error: 'hash or section key invalid'});
             return;
@@ -521,8 +525,9 @@ export class SearchEngine {
     getRouter(): Router {
         this.router.get('/', this.rootHandler.bind(this));
         this.router.get('/:id', this.sendFiltersHandler.bind(this));
-        this.router.get('/:id/:hash', this.sendIdsByHashHandler.bind(this));
         this.router.get('/:id/summary/:hash', this.sendSummaryByHashHandler.bind(this));
+        this.router.get('/:id/summary', this.sendSummaryByHashHandler.bind(this));
+        this.router.get('/:id/:hash', this.sendIdsByHashHandler.bind(this));
         this.router.get('/:id/filters/:hash', this.hashFilterHandler.bind(this));
         this.router.post('/:id', jsonparser, this.createVector.bind(this));
 
