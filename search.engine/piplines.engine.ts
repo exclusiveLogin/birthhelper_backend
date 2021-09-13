@@ -14,14 +14,20 @@ export class PipelineEngine {
         const cacheKey = `clinic.summary.default`;
 
         const q = `SELECT contragent_id as id, 
-                    COUNT(id), 
+                    COUNT(id) as count_slots, 
                     MAX(price) as max_price, 
                     MIN(price) as min_price, 
                     AVG(price) as avg_price 
                     FROM service_slot 
                     GROUP BY contragent_id`;
 
-        return this.getEntitiesByDBOrCache<Summary>(q, cacheKey);
+        return this.getEntitiesByDBOrCache<Summary>(q, cacheKey).pipe(map(result => result.map((sum) => (
+            {
+                ...sum, 
+                avg_price: Math.floor(sum.avg_price),
+                min_price: Math.floor(sum.min_price),
+                max_price: Math.floor(sum.max_price)
+            }))));
     }
 
     clinic_active_pipeline(): Observable<StoredIds> {
@@ -192,8 +198,8 @@ export class PipelineEngine {
             of<Summary[][]>(null);
     }
 
-    getSummaryPipelineContext<T>(key: string, ...args: any): Observable<T[]> {
+    getDefaultSummaryPipelineContext(key: SectionKeys): Observable<Summary[]> {
         const pipe = this.summaryPipelines[key];
-        return pipe ? pipe(...args) : of(null);
+        return pipe ? pipe() : of(null);
     }
 }
