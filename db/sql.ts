@@ -30,7 +30,7 @@ export class DataBaseService {
                 if (err) {
                     observer.error(err);
                 }
-                observer.next(result as T);
+                observer.next(result?.[0] as T);
                 observer.complete();
             });
         });
