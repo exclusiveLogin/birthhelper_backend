@@ -496,20 +496,11 @@ export const entityRepo: EntityRepo = {
 
     ent_images: {
         db_name: 'images',
-        fk: {
-            db: 'files',
-            target: [ 'filename' ],
-            key: 'file_id',
-            restrictors: [{
-                key: 'type',
-                value: '%image%'
-            }]
-        },
         filters: [],
         container: null,
         fields: [
             { key: 'id', title: 'ID картинки', type: 'id', readonly: true, showOnTable: true },
-            { key: 'file_id', type: 'id', title: 'ID Файла', readonly: true, showOnTable: true },
+            { key: 'file_id', type: 'img', title: 'ID Файла', readonly: true, showOnTable: true, loadEntity: true },
             { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
             { key: 'description', title: 'Описание', type: 'string', readonly: false, showOnTable: true },
         ],

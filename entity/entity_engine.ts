@@ -8,11 +8,11 @@ import multer from 'multer';
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {entityRepo} from './entity_repo';
 import {Entity as EntityConfig} from './entity_repo.model';
-import {SearchEngine} from "../search.engine/engine";
+import {SearchEngine, Summary} from "../search.engine/engine";
 import {Context, SectionKeys} from "../search.engine/config";
 import {forkJoin, Observable, of, throwError} from "rxjs";
-import {map, mapTo, switchMap, take, tap} from "rxjs/operators";
-import {concatFn, generateQStr} from "../db/sql.helper";
+import {filter, map, mapTo, switchMap, take, tap} from "rxjs/operators";
+import {concatFn, generateQStr, getFiltersByRequest, getKeyByRequest} from "../db/sql.helper";
 import {EntityCalc, EntityField} from "../entity/entity_repo.model";
 import {cacheKeyGenerator} from "../search.engine/sections.handler";
 const jsonparser = bodyParser.json();
@@ -43,6 +43,7 @@ export interface Entity {
     [key: string]: any;
 
     id: number;
+    summary?: Summary;
 }
 
 interface FKEntity {
@@ -57,6 +58,11 @@ interface CalcEntity {
     id: number;
 }
 
+export interface FilterParams {
+    [key: string]: string;
+    skip?: string;
+    limit?: string;
+}
 export class EntityEngine {
     cacheEngine: CacheEngine;
     searchEngine: SearchEngine;
@@ -80,13 +86,15 @@ export class EntityEngine {
         return !!entities[name];
     }
 
-    getSetFromDB(req): Observable<number> {
-        if (!!entities[req.params.id] && !!entities[req.params.id].db_name) {
-            const likeStr = [...generateQStr(req, 'string'), ...generateQStr(req, 'flag')].join(' AND ');
-            const whereStr = [...generateQStr(req, 'id')].join(' AND ');
+    getSetFromDB(key: string, filters: FilterParams): Observable<number> {
+        const db = entities[key].db_name;
+        if (!!key && !!db) {
+
+            const likeStr = [...generateQStr(key, filters, 'string'), ...generateQStr(key, filters, 'flag')].join(' AND ');
+            const whereStr = [...generateQStr(key, filters, 'id')].join(' AND ');
 
             const q = `SELECT COUNT(*) as cnt 
-                        FROM \`${ entities[req.params.id].db_name }\`
+                        FROM \`${ db }\`
                         ${(whereStr) ? 'WHERE ' + whereStr : ''} 
                         ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} `;
 
@@ -99,7 +107,9 @@ export class EntityEngine {
     }
 
     entitySetHandler(req, res): void {
-        if (!!entities[req.params.id] && !!entities[req.params.id].db_name) {
+        const key = getKeyByRequest(req);
+        const filters = getFiltersByRequest(req);
+        if (!!key) {
             const hash = req.query.hash;
             const searchKey: SectionKeys = entities[req.params.id].searchKey;
             const con = entities[req.params.id].container || null;
@@ -108,7 +118,7 @@ export class EntityEngine {
             const ids$ = this.searchEngine.getEntitiesIDByHash(searchKey, hash)
                 ?.pipe(
                     map(result => result.length || 0));
-            const provider = hash && ids$ ? ids$ : this.getSetFromDB(req);
+            const provider = hash && ids$ ? ids$ : this.getSetFromDB(key, filters);
 
             provider.subscribe(result =>
                     res.send({
@@ -240,10 +250,10 @@ export class EntityEngine {
         }
     }
 
-    getEntitiesByIds(ids: number[], key: string, req: Request): Observable<Entity[]> {
-        const db = entities[req.params.id].db_name;
+    getEntitiesByIds(ids: number[], key: string, skip = 0): Observable<Entity[]> {
+        const db = entities[key].db_name;
         const cacheKey = cacheKeyGenerator(key, 'hash', ids);
-        const skip = req.query.skip ? Number(req.query.skip) : 0;
+    
         ids = ids.splice(skip, 20);
         const whereStr = ids.length ? `${ids.map(id => 'id = ' + id).join(' OR ')}` : null;
 
@@ -253,82 +263,61 @@ export class EntityEngine {
         // console.log('getEntityByIds q: ', q);
         return of(cacheKey)
             .pipe(
-                switchMap(key => this.cacheEngine.checkCache(key) ?
-                    this.cacheEngine.getCachedByKey<Entity[]>(key) :
-                    this.context.dbe.queryList<Entity>(q).pipe(tap(data => this.cacheEngine.saveCacheData(key, data)))));
+                switchMap(k => this.cacheEngine.checkCache(k) ?
+                    this.cacheEngine.getCachedByKey<Entity[]>(k) :
+                    this.context.dbe.queryList<Entity>(q).pipe(tap(data => this.cacheEngine.saveCacheData(k, data)))));
     }
 
-    getEntityPortion(key: string, req: Request): Observable<Entity[]> {
-        const db = entities[req.params.id].db_name;
-        const fk = entities[req.params.id].fk;
-        const eid = req.params.eid;
+    getEntityPortion(key: string, filters?: FilterParams, skip: number = 0, limit: number = 20): Observable<Entity[]> {
+        const db = entities[key].db_name;
 
-        let limit = !!req.query.limit && Number(req.query.limit) || '20';
-        let likeStr = [...generateQStr(req, 'string'), ...generateQStr(req, 'flag')].join(' AND ');
-        let whereStr = [...generateQStr(req, 'id')].join(' AND ');
-        let limstr = `${!!req.query.skip ? ' LIMIT ' + limit + ' OFFSET ' + req.query.skip : ' LIMIT ' + limit}`;
+        let likeStr = [...generateQStr(key, filters, 'string'), ...generateQStr(key, filters, 'flag')].join(' AND ');
+        let whereStr = [...generateQStr(key, filters, 'id')].join(' AND ');
+        let limstr = `${!!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip : ' LIMIT ' + limit}`;
 
         // default query
-        let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : ''} ${likeStr ? (whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} ${limstr}`;
-
-        //link fk for parent table
-        if (fk) {
-            //searching keys
-            let s_str = fk.restrictors.map(r => fk.db + '.' + r.key).join(', ');
-            //restrictor statements
-            let r_str = fk.restrictors.map(r => fk.db + '.' + r.key + ' LIKE "' + r.value + '"').join(', ');
-            //target fields db
-            let t_str = fk.target.map(t => fk.db + '.' + t).join(', ');
-
-            q = `SELECT 
-                ${db}.*, 
-                ${fk.db}.id as _id, 
-                ${s_str}, 
-                ${t_str} 
-                FROM ${db} 
-                INNER JOIN ${fk.db} 
-                ON ${db}.${fk.key} = ${fk.db}.id 
-                WHERE ${r_str} 
-                ${ eid ? `AND ${db}.id = ${eid}` : ``} 
-                ${whereStr ? 'AND ' + whereStr : ''} 
-                ${likeStr ? ' AND ' + likeStr : ''} 
-                ${limstr}`;
-        } else
-            q = `SELECT 
+        const q = `SELECT 
                 * 
                 FROM \`${ db }\` 
-                ${ eid ? `WHERE id = ${ eid }` : ``}
-                ${(whereStr && !eid) ? 'WHERE ' + whereStr : ''} 
+                ${whereStr ? 'WHERE ' + whereStr : ''} 
                 ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} 
                 ${limstr}`;
 
+        console.log('getEntityPortion: ', q);
+       
         return this.context.dbe.queryList<Entity>(q);
     }
 
-    getEntities(key: string, hash: string, req: Request): Observable<Entity[]> {
-        const searchKey: SectionKeys = entities[req.params.id].searchKey;
+    getEntities(key: string, hash: string, filters: FilterParams): Observable<Entity[]> {
+        const searchKey: SectionKeys = entities[key].searchKey;
+        const skip = Number(filters?.skip ?? '0');
+        const limit = Number(filters?.limit ?? '20');
 
         if (hash) {
             const ids$ = this.searchEngine.getEntitiesIDByHash(searchKey, hash);
             return ids$ ?
                 ids$.pipe(
-                    switchMap(_ => this.getEntitiesByIds(_, key, req))) :
+                    switchMap(_ => this.getEntitiesByIds(_, key, skip))) :
                 null;
         }
 
-        return this.getEntityPortion(key, req);
+        return this.getEntityPortion(key, filters, skip, limit);
     }
 
     queryEntityHandler(req, res) {
         // console.log('ent req search: ', req.query, ' url params: ', req.params, this);
-        if (!!entities[req.params.id]) {
-            const entKey = req.params.id;
-            const hash = req.query.hash;
+        const entKey = getKeyByRequest(req);
+        const filters = getFiltersByRequest(req);
+        const skip = Number(filters?.skip ?? '0');
 
+        if (!!entKey) {
+            const hash = req.query.hash;
+            const eid = req.params.eid;
+    
             console.log('queryEntityHandler hash: ', hash);
 
-            const fields = entities[req.params.id].fields;
-            const calc = entities[req.params.id].calculated;
+            const fields = entities[entKey].fields;
+            const calc = entities[entKey].calculated;
 
             // если спросили что то лишнее хотя с новой логикой сюда не попадуть те запросы которых нет в репозитории доступных
             if (!Object.keys(req.query).every(r => !!(r === 'skip' || r === 'limit' || r === 'hash') || !!fields.find(f => f.key === r))) {
@@ -338,7 +327,7 @@ export class EntityEngine {
                 return;
             }
 
-            let provider = this.getEntities(entKey, hash, req);
+            let provider = eid ? this.getEntitiesByIds([eid], entKey, skip) : this.getEntities(entKey, hash, filters);
 
             if (!provider) {
                 res.status(500);
@@ -365,6 +354,7 @@ export class EntityEngine {
     }
 
     metanizer(pipeline: Observable<Entity[]>, fields: EntityField[], calc: EntityCalc[]): Observable<Entity[]> {
+        console.log('metanizer');
         return pipeline.pipe(
             // FK
             switchMap((data: Entity[]) => {
@@ -418,7 +408,14 @@ export class EntityEngine {
                                 if (t_row) {
                                     t_row.meta = t_row.meta ?
                                         {...t_row.meta, [d.key]: d.value ? d.value?.[0] : null} :
-                                        {[d.key]: d.value ? d.value?.[0] : null}
+                                        {[d.key]: d.value ? d.value?.[0] : null};
+
+                                    const targetConfigField = fields.find(f => f.key === d.key);
+                                    if(targetConfigField) {
+                                        if(targetConfigField.type === 'img') {
+                                            t_row.filename = d.value?.[0]?.filename ?? null;
+                                        }
+                                    }
                                 }
                             });
                         }),

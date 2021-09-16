@@ -504,23 +504,30 @@ export class SearchEngine {
 
     }
 
-    sendSummaryByHashHandler(req, res): void {
+    async sendSummaryByHashHandler(req, res): Promise<void> {
         const section: SectionKeys = req.params.id;
         const hash: SectionKeys = req.params.hash;
 
-        const hashProvider = hash ? this.getEntitiesSummaryByHash(section, hash) : this.pipeliner.getDefaultSummaryPipelineContext(section);
-
-        console.log('sendSummaryByHashHandler', section, hashProvider);
-
-        if(!section || !hashProvider) {
+        if(!section) {
             res.status(500);
-            res.send({error: 'hash or section key invalid'});
+            res.send({error: 'section key invalid'});
             return;
         }
 
-        hashProvider.subscribe(ids => res.send({ids}));
+        try {
+            const summaries = await this.getSummary(section, hash);
+        } catch (e) {
+            res.status(500);
+            res.send({error: e});
+            return;
+        }
 
     }
+
+    getSummary(section: SectionKeys, hash?: string): Promise<Summary[]> {
+        const hashProvider = hash ? this.getEntitiesSummaryByHash(section, hash) : this.pipeliner.getDefaultSummaryPipelineContext(section);
+        return hashProvider.toPromise();
+    } 
 
     getRouter(): Router {
         this.router.get('/', this.rootHandler.bind(this));

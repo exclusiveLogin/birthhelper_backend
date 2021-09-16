@@ -1,6 +1,9 @@
-import {Request} from "express";
+
 import {entityRepo} from "../entity/entity_repo";
 import {IDictionaryFilters} from "../dictionary/dictionary_repo";
+import { FilterParams } from "../entity/entity_engine";
+import { Entity } from "../entity/entity_repo.model";
+import { Request } from "express";
 const entities = entityRepo;
 
 export type reqType = 'string' | 'id' | 'flag';
@@ -61,10 +64,21 @@ export function generateFilterQStr(filters: IDictionaryFilters[], type: reqType)
     }
 
 }
-export function generateQStr(req: Request, type: reqType): string[] {
-    if (!!entities[req.params.id]) {
-        const fields = entities[req.params.id].fields;
-        const filtered = Object.keys(req.query).filter(k => !(k === 'skip' || k === 'limit'));
+
+export function getFiltersByRequest(req: Request): FilterParams {
+    return req.query as unknown as FilterParams || {}
+}
+
+export function getKeyByRequest(req: Request): string {
+    return req?.params?.id;
+}
+
+export function generateQStr(key: string, filters: FilterParams, type: reqType): string[] {
+    const config: Entity = entities[key];
+
+    if (!!config) {
+        const fields = config.fields;
+        const filtered = Object.keys(filters).filter(k => !(k === 'skip' || k === 'limit'));
 
         const keys = [];
         const values = [];
@@ -73,7 +87,7 @@ export function generateQStr(req: Request, type: reqType): string[] {
             keys.push(
                 ...filtered.filter(k => (fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'id'))
             );
-            values.push(keys.map(k => req.query[k]));
+            values.push(keys.map(k => filters[k]));
             return concatFn(keys, values);
         }
 
@@ -81,7 +95,7 @@ export function generateQStr(req: Request, type: reqType): string[] {
             keys.push(
                 ...filtered.filter(k => (fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'string'))
             );
-            values.push(keys.map(k => `${req.query[k]}`));
+            values.push(keys.map(k => `${filters[k]}`));
             return concatFn(keys, values, true);
         }
 
@@ -89,7 +103,7 @@ export function generateQStr(req: Request, type: reqType): string[] {
             keys.push(
                 ...filtered.filter(k => (fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'flag'))
             );
-            values.push(keys.map(k => `${(req.query[k] as any as boolean) == true ? '1' : '0'}`));
+            values.push(keys.map(k => `${(filters[k] as any as boolean) == true ? '1' : '0'}`));
             return concatFn(keys, values, true);
         }
     }
