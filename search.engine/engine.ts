@@ -504,7 +504,7 @@ export class SearchEngine {
 
     }
 
-    async sendSummaryByHashHandler(req, res): Promise<void> {
+    sendSummaryByHashHandler(req, res): void {
         const section: SectionKeys = req.params.id;
         const hash: SectionKeys = req.params.hash;
 
@@ -514,19 +514,11 @@ export class SearchEngine {
             return;
         }
 
-        try {
-            const summaries = await this.getSummary(section, hash);
-        } catch (e) {
-            res.status(500);
-            res.send({error: e});
-            return;
-        }
-
+        this.getSummary(section, hash).subscribe(sum => res.send(sum));
     }
 
-    getSummary(section: SectionKeys, hash?: string): Promise<Summary[]> {
-        const hashProvider = hash ? this.getEntitiesSummaryByHash(section, hash) : this.pipeliner.getDefaultSummaryPipelineContext(section);
-        return hashProvider.toPromise();
+    getSummary(section: SectionKeys, hash?: string): Observable<Summary[]> {
+        return hash ? this.getEntitiesSummaryByHash(section, hash) : this.pipeliner.getDefaultSummaryPipelineContext(section);
     } 
 
     getRouter(): Router {

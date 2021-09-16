@@ -10,7 +10,7 @@ import {entityRepo} from './entity_repo';
 import {Entity as EntityConfig} from './entity_repo.model';
 import {SearchEngine, Summary} from "../search.engine/engine";
 import {Context, SectionKeys} from "../search.engine/config";
-import {forkJoin, Observable, of, throwError} from "rxjs";
+import {combineLatest, forkJoin, Observable, of, throwError} from "rxjs";
 import {filter, map, mapTo, switchMap, take, tap} from "rxjs/operators";
 import {concatFn, generateQStr, getFiltersByRequest, getKeyByRequest} from "../db/sql.helper";
 import {EntityCalc, EntityField} from "../entity/entity_repo.model";
@@ -309,6 +309,7 @@ export class EntityEngine {
         const entKey = getKeyByRequest(req);
         const filters = getFiltersByRequest(req);
         const skip = Number(filters?.skip ?? '0');
+        const searchKey: SectionKeys = entities[entKey].searchKey;
 
         if (!!entKey) {
             const hash = req.query.hash;
@@ -337,6 +338,8 @@ export class EntityEngine {
 
             provider = this.metanizer(provider, fields, calc);
 
+            if(searchKey) provider = this.summariezer(provider, searchKey, hash);
+
             provider.subscribe(
                 (data) => {
                     res.send(data);
@@ -353,8 +356,14 @@ export class EntityEngine {
         }
     }
 
+    summariezer(pipeline: Observable<Entity[]>, sectionKey: SectionKeys, hash: string): Observable<Entity[]> {
+        return pipeline.pipe(
+            switchMap((entities) => combineLatest([of(entities), this.context.searchEngine.getSummary(sectionKey, hash)])),
+            map(([entities, summaries]) => entities.map(ent => ({...ent, summary: summaries.find(_ => _.id === ent.id)}))),
+        );
+    }
+    
     metanizer(pipeline: Observable<Entity[]>, fields: EntityField[], calc: EntityCalc[]): Observable<Entity[]> {
-        console.log('metanizer');
         return pipeline.pipe(
             // FK
             switchMap((data: Entity[]) => {
