@@ -99,9 +99,9 @@ export class EntityEngine {
                         ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} `;
 
             console.log('getSetFromDB', q);
-            return this.context.dbe.query<Entity>(q).pipe(
+            return this.context.dbe.queryList<Entity>(q).pipe(
                 tap(data => console.log('getSetFromDB result:', data)),
-                map(result => result.cnt || 0));
+                map(result => result?.[0]?.cnt ?? 0));
         }
 
         console.log('что то пошло не так... Сущность сета не определена');
