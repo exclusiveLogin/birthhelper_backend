@@ -15,14 +15,24 @@ export interface Slot extends Cached{
     required_fields_type?: { [key: string]: FieldType }; //поля обязательные для слота
     entity_key: string; // ключ сущности
     contragent_id_key: string; // название поля для хранения ссылки на КА
+    contragent_entity: SectionKeys; // ключ сущности КА (section)
     entity_id_key: string; // название поля для хранения ссылки на сущность
     createAffectionSectionKeys?: SectionKeys[]; // ключи секций для сброса по удалению сущности
     deleteAffectionSectionKeys?: SectionKeys[]; // ключи секций для сброса по созданию либо сохранению сущности
 }
 
+export const SlotRepoKeys = [
+    'slot_placement',
+    'slot_doctors',
+    'slot_birth_type',
+] as const;
+
+export type SlotKeys =  typeof SlotRepoKeys[number];
+export type SlotRepo = {[key in SlotKeys]: Slot};
+
 export type FieldType = 'number' | 'string' | 'flag';
 
-export const slots: { [key: string]: Slot } = {
+export const slots: SlotRepo = {
     slot_placement: {
         name: 'slot_placement',
         title: 'Слоты для услуг размещения',
@@ -43,6 +53,7 @@ export const slots: { [key: string]: Slot } = {
         }, //поля обязательные для слота
         entity_key: 'services', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
+        contragent_entity: 'clinic',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
@@ -67,6 +78,7 @@ export const slots: { [key: string]: Slot } = {
         }, //поля обязательные для слота
         entity_key: 'doctors', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
+        contragent_entity: 'clinic',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
@@ -91,6 +103,7 @@ export const slots: { [key: string]: Slot } = {
         }, //поля обязательные для слота
         entity_key: 'birthtype', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
+        contragent_entity: 'clinic',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],

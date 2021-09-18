@@ -1,15 +1,11 @@
 import {Cached} from "../cache.engine/cache.model";
 import {SectionKeys} from "../search.engine/config";
-
-export interface EntityRepo {
-    [key: string]: Entity;
-}
-
+import { SlotKeys } from "../slot/slot_repo";
 export interface Entity extends Cached {
     db_name: string,
     filters: EntityFilter[],
     container?: string,
-    slot?: string,
+    slot?: SlotKeys,
     fields: EntityField[],
     links?: EntityLink[],
     fk?: EntityForeignKey,
@@ -31,6 +27,33 @@ export interface EntityFilter {
         formFieldKey?: string,
     }
 }
+
+export const EntityRepoKeys = [
+    'ent_services',
+    'ent_doctor',
+    'ent_service_containers',
+    'ent_clinics',
+    'ent_districts',
+    'ent_phone_containers',
+    'ent_facilities_containers',
+    'ent_specialities_clinic_containers',
+    'ent_placement_slots',
+    'ent_birth_type_slots',
+    'ent_doctor_slots',
+    'ent_phones',
+    'ent_images',
+    'ent_files',
+    'ent_birthtype',
+    'ent_doctor_position',
+    'ent_doctor_category',
+    'ent_specialities_clinic',
+    'ent_facilities',
+    'ent_slot_clinic_type',
+] as const;
+
+export type EntityKeys = typeof EntityRepoKeys[number]
+
+export type EntityRepo = { [key in EntityKeys]: Entity }
 
 type FieldType = 'string' | 'flag' | 'id' | 'dict' | 'number' | 'text' | 'img';
 

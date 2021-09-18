@@ -1,4 +1,5 @@
 import {EntityRepo} from '../entity/entity_repo.model';
+
 export const entityRepo: EntityRepo = {
     ent_services: {
         db_name: 'services',
@@ -346,7 +347,7 @@ export const entityRepo: EntityRepo = {
             }
         ],
         container: null,
-        slot: 'slot_placement',
+        slot: 'slot_birth_type',
         fields: [
             { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
             { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
@@ -532,7 +533,6 @@ export const entityRepo: EntityRepo = {
             { key: 'folder', title: 'Имя файлсервера', type: 'string', readonly: true, showOnTable: true },
         ]
     },
-
     // Dicts
     ent_birthtype: {
         db_name: 'birth_clinic_type',
