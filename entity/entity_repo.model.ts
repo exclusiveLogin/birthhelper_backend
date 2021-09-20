@@ -48,7 +48,7 @@ export const EntityRepoKeys = [
     'ent_doctor_category',
     'ent_specialities_clinic',
     'ent_facilities',
-    'ent_slot_clinic_type',
+    'ent_slot_category_type',
 ] as const;
 
 export type EntityKeys = typeof EntityRepoKeys[number]

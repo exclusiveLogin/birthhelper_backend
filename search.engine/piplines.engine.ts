@@ -90,7 +90,7 @@ export class PipelineEngine {
                     FROM service_slot 
                     WHERE service_id IN 
                     (SELECT id FROM doctors WHERE ${positionId ? 'position = ' + positionId : 1})
-                    AND service_type = 1
+                    AND slot_category_type = 1
                     GROUP BY contragent_id`;
 
         // console.log('clinic_personal_birth_section: ', q, cacheKey);
@@ -113,7 +113,7 @@ export class PipelineEngine {
                     MIN(price) as min_price, 
                     AVG(price) as avg_price 
                     FROM service_slot 
-                    WHERE \`service_type\` = 2 
+                    WHERE \`slot_category_type\` = 2 
                     ${serviceId ? 'AND `service_id\` = ' + serviceId : 1} 
                     GROUP BY contragent_id`;
 
@@ -139,8 +139,8 @@ export class PipelineEngine {
                     AVG(price) as avg_price 
                     FROM service_slot 
                     WHERE service_id IN 
-                    (SELECT id FROM birth_clinic_type WHERE ${birthTypeId ? 'id = ' + birthTypeId : 1})
-                    AND service_type = 3
+                    (SELECT id FROM birthtype WHERE ${birthTypeId ? 'id = ' + birthTypeId : 1})
+                    AND slot_category_type = 3
                     GROUP BY contragent_id`;
 
         // console.log('clinic_placement_birth_section: ', q, cacheKey);

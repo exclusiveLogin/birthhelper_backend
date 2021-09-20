@@ -64,7 +64,7 @@ export const getSearchConfig = (context: Context): SearchConfig => {
             clinic_type_birth_section: {
                 type: "flag",
                 title: 'Как рожать',
-                fetcher$: of(null).pipe(switchMap(() => context.dictionaryEngine.getDict('dict_birth_clinic_type')))
+                fetcher$: of(null).pipe(switchMap(() => context.dictionaryEngine.getDict('dict_birthtype')))
                     .pipe(
                         filter(data => !!data),
                         map((dictItems: DictionaryItem[]) => (dictItems.map(item => ({id: item.id, title: item.title}))))

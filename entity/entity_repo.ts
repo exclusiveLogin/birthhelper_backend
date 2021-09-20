@@ -11,27 +11,10 @@ export const entityRepo: EntityRepo = {
                 title: 'Название услуги',
                 type: 'string',
             },
-            {
-                name: 'category',
-                title: 'Категория услуги',
-                type: 'id',
-                db_name: 'dict_category_service'
-            },
         ],
         fields:[ 
             { key: 'id', title: 'ID услуги', type: 'id', readonly: true, showOnTable: false }, 
             { key: 'title', type: 'string', title: 'Название услуги', required: true, showOnTable: true }, 
-            { 
-                key: 'category', 
-                title: 'Категория услуги', 
-                dctKey: 'dict_category_service', 
-                type: 'id', 
-                useDict: true, 
-                canBeNull: false, 
-                initData: 1, 
-                required: true,
-                showOnTable: true
-            }, 
             { key: 'description', title: 'Описание услуги', type: 'text', showOnTable: true }, 
             { key: 'article_id', type: 'id', hide: true, showOnTable: false }, 
             { key: 'image_id', title: 'Прикрепленное изображение', type: 'img', showOnTable: false },
@@ -45,11 +28,11 @@ export const entityRepo: EntityRepo = {
                 showOnTable: true
             },
             {
-                key: 'type',
+                key: 'slot_category_type',
                 type: 'id',
                 title: 'Тип услуги',
                 useDict: true,
-                dctKey: 'dict_slot_clinic_type',
+                dctKey: 'dict_slot_category_type',
                 canBeNull: false,
                 required: true,
                 showOnTable: true,
@@ -249,12 +232,12 @@ export const entityRepo: EntityRepo = {
         createAffectionSectionKeys: ['clinic'],
         filters: [
             {
-                name: 'service_type',
+                name: 'slot_category_type',
                 title: 'Категория',
                 readonly: true,
                 type: 'id',
                 value: 2,
-                db_name: 'dict_slot_clinic_type'
+                db_name: 'dict_slot_category_type'
             }
         ],
         container: null,
@@ -266,24 +249,24 @@ export const entityRepo: EntityRepo = {
             { key: 'contragent_id', type: 'string', title: 'id клиники', required: true, showOnTable: true, readonly: true },
             { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
             {
-                key: 'type',
+                key: 'entity_type',
                 title: 'Тип услуги',
                 required: true,
                 type: 'id',
                 useDict: true,
                 canBeNull: false,
                 showOnTable: true,
-                dctKey: 'dict_slot_entity_type'
+                dctKey: 'dict_entity_type'
             },
             {
-                key: 'service_type',
+                key: 'slot_category_type',
                 title: 'Вид услуги в конструкторе',
                 required: true,
                 type: 'id',
                 useDict: true,
                 canBeNull: false,
                 showOnTable: true,
-                dctKey: 'dict_slot_clinic_type',
+                dctKey: 'dict_slot_category_type',
                 readonly: true,
                 initData: 2,
             },
@@ -306,7 +289,7 @@ export const entityRepo: EntityRepo = {
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'service_id',
-                conditionField: 'type',
+                conditionField: 'entity_type',
                 conditionKey: 'name',
                 conditionValue: 'entity'
             },
@@ -317,7 +300,7 @@ export const entityRepo: EntityRepo = {
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'service_id',
-                conditionField: 'type',
+                conditionField: 'entity_type',
                 conditionKey: 'name',
                 conditionValue: 'container'
             },
@@ -338,12 +321,12 @@ export const entityRepo: EntityRepo = {
         createAffectionSectionKeys: ['clinic'],
         filters: [
             {
-                name: 'service_type',
+                name: 'slot_category_type',
                 title: 'Категория',
                 readonly: true,
                 type: 'id',
                 value: 3,
-                db_name: 'dict_slot_clinic_type'
+                db_name: 'dict_slot_category_type'
             }
         ],
         container: null,
@@ -355,7 +338,7 @@ export const entityRepo: EntityRepo = {
             { key: 'contragent_id', type: 'string', title: 'id клиники', required: true, showOnTable: true, readonly: true },
             { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
             {
-                key: 'type',
+                key: 'entity_type',
                 title: 'Тип услуги',
                 required: true,
                 type: 'id',
@@ -364,17 +347,17 @@ export const entityRepo: EntityRepo = {
                 useDict: true,
                 canBeNull: false,
                 showOnTable: true,
-                dctKey: 'dict_slot_entity_type'
+                dctKey: 'dict_entity_type'
             },
             {
-                key: 'service_type',
+                key: 'slot_category_type',
                 title: 'Вид услуги в конструкторе',
                 required: true,
                 type: 'id',
                 useDict: true,
                 canBeNull: false,
                 showOnTable: true,
-                dctKey: 'dict_slot_clinic_type',
+                dctKey: 'dict_slot_category_type',
                 readonly: true,
                 initData: 3,
             },
@@ -387,7 +370,7 @@ export const entityRepo: EntityRepo = {
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'service_id',
-                conditionField: 'type',
+                conditionField: 'entity_type',
                 conditionKey: 'name',
                 conditionValue: 'entity'
             },
@@ -408,12 +391,12 @@ export const entityRepo: EntityRepo = {
         createAffectionSectionKeys: ['clinic'],
         filters: [
             {
-                name: 'service_type',
+                name: 'slot_category_type',
                 title: 'Категория',
                 readonly: true,
                 type: 'id',
                 value: 1,
-                db_name: 'dict_slot_clinic_type'
+                db_name: 'dict_slot_category_type'
             }
         ],
         container: null,
@@ -425,26 +408,26 @@ export const entityRepo: EntityRepo = {
             { key: 'contragent_id', type: 'string', title: 'id клиники', required: true, showOnTable: true, readonly: true },
             { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
             {
-                key: 'type',
+                key: 'entity_type',
                 title: 'Тип услуги',
                 required: true,
                 type: 'id',
                 useDict: true,
                 canBeNull: false,
                 showOnTable: true,
-                dctKey: 'dict_slot_entity_type',
+                dctKey: 'dict_entity_type',
                 readonly: true,
                 initData: 1,
             },
             {
-                key: 'service_type',
+                key: 'slot_category_type',
                 title: 'Вид услуги в конструкторе',
                 required: true,
                 type: 'id',
                 useDict: true,
                 canBeNull: false,
                 showOnTable: true,
-                dctKey: 'dict_slot_clinic_type',
+                dctKey: 'dict_slot_category_type',
                 readonly: true,
                 initData: 1,
             },
@@ -535,7 +518,7 @@ export const entityRepo: EntityRepo = {
     },
     // Dicts
     ent_birthtype: {
-        db_name: 'birth_clinic_type',
+        db_name: 'birthtype',
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
         filters: [],
@@ -599,8 +582,8 @@ export const entityRepo: EntityRepo = {
         ]
     },
     
-    ent_slot_clinic_type: {
-        db_name: 'slot_clinic_type',
+    ent_slot_category_type: {
+        db_name: 'slot_category_type',
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
         filters: [],
