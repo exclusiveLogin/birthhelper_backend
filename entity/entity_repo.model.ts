@@ -22,6 +22,7 @@ export interface EntityFilter {
     readonly?: boolean,
     value?: any,
     db_name?: string,
+    override?: boolean,
     formLink?: {
         formKey?: string,
         formFieldKey?: string,

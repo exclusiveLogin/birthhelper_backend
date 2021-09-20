@@ -43,7 +43,14 @@ export const entityRepo: EntityRepo = {
 
     ent_doctor: {
         db_name: 'doctors',
-        filters: [],
+        filters: [
+            {
+                name: 'def',
+                title: 'Врачи по умолчанию',
+                override: true,
+                type: 'flag',
+            },
+        ],
         container: null,
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
@@ -60,6 +67,7 @@ export const entityRepo: EntityRepo = {
             { key: 'category', title: 'Категория врача', type: 'id', useDict: true, dctKey: 'dict_doctor_category_type', showOnTable: true },
             { key: 'position', title: 'Должность врача', type: 'id', useDict: true, dctKey: 'dict_doctor_position_type', showOnTable: true },
             { key: 'clinic_id', type: 'id', title: 'Клиника', required: true, showOnTable: true, useDict: true, dctKey: 'dict_clinics' },
+            { key: 'def', title: 'Врач по умолчанию', type: 'flag', showOnTable: true  },
         ],
     },
 
@@ -451,7 +459,7 @@ export const entityRepo: EntityRepo = {
                             formKey: 'editor',
                             formFieldKey: 'contragent_id'
                         }
-                    }
+                    },
                 ],
             },
             {
