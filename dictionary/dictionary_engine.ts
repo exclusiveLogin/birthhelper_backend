@@ -6,9 +6,7 @@ import {generateFilterQStr} from "../db/sql.helper";
 import {DataBaseService} from "../db/sql";
 import {Context} from "../search.engine/config";
 import {tap} from "rxjs/operators";
-const dicts = require('../dictionary/dictionary_repo');
-
-
+import { dictionaries } from "./dictionary_repo";
 export interface DictionaryItem {
     id: number;
     title: string;
@@ -28,7 +26,7 @@ export class DictionaryEngine {
     }
 
     getDict(id: string, limit = '200', skip = '0'): Observable<DictionaryItem[]> {
-        const dict = dicts[id];
+        const dict = dictionaries[id];
         if(!dict) {
             return throwError(`Словарь ${id} не найден`);
         }

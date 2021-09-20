@@ -56,7 +56,7 @@ export type EntityKeys = typeof EntityRepoKeys[number]
 
 export type EntityRepo = { [key in EntityKeys]: Entity }
 
-type FieldType = 'string' | 'flag' | 'id' | 'dict' | 'number' | 'text' | 'img';
+export type FieldType = 'string' | 'flag' | 'id' | 'dict' | 'number' | 'text' | 'img';
 
 export interface EntityField {
     key: string,

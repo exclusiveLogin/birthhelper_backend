@@ -238,16 +238,7 @@ export const entityRepo: EntityRepo = {
         db_name: 'service_slot',
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
-        filters: [
-            {
-                name: 'slot_category_type',
-                title: 'Категория',
-                readonly: true,
-                type: 'id',
-                value: 2,
-                db_name: 'dict_slot_category_type'
-            }
-        ],
+        filters: [],
         container: null,
         slot: 'slot_placement',
         fields: [
@@ -327,16 +318,7 @@ export const entityRepo: EntityRepo = {
         db_name: 'service_slot',
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
-        filters: [
-            {
-                name: 'slot_category_type',
-                title: 'Категория',
-                readonly: true,
-                type: 'id',
-                value: 3,
-                db_name: 'dict_slot_category_type'
-            }
-        ],
+        filters: [],
         container: null,
         slot: 'slot_birth_type',
         fields: [
@@ -397,16 +379,7 @@ export const entityRepo: EntityRepo = {
         db_name: 'service_slot',
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
-        filters: [
-            {
-                name: 'slot_category_type',
-                title: 'Категория',
-                readonly: true,
-                type: 'id',
-                value: 1,
-                db_name: 'dict_slot_category_type'
-            }
-        ],
+        filters: [],
         container: null,
         slot: 'slot_doctors',
         fields: [

@@ -2,24 +2,23 @@ import * as express from "express";
 
 const bodyParser = require('body-parser');
 import validator from 'validator';
-import {Request, Router} from 'express';
+import {Router} from 'express';
 import fs from "fs";
 import multer from 'multer';
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {entityRepo} from './entity_repo';
-import {Entity as EntityConfig} from './entity_repo.model';
+import {Entity as EntityConfig, EntityKeys} from './entity_repo.model';
 import {SearchEngine, Summary} from "../search.engine/engine";
 import {Context, SectionKeys} from "../search.engine/config";
 import {combineLatest, forkJoin, Observable, of, throwError} from "rxjs";
-import {filter, map, mapTo, switchMap, take, tap} from "rxjs/operators";
+import {map, mapTo, switchMap, take, tap} from "rxjs/operators";
 import {concatFn, generateQStr, getFiltersByRequest, getKeyByRequest} from "../db/sql.helper";
 import {EntityCalc, EntityField} from "../entity/entity_repo.model";
 import {cacheKeyGenerator} from "../search.engine/sections.handler";
+import { containers } from "../container/container_repo";
+import { slots } from "../slot/slot_repo";
+import { dictionaries } from "../dictionary/dictionary_repo";
 const jsonparser = bodyParser.json();
-
-const containers = require('../container/container_repo');
-const slots = require('../slot/slot_repo');
-const dict = require('../dictionary/dictionary_repo');
 
 const entities = entityRepo;
 const sanitizer = validator.escape;
@@ -270,14 +269,22 @@ export class EntityEngine {
                     this.context.dbe.queryList<Entity>(q).pipe(tap(data => this.cacheEngine.saveCacheData(k, data)))));
     }
 
-    getEntityPortion(key: string, filters?: FilterParams, skip: number = 0, limit: number = 20): Observable<Entity[]> {
+    getEntityPortion(key: EntityKeys, filters?: FilterParams, skip: number = 0, limit: number = 20): Observable<Entity[]> {
         const db = entities[key].db_name;
+        const slotKey = entities[key].slot;
+        const slotConfig = slots[slotKey];
 
+        if(slotConfig?.resrtictorsSlot){
+            const _ = {};
+            slotConfig?.resrtictorsSlot.forEach(slot => _[slot.key] = slot.value);
+            filters = filters ? {...filters, ..._} : {..._};
+        }
+    
         let likeStr = [...generateQStr(key, filters, 'string'), ...generateQStr(key, filters, 'flag')].join(' AND ');
         let whereStr = [...generateQStr(key, filters, 'id')].join(' AND ');
         let limstr = `${!!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip : ' LIMIT ' + limit}`;
 
-        // default query
+        // default query    
         const q = `SELECT 
                 * 
                 FROM \`${ db }\` 
@@ -290,7 +297,7 @@ export class EntityEngine {
         return this.context.dbe.queryList<Entity>(q);
     }
 
-    getEntities(key: string, hash: string, filters: FilterParams): Observable<Entity[]> {
+    getEntities(key: EntityKeys, hash: string, filters: FilterParams): Observable<Entity[]> {
         const searchKey: SectionKeys = entities[key].searchKey;
         const skip = Number(filters?.skip ?? '0');
         const limit = Number(filters?.limit ?? '20');
@@ -308,7 +315,7 @@ export class EntityEngine {
 
     queryEntityHandler(req, res) {
         // console.log('ent req search: ', req.query, ' url params: ', req.params, this);
-        const entKey = getKeyByRequest(req);
+        const entKey = getKeyByRequest(req) as EntityKeys;
         const filters = getFiltersByRequest(req);
         const skip = Number(filters?.skip ?? '0');
         const searchKey: SectionKeys = entities[entKey].searchKey;
@@ -395,7 +402,7 @@ export class EntityEngine {
                             }
 
                             if (targetReq?.type === 'id') {
-                                const db = targetReq.dctKey ? dict[targetReq.dctKey].db : null;
+                                const db = targetReq.dctKey ? dictionaries[targetReq.dctKey].db : null;
                                 if (db) {
                                     const q = `SELECT * FROM \`${db}\` WHERE \`id\` = ${row[k]}`;
 

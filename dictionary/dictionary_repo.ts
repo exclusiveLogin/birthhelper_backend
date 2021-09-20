@@ -11,7 +11,7 @@ export interface IDictionaryFilters {
     type: 'string' | 'number' | 'flag';
 }
 
-const dictionaries: { [key: string]: IDictionary } = {
+export const dictionaries: { [key: string]: IDictionary } = {
     dict_trimester_service: {db: 'trimester'},
     dict_clinics: {db: 'clinics'},
     dict_placement: {
@@ -46,5 +46,3 @@ const dictionaries: { [key: string]: IDictionary } = {
     dict_facilities_containers_repo: {db: 'facilities_containers_repo'},
     dict_slot_category_type: {db: 'slot_category_type'}
 };
-
-module.exports = dictionaries;
