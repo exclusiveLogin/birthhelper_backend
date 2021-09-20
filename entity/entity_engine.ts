@@ -297,57 +297,54 @@ export class EntityEngine {
         return this.context.dbe.queryList<Entity>(q);
     }
 
-    getEntities(key: EntityKeys, hash: string, filters: FilterParams): Observable<Entity[]> {
+    getEntities(key: EntityKeys, hash: string, filters: FilterParams, eid: number = null): Observable<Entity[]> {
         const searchKey: SectionKeys = entities[key].searchKey;
         const skip = Number(filters?.skip ?? '0');
         const limit = Number(filters?.limit ?? '20');
+        const fields = entities[key].fields;
+        const calc = entities[key].calculated;
 
-        if (hash) {
+        // если есть EID это превалирует над всеми остальными источниками. Hash будет проигнорирован
+        let provider: Observable<Entity[]> = eid && this.getEntitiesByIds([eid], key, skip);
+
+        // Если есть претендентный hash пробуем получить провадер на ids 
+        if(hash){
             const ids$ = this.searchEngine.getEntitiesIDByHash(searchKey, hash);
-            return ids$ ?
-                ids$.pipe(
-                    switchMap(_ => this.getEntitiesByIds(_, key, skip))) :
+            provider = provider ?? ids$ ? 
+                ids$.pipe(switchMap(_ => this.getEntitiesByIds(_, key, skip))) :
                 null;
+            // если после попытки у нас провайдер пустой возвращаем ответ внешнему коду
+            if(!provider) return null;
         }
+            
+        provider = provider ?? this.getEntityPortion(key, filters, skip, limit);
+        
+        // ОБОГОЩАЕМ сущности
+        provider = this.metanizer(provider, fields, calc);
 
-        return this.getEntityPortion(key, filters, skip, limit);
+        if(searchKey) provider = this.summariezer(provider, searchKey, hash);
+
+        return provider;
     }
 
     queryEntityHandler(req, res) {
         // console.log('ent req search: ', req.query, ' url params: ', req.params, this);
         const entKey = getKeyByRequest(req) as EntityKeys;
         const filters = getFiltersByRequest(req);
-        const skip = Number(filters?.skip ?? '0');
-        const searchKey: SectionKeys = entities[entKey].searchKey;
-
+       
         if (!!entKey) {
             const hash = req.query.hash;
             const eid = req.params.eid;
     
             console.log('queryEntityHandler hash: ', hash);
 
-            const fields = entities[entKey].fields;
-            const calc = entities[entKey].calculated;
-
-            // если спросили что то лишнее хотя с новой логикой сюда не попадуть те запросы которых нет в репозитории доступных
-            if (!Object.keys(req.query).every(r => !!(r === 'skip' || r === 'limit' || r === 'hash') || !!fields.find(f => f.key === r))) {
-                res.status(500);
-                res.end('в запросе поиска присутствуют неизвестные поля');
-                console.warn('в запросе поиска присутствуют неизвестные поля');
-                return;
-            }
-
-            let provider = eid ? this.getEntitiesByIds([eid], entKey, skip) : this.getEntities(entKey, hash, filters);
+            const provider = this.getEntities(entKey, hash, filters, eid);
 
             if (!provider) {
                 res.status(500);
                 res.send({error: 'Hash unknown'});
                 return;
             }
-
-            provider = this.metanizer(provider, fields, calc);
-
-            if(searchKey) provider = this.summariezer(provider, searchKey, hash);
 
             provider.subscribe(
                 (data) => {
