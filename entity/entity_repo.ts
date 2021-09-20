@@ -66,7 +66,7 @@ export const entityRepo: EntityRepo = {
             { key: 'description_experience', title: 'Профессиональные навыки', type: 'text', showOnTable: false },
             { key: 'category', title: 'Категория врача', type: 'id', useDict: true, dctKey: 'dict_doctor_category_type', showOnTable: true },
             { key: 'position', title: 'Должность врача', type: 'id', useDict: true, dctKey: 'dict_doctor_position_type', showOnTable: true },
-            { key: 'clinic_id', type: 'id', title: 'Клиника', required: true, showOnTable: true, useDict: true, dctKey: 'dict_clinics' },
+            { key: 'clinic_id', type: 'id', title: 'Клиника', showOnTable: true, useDict: true, dctKey: 'dict_clinics' },
             { key: 'def', title: 'Врач по умолчанию', type: 'flag', showOnTable: true  },
         ],
     },
