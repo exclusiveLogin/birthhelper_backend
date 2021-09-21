@@ -87,7 +87,16 @@ export class EntityEngine {
 
     getSetFromDB(key: string, filters: FilterParams): Observable<number> {
         const db = entities[key].db_name;
+        const slotKey = entities[key].slot;
+        const slotConfig = slots[slotKey];
+
         if (!!key && !!db) {
+
+            if(slotConfig?.resrtictorsSlot){
+                const _ = {};
+                slotConfig?.resrtictorsSlot.forEach(slot => _[slot.key] = slot.value);
+                filters = filters ? {...filters, ..._} : {..._};
+            }
 
             const likeStr = [...generateQStr(key, filters, 'string'), ...generateQStr(key, filters, 'flag')].join(' AND ');
             const whereStr = [...generateQStr(key, filters, 'id')].join(' AND ');

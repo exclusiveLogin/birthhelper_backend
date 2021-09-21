@@ -14,6 +14,7 @@ function apiRootHandler(req, res){
 function getAPIMiddleware(context: Context): Router {
     api.use('/filter', filter);
     api.use('/dict', context.dictionaryEngine.getRouter());
+    api.use('/slots', context.slotEngine.getRouter());
     api.use('/', context.entityEngine.getRouter());
     return api;
 }
