@@ -11,12 +11,12 @@ import {Entity as EntityConfig, EntityKeys} from './entity_repo.model';
 import {SearchEngine, Summary} from "../search.engine/engine";
 import {Context, SectionKeys} from "../search.engine/config";
 import {combineLatest, forkJoin, Observable, of, throwError} from "rxjs";
-import {map, mapTo, switchMap, take, tap} from "rxjs/operators";
+import {filter, map, mapTo, switchMap, take, tap} from "rxjs/operators";
 import {concatFn, generateQStr, getFiltersByRequest, getKeyByRequest} from "../db/sql.helper";
 import {EntityCalc, EntityField} from "../entity/entity_repo.model";
 import {cacheKeyGenerator} from "../search.engine/sections.handler";
 import { containers } from "../container/container_repo";
-import { slots } from "../slot/slot_repo";
+import { Slot, slots } from "../slot/slot_repo";
 import { dictionaries } from "../dictionary/dictionary_repo";
 const jsonparser = bodyParser.json();
 
@@ -38,11 +38,16 @@ const fileFilter = (req, file, cb) => file && file.mimetype === 'image/jpeg' ? c
 const upload = multer({storage: storage, fileFilter});
 const entity = express.Router();
 
-export interface Entity {
+export interface Entity extends Slotted {
     [key: string]: any;
 
     id: number;
     summary?: Summary;
+}
+
+export interface Slotted {
+    _contragent?: Entity;
+    _enitites?: Entity[];
 }
 
 interface FKEntity {
@@ -307,11 +312,14 @@ export class EntityEngine {
     }
 
     getEntities(key: EntityKeys, hash: string, filters: FilterParams, eid: number = null): Observable<Entity[]> {
+        console.log('getEntities ', key, hash, filters, eid)
         const searchKey: SectionKeys = entities[key].searchKey;
         const skip = Number(filters?.skip ?? '0');
         const limit = Number(filters?.limit ?? '20');
         const fields = entities[key].fields;
         const calc = entities[key].calculated;
+        const slotKey = entities[key].slot;
+        const slotConfig = slots[slotKey];
 
         // если есть EID это превалирует над всеми остальными источниками. Hash будет проигнорирован
         let provider: Observable<Entity[]> = eid && this.getEntitiesByIds([eid], key, skip);
@@ -333,6 +341,8 @@ export class EntityEngine {
 
         if(searchKey) provider = this.summariezer(provider, searchKey, hash);
 
+        if(slotConfig) provider = this.slotEnreacher(provider, slotConfig);
+
         return provider;
     }
 
@@ -345,7 +355,7 @@ export class EntityEngine {
             const hash = req.query.hash;
             const eid = req.params.eid;
     
-            console.log('queryEntityHandler hash: ', hash);
+            console.log('queryEntityHandler hash: ', req.params);
 
             const provider = this.getEntities(entKey, hash, filters, eid);
 
@@ -375,6 +385,34 @@ export class EntityEngine {
         return pipeline.pipe(
             switchMap((entities) => combineLatest([of(entities), this.context.searchEngine.getSummary(sectionKey, hash)])),
             map(([entities, summaries]) => entities.map(ent => ({...ent, summary: summaries.find(_ => _.id === ent.id)}))),
+        );
+    }
+
+    slotEnreacher(pipeline: Observable<Entity[]>, config: Slot): Observable<Entity[]> {
+        type slotMode = 'entity' | 'container';
+        const contragentIDKey = config.contragent_id_key;
+        const contragentEntity = config.contragent_entity;
+
+
+        return pipeline.pipe(
+            switchMap((entities) => {
+                const contragentProviders = entities.map(ent => {
+                    const mode: slotMode = ent.entity_type === 1 ? 'entity' : 'container';
+                    
+
+                    const contragentID = ent?.[contragentIDKey];
+                    console.log('contragentProviders', ent, mode, contragentID);
+                    return contragentID ? 
+                        this.getEntitiesByIds([contragentID], contragentEntity).pipe(map(data => data[0]), filter(d => !!d)) :
+                        null;
+                })
+
+                return combineLatest([of(entities), forkJoin(contragentProviders.filter(p => !!p))]).pipe(
+                    map(([ents, contragents]) => ents.map(ent => ({...ent, _contragent: contragents.find(_ => _.id.toString() === ent[contragentIDKey]?.toString())})))
+                
+                );
+                
+            }),
         );
     }
     
