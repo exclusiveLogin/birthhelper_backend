@@ -10,7 +10,7 @@ import {entityRepo} from './entity_repo';
 import {Entity as EntityConfig, EntityKeys} from './entity_repo.model';
 import {SearchEngine, Summary} from "../search.engine/engine";
 import {Context, SectionKeys} from "../search.engine/config";
-import {combineLatest, forkJoin, Observable, of, throwError} from "rxjs";
+import {combineLatest, forkJoin, from, Observable, of, throwError} from "rxjs";
 import {filter, map, mapTo, switchMap, take, tap} from "rxjs/operators";
 import {concatFn, generateQStr, getFiltersByRequest, getKeyByRequest} from "../db/sql.helper";
 import {EntityCalc, EntityField} from "../entity/entity_repo.model";
@@ -18,6 +18,7 @@ import {cacheKeyGenerator} from "../search.engine/sections.handler";
 import { containers } from "../container/container_repo";
 import { Slot, slots } from "../slot/slot_repo";
 import { dictionaries } from "../dictionary/dictionary_repo";
+import { ContainerRecordSrc } from "../container/container_engine";
 const jsonparser = bodyParser.json();
 
 const entities = entityRepo;
@@ -47,7 +48,7 @@ export interface Entity extends Slotted {
 
 export interface Slotted {
     _contragent?: Entity;
-    _enitites?: Entity[];
+    _entity?: Entity;
 }
 
 interface FKEntity {
@@ -67,6 +68,7 @@ export interface FilterParams {
     skip?: string;
     limit?: string;
 }
+
 export class EntityEngine {
     cacheEngine: CacheEngine;
     searchEngine: SearchEngine;
@@ -350,6 +352,8 @@ export class EntityEngine {
         // console.log('ent req search: ', req.query, ' url params: ', req.params, this);
         const entKey = getKeyByRequest(req) as EntityKeys;
         const filters = getFiltersByRequest(req);
+
+        console.log('queryEntityHandler filters:', filters);
        
         if (!!entKey) {
             const hash = req.query.hash;
@@ -391,27 +395,59 @@ export class EntityEngine {
     slotEnreacher(pipeline: Observable<Entity[]>, config: Slot): Observable<Entity[]> {
         type slotMode = 'entity' | 'container';
         const contragentIDKey = config.contragent_id_key;
+        const entityIDKey = config.entity_id_key;
+        const entityKey = config.entity_key;
         const contragentEntity = config.contragent_entity;
+        const containerName = config.container_name;
 
 
         return pipeline.pipe(
             switchMap((entities) => {
                 const contragentProviders = entities.map(ent => {
-                    const mode: slotMode = ent.entity_type === 1 ? 'entity' : 'container';
-                    
-
                     const contragentID = ent?.[contragentIDKey];
-                    console.log('contragentProviders', ent, mode, contragentID);
+                    console.log('contragentProviders', ent, contragentID);
                     return contragentID ? 
                         this.getEntitiesByIds([contragentID], contragentEntity).pipe(map(data => data[0]), filter(d => !!d)) :
                         null;
+                });
+
+                const entitiesProviders: Observable<Entity>[] = entities.map(ent => {
+                    const mode: slotMode = ent.entity_type === 1 ? 'entity' : 'container';
+                    const entityID = ent?.[entityIDKey];
+                    return mode === "entity" && entityID && entityKey ? this.getEntitiesByIds([entityID], entityKey).pipe(map(_ => _?.[0])) : null;
+                });
+
+                const containersProviders: Observable<ContainerRecordSrc>[] = entities.map(ent => {
+                    const mode: slotMode = ent.entity_type === 1 ? 'entity' : 'container';
+
+                    const entityID = ent?.[entityIDKey];
+                   
+                    return mode === "container" && containerName && entityID ? 
+                        from(this.context.containerEngine.getContainer(containers[containerName], entityID)) : null;
                 })
 
-                return combineLatest([of(entities), forkJoin(contragentProviders.filter(p => !!p))]).pipe(
-                    map(([ents, contragents]) => ents.map(ent => ({...ent, _contragent: contragents.find(_ => _.id.toString() === ent[contragentIDKey]?.toString())})))
+                console.log('containersProviders', containersProviders);
                 
-                );
-                
+                return forkJoin([
+                        of(entities), 
+                        contragentProviders.filter(p => !!p).length ? forkJoin(contragentProviders.filter(p => !!p)) : of(null as Entity[]),
+                        entitiesProviders.filter(p => !!p).length ? forkJoin(entitiesProviders.filter(p => !!p)) : of(null as Entity[][]),
+                        containersProviders.filter(p => !!p).length ? forkJoin(containersProviders.filter(p => !!p)) : of(null as ContainerRecordSrc[]),
+                    ]).pipe(
+                    map(([ents, contragents, entities, containers]) => {
+                        console.log('results containers:', entities, containers);
+                        return ents.map(ent => {
+                            const mode: slotMode = ent.entity_type === 1 ? 'entity' : 'container';
+                            return {
+                                ...ent,
+                                _contragent: contragents.filter(_ => !!_).find(_ => _.id.toString() === ent[contragentIDKey]?.toString()),
+                                _entity: mode === "entity" ?
+                                    entities.filter(_ => !!_).find($ => $.id.toString() === ent[entityIDKey]?.toString()) :
+                                    containers.filter(_ => !!_).find($ => $.id?.toString() === ent[entityIDKey]?.toString()),
+                            }
+                        });
+                    }),
+                )
             }),
         );
     }

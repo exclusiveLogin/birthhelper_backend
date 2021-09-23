@@ -85,7 +85,7 @@ export const entityRepo: EntityRepo = {
             { key: 'items', title: 'Элементов', type: 'text', showOnTable: true, readonly: true },
         ],
         links: [
-            { type: 'repo', title: 'Таблица услуг системы', entKey: 'services', multiselect: true, dummyTitle: 'Услуги в контейнере'},
+            { type: 'repo', title: 'Таблица услуг системы', entKey: 'ent_services', multiselect: true, dummyTitle: 'Услуги в контейнере'},
         ],
         calculated: [
             { key: 'items', type: 'count', id_key: 'container_id', db_name: 'service_containers' },
@@ -185,7 +185,7 @@ export const entityRepo: EntityRepo = {
             { key: 'items', title: 'Элементов', type: 'text', showOnTable: true, readonly: true },
         ],
         links: [
-            { type: 'repo', title: 'Таблица телефонов системы', entKey: 'phones', multiselect: true, dummyTitle: 'Таблица выбранных телефонов контейнера'},
+            { type: 'repo', title: 'Таблица телефонов системы', entKey: 'ent_phones', multiselect: true, dummyTitle: 'Таблица выбранных телефонов контейнера'},
         ],
         calculated: [
             { key: 'items', type: 'count', id_key: 'container_id', db_name: 'phone_containers' },
@@ -206,7 +206,7 @@ export const entityRepo: EntityRepo = {
             { key: 'items', title: 'Элементов', type: 'text', showOnTable: true, readonly: true },
         ],
         links: [
-            { type: 'repo', title: 'Таблица удобств клиник системы', entKey: 'facilities', multiselect: true, dummyTitle: 'Таблица выбранных удобств контейнера'},
+            { type: 'repo', title: 'Таблица удобств клиник системы', entKey: 'ent_facilities', multiselect: true, dummyTitle: 'Таблица выбранных удобств контейнера'},
         ],
         calculated: [
             { key: 'items', type: 'count', id_key: 'container_id', db_name: 'facilities_containers' },
@@ -227,7 +227,7 @@ export const entityRepo: EntityRepo = {
             { key: 'items', title: 'Элементов', type: 'text', showOnTable: true, readonly: true },
         ],
         links: [
-            { type: 'repo', title: 'Таблица специализаций для клиники', entKey: 'specialities_clinic', multiselect: true, dummyTitle: 'Таблица выбранных специализаций контейнера'},
+            { type: 'repo', title: 'Таблица специализаций для клиники', entKey: 'ent_specialities_clinic', multiselect: true, dummyTitle: 'Таблица выбранных специализаций контейнера'},
         ],
         calculated: [
             { key: 'items', type: 'count', id_key: 'container_id', db_name: 'clinic_specialities_containers' },
@@ -284,7 +284,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица услуг',
-                entKey: 'services',
+                entKey: 'ent_services',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'service_id',
@@ -295,7 +295,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица пакетов услуг',
-                entKey: 'service_containers',
+                entKey: 'ent_service_containers',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'service_id',
@@ -306,7 +306,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица клиник системы',
-                entKey: 'clinics',
+                entKey: 'ent_clinics',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id'
@@ -356,7 +356,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица видов родов',
-                entKey: 'birthtype',
+                entKey: 'ent_birthtype',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'service_id',
@@ -367,7 +367,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица клиник системы',
-                entKey: 'clinics',
+                entKey: 'ent_clinics',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id'
@@ -417,7 +417,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица персонала',
-                entKey: 'doctor',
+                entKey: 'ent_doctor',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'service_id',
@@ -438,7 +438,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица клиник системы',
-                entKey: 'clinics',
+                entKey: 'ent_clinics',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id'
@@ -473,7 +473,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица файлов системы',
-                entKey: 'files',
+                entKey: 'ent_files',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'file_id',

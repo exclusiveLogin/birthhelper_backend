@@ -14,6 +14,7 @@
     ],
     "types": ["node"],
     "lib": [
+      "ES2019.Array",
       "ES6",
       "dom"
     ]

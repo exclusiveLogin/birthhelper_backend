@@ -4,8 +4,21 @@ import {Router} from "express";
 import {Context, SectionKeys} from "../search.engine/config";
 import {Container, containers} from "./container_repo";
 import {mapTo, tap} from "rxjs/operators";
+import { Entity } from "../entity/entity_engine";
 
 const jsonparser = bodyparser.json();
+
+export interface ContainerRecordSrc {
+    [key: string]: any;
+    id: number, 
+    items: ContainerRecordItem[],
+}
+
+export interface ContainerRecordItem {
+    [key: string]: any;
+    id: number, 
+    entity: Entity,
+}
 
 export class ContainerEngine {
     container = express.Router();
@@ -19,49 +32,48 @@ export class ContainerEngine {
         res.send(Object.keys(containers).map(k => containers[k]));
     }
 
-    async getContainerRepo(containerParams: Container, cid?: number) {
+    async getContainerRepo(containerParams: Container, cid: number) {
         const whereStr = cid ? `WHERE \`id\`=${cid}` : '';
         const q = 'SELECT * FROM `' + containerParams.db_list + '`' + whereStr;
 
-        return this.context.dbe.queryList<{ id: number, items: any[], q: Promise<any> }>(q).toPromise();
+        return this.context.dbe.queryList<ContainerRecordSrc>(q).toPromise();
     }
 
     // функция возвращающая объекты контейнера по имени
-    async getContainer(containerParams: Container, cid?: number) {
-        const repo = await this.getContainerRepo(containerParams, cid);
+    async getContainer(containerParams: Container, cid: number): Promise<ContainerRecordSrc> {
+        const _ = await this.getContainerRepo(containerParams, cid);
+        const repo = _?.[0];
 
-        const subQueries = repo.map(r => {
-            if (!r.id) return;
+        if (!repo.id) return;
 
-            const id = r.id;
-            const qi = `SELECT \`${containerParams.db_links}\`.*, 
-                                \`${containerParams.db_entity}\`.\`id\` as \`eid\`, 
-                                ${containerParams.entity_fields.map(f => `\`${containerParams.db_entity}\`.\`${f}\``).join(', ')} 
-                                FROM \`${containerParams.db_links}\`
-                                LEFT JOIN \`${containerParams.db_entity}\` 
-                                ON \`${containerParams.db_links}\`.\`${containerParams.container_id_key}\` = \`${containerParams.db_entity}\`.\`id\`
-                                WHERE \`${containerParams.db_links}\`.\`container_id\`=${id}`;
+        const id = repo.id;
+        const qi = `SELECT \`${containerParams.db_links}\`.*, 
+                            \`${containerParams.db_entity}\`.\`id\` as \`eid\`, 
+                            ${containerParams.entity_fields.map(f => `\`${containerParams.db_entity}\`.\`${f}\``).join(', ')} 
+                            FROM \`${containerParams.db_links}\`
+                            LEFT JOIN \`${containerParams.db_entity}\` 
+                            ON \`${containerParams.db_links}\`.\`${containerParams.container_id_key}\` = \`${containerParams.db_entity}\`.\`id\`
+                            WHERE \`${containerParams.db_links}\`.\`container_id\`=${id}`;
 
-            console.log('qi: ', qi);
+        console.log('qi: ', qi);
 
-            return this.context.dbe.queryList<{ entity: any }>(qi).toPromise().then((items) => {
+        const containerRecordList = await this.context.dbe.queryList<ContainerRecordItem>(qi).toPromise() ?? [];
 
-                items.forEach(item => {
-                    item.entity = {};
+        containerRecordList.forEach(record => {
+            record.entity = {} as Entity;
 
-                    containerParams.entity_fields.forEach(field => {
-                        item.entity[field] = item[field];
-                        item.entity['id'] = item['eid'];
-                        delete item[field];
-                    });
-                });
-
-                r.items = items;
-                console.log('entity: ', r);
+            containerParams.entity_fields.forEach(field => {
+                record.entity[field] = record[field];
+                record.entity['id'] = record['eid'];
+                delete record[field];
             });
         });
 
-        return Promise.all(subQueries).then(() => repo);
+        repo.items = containerRecordList;
+        console.log('getContainer entity: ', repo);
+    
+        return repo;
+
     }
 
     async simpleSaveContainer(containerParams, id_container, ids) {
