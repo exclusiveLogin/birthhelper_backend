@@ -407,14 +407,14 @@ export class EntityEngine {
                     const contragentID = ent?.[contragentIDKey];
                     console.log('contragentProviders', ent, contragentID);
                     return contragentID ? 
-                        this.getEntitiesByIds([contragentID], contragentEntity).pipe(map(data => data[0]), filter(d => !!d)) :
+                        this.getEntities(contragentEntity, null, null, contragentID).pipe(map(data => data[0]), filter(d => !!d)) :
                         null;
                 });
 
                 const entitiesProviders: Observable<Entity>[] = entities.map(ent => {
                     const mode: slotMode = ent.entity_type === 1 ? 'entity' : 'container';
                     const entityID = ent?.[entityIDKey];
-                    return mode === "entity" && entityID && entityKey ? this.getEntitiesByIds([entityID], entityKey).pipe(map(_ => _?.[0])) : null;
+                    return mode === "entity" && entityID && entityKey ? this.getEntities(entityKey, null, null, entityID).pipe(map(_ => _?.[0])) : null;
                 });
 
                 const containersProviders: Observable<ContainerRecordSrc>[] = entities.map(ent => {

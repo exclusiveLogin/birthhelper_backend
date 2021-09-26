@@ -102,7 +102,7 @@ export class SearchEngine {
                     this.deleteFiltersFromDb(f.hash);
                 }
             })
-            console.error('initFiltersFromDB RESULT:', filters);
+            console.error('initFiltersFromDB DONE');
         } catch(e) {
             console.error('initFiltersFromDB ERR:', e);
         }

@@ -17,7 +17,7 @@ export const entityRepo: EntityRepo = {
             { key: 'title', type: 'string', title: 'Название услуги', required: true, showOnTable: true }, 
             { key: 'description', title: 'Описание услуги', type: 'text', showOnTable: true }, 
             { key: 'article_id', type: 'id', hide: true, showOnTable: false }, 
-            { key: 'image_id', title: 'Прикрепленное изображение', type: 'img', showOnTable: false },
+            { key: 'image_id', title: 'Прикрепленное изображение', type: 'img', showOnTable: false, loadEntity: true},
             { 
                 key: 'trimester', 
                 type: 'id', 
