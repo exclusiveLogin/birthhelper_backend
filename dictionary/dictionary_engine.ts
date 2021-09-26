@@ -67,7 +67,7 @@ export class DictionaryEngine {
     sendError = (res: Response, err): void => {
         console.log('DICT error: ', err);
         res.status(500);
-        res.end({err});
+        res.end(JSON.stringify({error: err}));
     }
 
     getRouter(): Router {

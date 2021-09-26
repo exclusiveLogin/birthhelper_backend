@@ -5,7 +5,8 @@ import { SectionKeys } from "../search.engine/config";
 
 export interface Restrictor {
     key: string;
-    value: number |string;
+    value: number | string;
+    mode?: 'positive' | 'negative';
 }
 export interface Slot extends Cached{
     name: string;

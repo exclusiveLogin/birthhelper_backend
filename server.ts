@@ -1,7 +1,5 @@
 import express from "express";
 import cors from 'cors';
-const admin = require('./api/admin_rest');
-const api = require('./api/api_rest');
 import fs from 'fs';
 import {CacheEngine} from "./cache.engine/cache_engine";
 import {SearchEngine} from "./search.engine/engine";
@@ -12,6 +10,9 @@ import {DataBaseService} from "./db/sql";
 import {EntityEngine} from "./entity/entity_engine";
 import {ContainerEngine} from "./container/container_engine";
 import {SlotEngine} from "./slot/slot_engine";
+import { ConfigEngine } from "./config/config_engine";
+import { getAdminMiddleware } from "./api/admin_rest";
+import { getAPIMiddleware } from "./api/api_rest";
 
 
 // context
@@ -25,6 +26,7 @@ const context: Context = {
     entityEngineAdmin: null,
     containerEngine: null,
     slotEngine: null,
+    configEngine: null,
 }
 
 // providers
@@ -37,6 +39,7 @@ const EE: EntityEngine = new EntityEngine(context);
 const EEA: EntityEngine = new EntityEngine(context, true);
 const CNE: ContainerEngine = new ContainerEngine(context);
 const SLE: SlotEngine = new SlotEngine(context);
+const CFGE: ConfigEngine = new ConfigEngine(context);
 
 let app = express();
 function jsonHeaders(req, res, next) {
@@ -45,8 +48,8 @@ function jsonHeaders(req, res, next) {
 }
 app.use(cors(), jsonHeaders);
 app.use('/search', context.searchEngine.getRouter());
-app.use('/admin', admin(context));
-app.use('/api', api(context));
+app.use('/admin', getAdminMiddleware(context));
+app.use('/api', getAPIMiddleware(context));
 app.use('/auth', context.authorizationEngine.getRouter());
 app.use('/static', express.static('/usr/src/app/uploads/',{ fallthrough: false }), (err, req, res, next) => {
     console.log('err static:', err);

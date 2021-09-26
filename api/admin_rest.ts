@@ -9,7 +9,7 @@ function adminRootHandler(req, res){
     res.send({index: 'admin root index'});
 }
 
-function getAdminMiddleware(context: Context): Router {
+export function getAdminMiddleware(context: Context): Router {
     admin.use('/dict', context.dictionaryEngine.getRouter());
     admin.use('/entity', context.entityEngineAdmin.getRouter());
     admin.use('/containers', context.containerEngine.getRouter());
@@ -17,5 +17,3 @@ function getAdminMiddleware(context: Context): Router {
 
     return admin;
 }
-
-module.exports = getAdminMiddleware;
