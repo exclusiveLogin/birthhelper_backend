@@ -315,12 +315,18 @@ export class EntityEngine {
 
     getEntities(key: EntityKeys, hash: string, filters: FilterParams, eid: number = null): Observable<Entity[]> {
         console.log('getEntities ', key, hash, filters, eid)
-        const searchKey: SectionKeys = entities[key].searchKey;
+        const config = entities[key];
+
+        if(!config) {
+            return throwError(`Сущность ${key} не найдена`);
+        }
+
+        const searchKey: SectionKeys = config?.searchKey;
         const skip = Number(filters?.skip ?? '0');
         const limit = Number(filters?.limit ?? '20');
-        const fields = entities[key].fields;
-        const calc = entities[key].calculated;
-        const slotKey = entities[key].slot;
+        const fields = config?.fields;
+        const calc = config?.calculated;
+        const slotKey = config?.slot;
         const slotConfig = slots[slotKey];
 
         // если есть EID это превалирует над всеми остальными источниками. Hash будет проигнорирован
@@ -376,7 +382,7 @@ export class EntityEngine {
                 (error) => {
                     console.log('subscribe error', error);
                     res.status(500);
-                    res.send(JSON.stringify(error));
+                    res.send(JSON.stringify({error}));
                 },
             )
         } else {
