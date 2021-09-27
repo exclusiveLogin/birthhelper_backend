@@ -8,15 +8,14 @@ export interface Provider {
     key: string;
     busKey: string;
     entityKey: EntityKeys;
-    filters: Restrictor[];
+    restrictors: Restrictor[];
 }
 
 export interface Consumer {
     title: string;
     key: string;
     busKey: string;
-    entityType?: 'person' | 'placement' | 'other';
-    restrictors?: Restrictor[]
+    restrictors?: Restrictor[];
     priority?: PriorityFloor;
 }
 
@@ -28,6 +27,7 @@ export interface TabConfig {
 
 export interface TabFloorSetting {
     title: string;
+    entityType?: 'person' | 'placement' | 'other';
     consumerKeys: string[];
 }
 
@@ -44,25 +44,24 @@ export const config: { [key in SectionKeys]: Config } = {
                 key: 'doctors',
                 busKey: 'bus_doctors_any',
                 entityKey: 'ent_doctor_slots',
-                filters: [],
+                restrictors: [],
             },
             {
                 key: 'placement',
                 busKey: 'bus_placement_any',
                 entityKey: 'ent_placement_slots',
-                filters: [],
+                restrictors: [],
             },
             {
                 key: 'birthtype',
                 busKey: 'bus_birthtype_any',
                 entityKey: 'ent_birth_type_slots',
-                filters: [],
+                restrictors: [],
             },
         ],
         consumers: [
             {
                 key: 'doctors',
-                entityType: 'person',
                 title: null,
                 busKey: 'bus_doctors_any',
                 priority: 'mid',
@@ -70,7 +69,6 @@ export const config: { [key in SectionKeys]: Config } = {
             },
             {
                 key: 'placement',
-                entityType: 'placement',
                 title: null,
                 busKey: 'bus_placement_any',
                 priority: 'mid',
@@ -78,7 +76,6 @@ export const config: { [key in SectionKeys]: Config } = {
             },
             {
                 key: 'birthtype',
-                entityType: 'other',
                 title: null,
                 busKey: 'bus_birthtype_any',
                 priority: 'mid',
@@ -93,6 +90,7 @@ export const config: { [key in SectionKeys]: Config } = {
                 floors: [
                     {
                         title: null,
+                        entityType: 'person',
                         consumerKeys: ['doctors'],
                     },
                 ]
@@ -103,6 +101,7 @@ export const config: { [key in SectionKeys]: Config } = {
                 floors: [
                     {
                         title: null,
+                        entityType: 'placement',
                         consumerKeys: ['placement'],
                     },
                 ]
@@ -113,6 +112,7 @@ export const config: { [key in SectionKeys]: Config } = {
                 floors: [
                     {
                         title: null,
+                        entityType: 'other',
                         consumerKeys: ['birthtype'],
                     },
                 ]
