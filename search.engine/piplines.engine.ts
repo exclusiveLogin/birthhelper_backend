@@ -200,6 +200,6 @@ export class PipelineEngine {
 
     getDefaultSummaryPipelineContext(key: SectionKeys): Observable<Summary[]> {
         const pipe = this.summaryPipelines[key];
-        return pipe ? pipe() : of(null);
+        return pipe ? pipe() : of([]);
     }
 }

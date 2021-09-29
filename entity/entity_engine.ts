@@ -322,6 +322,7 @@ export class EntityEngine {
         }
 
         const searchKey: SectionKeys = config?.searchKey;
+        const generateSummary = searchKey && config?.generateSummariesEnabled;
         const skip = Number(filters?.skip ?? '0');
         const limit = Number(filters?.limit ?? '20');
         const fields = config?.fields;
@@ -347,7 +348,7 @@ export class EntityEngine {
         // ОБОГОЩАЕМ сущности
         provider = this.metanizer(provider, fields, calc);
 
-        if(searchKey) provider = this.summariezer(provider, searchKey, hash);
+        if(generateSummary) provider = this.summariezer(provider, searchKey, hash);
 
         if(slotConfig) provider = this.slotEnreacher(provider, slotConfig);
 
@@ -394,7 +395,7 @@ export class EntityEngine {
     summariezer(pipeline: Observable<Entity[]>, sectionKey: SectionKeys, hash: string): Observable<Entity[]> {
         return pipeline.pipe(
             switchMap((entities) => combineLatest([of(entities), this.context.searchEngine.getSummary(sectionKey, hash)])),
-            map(([entities, summaries]) => entities.map(ent => ({...ent, summary: summaries.find(_ => _.id === ent.id)}))),
+            map(([entities, summaries]) => entities.map(ent => ({...ent, summary: summaries.find(_ => _.id === ent.id) ?? null}))),
         );
     }
 

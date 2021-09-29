@@ -11,6 +11,7 @@ export interface Entity extends Cached {
     fk?: EntityForeignKey,
     calculated?: EntityCalc[],
     searchKey?: SectionKeys,
+    generateSummariesEnabled?: boolean,
     createAffectionSectionKeys?: SectionKeys[],
     deleteAffectionSectionKeys?: SectionKeys[],
 }
