@@ -104,12 +104,8 @@ export const config: { [key in SectionKeys]: Config } = {
                         title: null,
                         entityType: 'person',
                         consumerKeys: ['doctors1'],
-                    },{
-                        title: null,
-                        entityType: 'person',
-                        consumerKeys: ['doctors2'],
-                    }
-                ]
+                    },
+                ],
             },
             {
                 key: 'placement',
@@ -120,7 +116,7 @@ export const config: { [key in SectionKeys]: Config } = {
                         entityType: 'placement',
                         consumerKeys: ['placement'],
                     },
-                ]
+                ],
             },
             {
                 key: 'birthtype',
@@ -131,7 +127,7 @@ export const config: { [key in SectionKeys]: Config } = {
                         entityType: 'other',
                         consumerKeys: ['birthtype'],
                     },
-                ]
+                ],
             },
         
         ],

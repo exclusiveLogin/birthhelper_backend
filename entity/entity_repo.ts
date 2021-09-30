@@ -56,7 +56,7 @@ export const entityRepo: EntityRepo = {
         createAffectionSectionKeys: ['clinic'],
         fields: [
             { key: 'id', title: 'ID специалиста', type: 'id', readonly: true, showOnTable: false },
-            { key: 'image_id', title: 'Фото', type: 'img', showOnTable: false },
+            { key: 'image_id', title: 'Фото', type: 'img', showOnTable: false, loadEntity: true },
             { key: 'full_name', type: 'string', title: 'Имя', required: true, showOnTable: true },
             { key: 'short_name', type: 'string', title: 'Фамилия', required: true, showOnTable: false },
             { key: 'patronymic', type: 'string', title: 'Отчество', required: false, showOnTable: false },
