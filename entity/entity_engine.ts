@@ -295,7 +295,7 @@ export class EntityEngine {
             slotConfig?.resrtictorsSlot.forEach(slot => _[slot.key] = slot.value);
             filters = filters ? {...filters, ..._} : {..._};
         }
-    
+        
         let likeStr = [...generateQStr(key, filters, 'string'), ...generateQStr(key, filters, 'flag')].join(' AND ');
         let whereStr = [...generateQStr(key, filters, 'id')].join(' AND ');
         let limstr = `${!!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip : ' LIMIT ' + limit}`;

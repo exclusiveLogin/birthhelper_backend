@@ -16,6 +16,8 @@ export function concatFn(arrA, arrB, isStr?: boolean) {
         for (let i = 0; i < arrA.length; i++) {
             fine.push((isStr ? `${arrA[i]} LIKE "%${arrB[i]}%"` : `${arrA[i]} = ${arrB[i]}`));
         }
+
+        console.log('concatFn fine:', fine);
         return fine;
     }
     return [];
@@ -89,7 +91,7 @@ export function generateQStr(key: string, filters: FilterParams, type: reqType):
             keys.push(
                 ...filtered.filter(k => (fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'id'))
             );
-            values.push(keys.map(k => filters[k]));
+            values.push(...keys.map(k => filters[k]));
             return concatFn(keys, values);
         }
 
@@ -97,7 +99,7 @@ export function generateQStr(key: string, filters: FilterParams, type: reqType):
             keys.push(
                 ...filtered.filter(k => (fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'string'))
             );
-            values.push(keys.map(k => `${filters[k]}`));
+            values.push(...keys.map(k => `${filters[k]}`));
             return concatFn(keys, values, true);
         }
 
@@ -105,7 +107,7 @@ export function generateQStr(key: string, filters: FilterParams, type: reqType):
             keys.push(
                 ...filtered.filter(k => (fields.some(f => f.key === k) && fields.find(f => f.key === k).type === 'flag'))
             );
-            values.push(keys.map(k => `${(filters[k] as any as boolean) == true ? '1' : '0'}`));
+            values.push(...keys.map(k => `${(filters[k] as any as boolean) == true ? '1' : '0'}`));
             return concatFn(keys, values, true);
         }
     }
