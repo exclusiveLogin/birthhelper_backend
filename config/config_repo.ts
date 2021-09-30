@@ -15,6 +15,7 @@ export interface Consumer {
     title: string;
     key: string;
     busKey: string;
+    entityKey: string;
     restrictors?: Restrictor[];
     priority?: PriorityFloor;
 }
@@ -61,9 +62,18 @@ export const config: { [key in SectionKeys]: Config } = {
         ],
         consumers: [
             {
-                key: 'doctors',
+                key: 'doctors1',
                 title: null,
                 busKey: 'bus_doctors_any',
+                entityKey: 'ent_doctor_slots',
+                priority: 'mid',
+                restrictors: [],
+            },
+            {
+                key: 'doctors2',
+                title: null,
+                busKey: 'bus_doctors_any',
+                entityKey: 'ent_doctor_slots',
                 priority: 'mid',
                 restrictors: [],
             },
@@ -71,6 +81,7 @@ export const config: { [key in SectionKeys]: Config } = {
                 key: 'placement',
                 title: null,
                 busKey: 'bus_placement_any',
+                entityKey: 'ent_placement_slots',
                 priority: 'mid',
                 restrictors: [],
             },
@@ -78,6 +89,7 @@ export const config: { [key in SectionKeys]: Config } = {
                 key: 'birthtype',
                 title: null,
                 busKey: 'bus_birthtype_any',
+                entityKey: 'ent_birth_type_slots',
                 priority: 'mid',
                 restrictors: [],
             },
@@ -91,8 +103,12 @@ export const config: { [key in SectionKeys]: Config } = {
                     {
                         title: null,
                         entityType: 'person',
-                        consumerKeys: ['doctors'],
-                    },
+                        consumerKeys: ['doctors1'],
+                    },{
+                        title: null,
+                        entityType: 'person',
+                        consumerKeys: ['doctors2'],
+                    }
                 ]
             },
             {
