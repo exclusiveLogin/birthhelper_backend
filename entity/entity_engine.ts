@@ -352,7 +352,7 @@ export class EntityEngine {
 
         if(slotConfig) provider = this.slotEnreacher(provider, slotConfig);
 
-        return provider;
+        return provider.pipe(tap(list => list.forEach && list.forEach(ent => Object.keys(ent).forEach(fieldKey => ent[fieldKey] = ent[fieldKey] === 'null' ? null : ent[fieldKey]))));
     }
 
     queryEntityHandler(req, res) {
