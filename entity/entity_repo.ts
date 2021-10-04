@@ -577,4 +577,18 @@ export const entityRepo: EntityRepo = {
         ]
     },
 
+    ent_order_status_type: {
+        db_name: 'order_status_type',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
+        filters: [],
+        container: null,
+        fields: [
+            { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },
+            { key: 'slug', title: 'Ключ', type: 'string', readonly: false, showOnTable: true },
+            { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
+            { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
+        ]
+    },
+
 };
