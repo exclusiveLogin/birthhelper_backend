@@ -585,9 +585,9 @@ export const entityRepo: EntityRepo = {
         container: null,
         fields: [
             { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },
-            { key: 'slug', title: 'Ключ', type: 'string', readonly: false, showOnTable: true },
-            { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
-            { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
+            { key: 'slug', title: 'Ключ', type: 'string', readonly: true, showOnTable: true },
+            { key: 'title', title: 'Название', type: 'string', readonly: true, showOnTable: true },
+            { key: 'description', title: 'Описание', type: 'text', readonly: true, showOnTable: true },
         ]
     },
 
