@@ -13,6 +13,7 @@ import {SlotEngine} from "./slot/slot_engine";
 import { ConfigEngine } from "./config/config_engine";
 import { getAdminMiddleware } from "./api/admin_rest";
 import { getAPIMiddleware } from "./api/api_rest";
+import { OrderEngine } from "./orders/orders_engine";
 
 
 // context
@@ -27,6 +28,7 @@ const context: Context = {
     containerEngine: null,
     slotEngine: null,
     configEngine: null,
+    orderEngine: null,
 }
 
 // providers
@@ -40,6 +42,7 @@ const EEA: EntityEngine = new EntityEngine(context, true);
 const CNE: ContainerEngine = new ContainerEngine(context);
 const SLE: SlotEngine = new SlotEngine(context);
 const CFGE: ConfigEngine = new ConfigEngine(context);
+const OE: OrderEngine = new OrderEngine(context);
 
 let app = express();
 function jsonHeaders(req, res, next) {
@@ -50,6 +53,7 @@ app.use(cors(), jsonHeaders);
 app.use('/search', context.searchEngine.getRouter());
 app.use('/admin', getAdminMiddleware(context));
 app.use('/api', getAPIMiddleware(context));
+app.use('/order', context.orderEngine.getRouter());
 app.use('/auth', context.authorizationEngine.getRouter());
 app.use('/static', express.static('/usr/src/app/uploads/',{ fallthrough: false }), (err, req, res, next) => {
     console.log('err static:', err);

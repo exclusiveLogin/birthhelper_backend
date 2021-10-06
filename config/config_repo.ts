@@ -24,12 +24,14 @@ export interface TabConfig {
     key: string;
     title: string;
     floors: TabFloorSetting[];
+    required?: boolean;
 }
 
 export interface TabFloorSetting {
     title: string;
-    entityType?: 'person' | 'placement' | 'other';
     consumerKeys: string[];
+    required?: boolean;
+    entityType?: 'person' | 'placement' | 'other';
 }
 
 export interface Config {
@@ -101,9 +103,10 @@ export const config: { [key in SectionKeys]: Config } = {
                 title: 'Специалисты',
                 floors: [
                     {
-                        title: null,
+                        title: 'Акушеры',
                         entityType: 'person',
                         consumerKeys: ['doctors1'],
+                        required: true,
                     },
                 ],
             },
@@ -115,6 +118,7 @@ export const config: { [key in SectionKeys]: Config } = {
                         title: null,
                         entityType: 'placement',
                         consumerKeys: ['placement'],
+                        required: true,
                     },
                 ],
             },
@@ -126,6 +130,7 @@ export const config: { [key in SectionKeys]: Config } = {
                         title: null,
                         entityType: 'other',
                         consumerKeys: ['birthtype'],
+                        required: true,
                     },
                 ],
             },
