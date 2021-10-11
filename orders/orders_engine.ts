@@ -2,25 +2,27 @@
 import * as express from "express";
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {Response, Router} from "express";
-import {Observable, throwError} from "rxjs";
+import {from, Observable, throwError} from "rxjs";
 import {generateFilterQStr} from "../db/sql.helper";
 import {DataBaseService} from "../db/sql";
 import {Context} from "../search.engine/config";
-import {tap} from "rxjs/operators";
+import {map, tap} from "rxjs/operators";
 import { ODRER_ACTIONS, Order } from "./orders.model";
 
 export class OrderEngine {
     private orderRouter = express.Router();
     ce: CacheEngine;
     dbe: DataBaseService;
+    ctx:  Context;
 
     constructor(context: Context) {
         context.orderEngine = this;
+        this.ctx = context;
         this.ce = context.cacheEngine;
         this.dbe = context.dbe;
     }
 
-    getOrdersByUser(id: string, limit = '200', skip = '0'): Observable<any[]> {
+    getOrdersByUser(uid: number): Promise<Order[]> {
 
         return 
         // if(!dict) {
@@ -60,20 +62,30 @@ export class OrderEngine {
         // }
     }
 
-    getOrdersBySession(id: string): Observable<any[]> {
+    getOrdersBySession(sid: string): Promise<Order[]> {
         return 
     }
 
-    getOrders(session_id: string): Observable<Order[]> {
-        return
+    async getOrders(session_id: string): Promise<Order[]> {
+        const uid = await this.getUserIDBySession(session_id);
+        const authMode = await this.userISAuthorized(uid);
+
+        return authMode ? await this.getOrdersByUser(uid) : this.getOrdersBySession(session_id);
     }
 
     
-    isAuthUser(): boolean {
-        return
+    getUserIDBySession(token: string): Promise<number> {
+        return token ? this.ctx.authorizationEngine.getUserIdByToken(token) : null;
     }
 
-    actionToOrder(action: ODRER_ACTIONS, id, payload: any): Observable<void> {
+    async userISAuthorized(uid: number): Promise<boolean> {
+        if(!uid) return false;
+
+        const role = await this.ctx.authorizationEngine.getRoleByUserId(uid);
+        return role?.rank > 1;
+    }
+
+    actionToOrder(action: ODRER_ACTIONS, id, payload: any): Promise<void> {
         switch(action) {
             case ODRER_ACTIONS.ADD:
                 this.addOrderToUserCart(id)
