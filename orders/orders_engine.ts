@@ -221,8 +221,13 @@ export class OrderEngine {
     }
 
     getRouter(): Router {
-        this.orderRouter.get('/', this.getOrdersHandler.bind(this));
-        this.orderRouter.post('/', this.actionHandler.bind(this));
+        this.orderRouter.get('/', 
+            this.ctx.authorizationEngine.checkAccess.bind(this.ctx.authorizationEngine, null),
+            this.getOrdersHandler.bind(this));
+
+        this.orderRouter.post('/', 
+            this.ctx.authorizationEngine.checkAccess.bind(this.ctx.authorizationEngine, null),
+            this.actionHandler.bind(this));
         return this.orderRouter;
     }
 }
