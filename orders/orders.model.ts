@@ -12,16 +12,18 @@ export enum ODRER_ACTIONS {
     
 }
 
-export type STATUSES = 
-    'pending'   | 
-    'deleted'   | 
-    'waiting'   | 
-    'resolved'  | 
-    'rejected'  | 
-    'completed' | 
-    'canceled'  | 
-    'inprogress';
+export enum STATUSES {
+    pending = 'pending',
+    deleted = 'deleted',
+    waiting = 'waiting',
+    resolved = 'resolved',
+    rejected = 'rejected',
+    completed = 'completed', 
+    canceled = 'canceled',
+    inprogress = 'inprogress',
+}
 
+export type StatusType = keyof typeof STATUSES;
 export interface OrderSrc  {
     id: number;
     user_id: number;

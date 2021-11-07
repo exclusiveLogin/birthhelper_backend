@@ -2,18 +2,16 @@
 import * as express from "express";
 import { CacheEngine } from "../cache.engine/cache_engine";
 import { Response, Request, Router } from "express";
-import { from, Observable, throwError } from "rxjs";
-import { generateFilterQStr } from "../db/sql.helper";
 import { DataBaseService } from "../db/sql";
 import { Context } from "../search.engine/config";
-import { map, tap } from "rxjs/operators";
-import { ODRER_ACTIONS, Order, STATUSES } from "./orders.model";
+import { tap } from "rxjs/operators";
+import { ODRER_ACTIONS, Order, STATUSES, StatusType } from "./orders.model";
 import { EntityKeys } from "../entity/entity_repo.model";
 import { OkPacket } from "mysql";
 
 export interface OrderPayload {
     action: ODRER_ACTIONS;
-    ent_key: string;
+    ent_key: EntityKeys;
     ent_id: number;
     id?: number;
     count?: number;
@@ -31,55 +29,53 @@ export class OrderEngine {
         this.dbe = context.dbe;
     }
 
-    getOrdersByUser(uid: number): Promise<Order[]> {
+    async getOrdersByUser(uid: number): Promise<Order[]> {
+        const cacheKey = `orders_by_user_${uid}`;
+        const fetchFromDB = (): Promise<Order[]> => {
+            let q =
+                `SELECT * 
+                FROM \`orders\` 
+                WHERE user_id = ${uid}`;
 
-        return
-        // if(!dict) {
-        //     return throwError(`Словарь ${id} не найден`);
-        // }
+            return this.dbe.queryList<Order>(q).pipe(
+                tap(data => this.ce.saveCacheData(cacheKey, data)),
+            ).toPromise();
+        };
+        const existInCache = this.ce.checkCache(cacheKey);
 
-        // const fetchFromDB = (): Observable<DictionaryItem[]> => {
-        //     let limstr = `${ !!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip  : '' }`;
-
-        //     let likeStr = [...generateFilterQStr(dict?.filters || [], 'string'), ...generateFilterQStr(dict?.filters || [], 'flag')].join(' AND ');
-        //     let whereStr = [...generateFilterQStr(dict?.filters || [], 'id')].join(' AND ');
-
-        //     let q =
-        //         `SELECT * 
-        //         FROM \`${ dict.db }\` 
-        //         ${(whereStr) ? 'WHERE ' + whereStr : ''} 
-        //         ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} 
-        //         ${limstr}`;
-
-        //     return this.dbe.queryList<DictionaryItem>(q).pipe(
-        //         tap(data => this.ce.saveCacheData(`${id}`, data)),
-        //         tap(result => {
-        //             if( dict.titleMap || dict.titleAddMap ){
-        //                 result && result.forEach( r => {
-        //                     r.title = dict.titleMap.map(f => r[f]).join(', ');
-        //                     r.title = dict.titleAddMap ? r.title + ` ( ${dict.titleAddMap.map(f => r[f]).join(', ')} )` : r.title;
-        //                 })
-        //             }
-        //         }),
-        //     );
-        // };
-
-        // if(this.ce.checkCache(id)) {
-        //     return this.ce.getCachedByKey(id);
-        // } else {
-        //     return fetchFromDB()
-        // }
+        return existInCache
+            ? this.ce.getCachedByKey<Order[]>(cacheKey).toPromise()
+            : fetchFromDB()
+        
     }
 
-    getOrdersBySession(sid: string): Promise<Order[]> {
-        return
+    async getOrdersBySession(sid: string): Promise<Order[]> {
+        const cacheKey = `orders_by_session_${sid}`;
+        const fetchFromDB = (): Promise<Order[]> => {
+            let q =
+                `SELECT * 
+                FROM \`orders\` 
+                WHERE session_id = ${sid}`;
+
+            return this.dbe.queryList<Order>(q).pipe(
+                tap(data => this.ce.saveCacheData(cacheKey, data)),
+            ).toPromise();
+        };
+        const existInCache = this.ce.checkCache(cacheKey);
+
+        return existInCache
+            ? this.ce.getCachedByKey<Order[]>(cacheKey).toPromise()
+            : fetchFromDB()
+        
     }
 
     async getOrders(session_id: string): Promise<Order[]> {
         const uid = await this.getUserIDBySession(session_id);
         const authMode = await this.userISAuthorized(uid);
 
-        return authMode ? await this.getOrdersByUser(uid) : this.getOrdersBySession(session_id);
+        return authMode 
+            ? this.getOrdersByUser(uid) 
+            : this.getOrdersBySession(session_id);
     }
 
 
@@ -98,19 +94,57 @@ export class OrderEngine {
         return role?.rank > 1;
     }
 
-    async actionToOrder(session_id: string, action: ODRER_ACTIONS, payload: OrderPayload): Promise<any> {
+    async actionToOrder(token: string, action: ODRER_ACTIONS, payload: OrderPayload): Promise<OkPacket> {
+        const {
+            id,
+            ent_id,
+            ent_key, 
+        } = payload;
+        
         switch (action) {
             case ODRER_ACTIONS.ADD:
-                return this.addOrderToUserCart(session_id, payload);
+                return this.addOrderToUserCart(token, payload);
             case ODRER_ACTIONS.CANCEL:
+                return id 
+                    ? this.changeStatusOrderById(id, STATUSES.canceled)
+                    : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.canceled)
 
+            case ODRER_ACTIONS.COMPLETE:
+                return id 
+                    ? this.changeStatusOrderById(id, STATUSES.completed)
+                    : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.completed)
 
+            case ODRER_ACTIONS.REJECT:
+                return id 
+                    ? this.changeStatusOrderById(id, STATUSES.rejected)
+                    : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.rejected)
+
+            case ODRER_ACTIONS.RESOLVE:
+                return id 
+                    ? this.changeStatusOrderById(id, STATUSES.resolved)
+                    : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.resolved)
+
+            case ODRER_ACTIONS.REMOVE:
+                return id 
+                    ? this.changeStatusOrderById(id, STATUSES.deleted)
+                    : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.deleted)
+
+            case ODRER_ACTIONS.SUBMIT:
+                return id 
+                    ? this.changeStatusOrderById(id, STATUSES.waiting)
+                    : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.waiting)
+
+            case ODRER_ACTIONS.SENDBYORG:
+                return id 
+                    ? this.changeStatusOrderById(id, STATUSES.inprogress)
+                    : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.inprogress)
         }
+        
         return Promise.reject('Action is unknown');
     }
 
-    async actionHandler(req: Request, res: Response) {
-        const session = await this.ctx.authorizationEngine.getToken(req);
+    async actionHandler(req: Request, res: Response): Promise<void> {
+        const token = await this.ctx.authorizationEngine.getToken(req);
         const action = req.body?.action as ODRER_ACTIONS;
         const payload = req.body;
 
@@ -121,7 +155,7 @@ export class OrderEngine {
         }
 
         try {
-            const result = await this.actionToOrder(session, action, payload);
+            const result = await this.actionToOrder(token, action, payload);
             res.send(JSON.stringify({ context: 'orders', result }));
         } catch (e) {
             res.status(500);
@@ -130,12 +164,17 @@ export class OrderEngine {
 
     }
 
-    addOrderToUserCart(session_id, payload: OrderPayload): Promise<number> {
-        
-        return;
+    async addOrderToUserCart(token: string, payload: OrderPayload): Promise<OkPacket> {
+        const { ent_id, ent_key } = payload;
+        const user_id = await this.getUserIDBySession(token);
+        const session_id = await this.getSessionByToken(token);
+        const q = ` INSERT INTO \`orders\` 
+                    (\`user_id\`, \`session_id\`, \`slot_entity_id\`, \`slot_entity_key\`, \`refferer\`, \`status\`)
+                    VALUES (${user_id}, ${session_id}, ${ent_id}, "${ent_key}", ${user_id}, "pending")`;
+        return this.ctx.dbe.query<OkPacket>(q).toPromise();
     }
 
-    changeStatusOrderById(id: number, newStatus: STATUSES): Promise<OkPacket> {
+    changeStatusOrderById(id: number, newStatus: StatusType): Promise<OkPacket> {
         const q = `UPDATE \`orders\` SET \`status\`= \"${newStatus}\" WHERE \`id\`=${id}`;
         return this.ctx.dbe.query<OkPacket>(q).toPromise();
     }
@@ -144,7 +183,7 @@ export class OrderEngine {
         token: string,
         ent_key: EntityKeys,
         ent_id: number,
-        newStatus: STATUSES
+        newStatus: StatusType
     ): Promise<OkPacket> {
         const user = await this.getUserIDBySession(token);
         const session = await this.getSessionByToken(token);
@@ -158,30 +197,20 @@ export class OrderEngine {
         return this.ctx.dbe.query<OkPacket>(q).toPromise();
     }
 
-    submitOrder(id) { }
+    async getOrdersHandler(req: Request, res: Response): Promise<void> {
+        const token = await this.ctx.authorizationEngine.getToken(req);
+        if (!token) {
+            res.status(500);
+            res.send({ error: 'Token not recieved' });
+        }
 
-    rejectOrder(id) { }
-
-    resolveOrder(id) { }
-
-    sendOrderToContragent(id) {
-
-    }
-
-    removeOrder(id) {
-
-    }
-
-    cancelOrder(id) {
-
-    }
-
-    completeOrder(id) {
-
-    }
-
-    getOrdersHandler(req: Request, res: Response): void {
-
+        try {
+            const result = await this.getOrders(token);
+            res.send(JSON.stringify({ context: 'orders', result }));
+        } catch (e) {
+            res.status(500);
+            res.send({ error: e });
+        }
     }
 
 
