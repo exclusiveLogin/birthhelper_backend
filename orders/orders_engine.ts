@@ -8,6 +8,8 @@ import { tap } from "rxjs/operators";
 import { ODRER_ACTIONS, Order, STATUSES, StatusType } from "./orders.model";
 import { EntityKeys } from "../entity/entity_repo.model";
 import { OkPacket } from "mysql";
+const bodyParser = require('body-parser');
+const jsonparser = bodyParser.json();
 
 export interface OrderPayload {
     action: ODRER_ACTIONS;
@@ -49,7 +51,7 @@ export class OrderEngine {
         
     }
 
-    async getOrdersBySession(sid: string): Promise<Order[]> {
+    async getOrdersBySession(sid: number): Promise<Order[]> {
         const cacheKey = `orders_by_session_${sid}`;
         const fetchFromDB = (): Promise<Order[]> => {
             let q =
@@ -69,13 +71,14 @@ export class OrderEngine {
         
     }
 
-    async getOrders(session_id: string): Promise<Order[]> {
-        const uid = await this.getUserIDBySession(session_id);
+    async getOrders(token: string): Promise<Order[]> {
+        const uid = await this.getUserIDBySession(token);
         const authMode = await this.userISAuthorized(uid);
+        const session = await this.getSessionByToken(token);
 
         return authMode 
             ? this.getOrdersByUser(uid) 
-            : this.getOrdersBySession(session_id);
+            : this.getOrdersBySession(session);
     }
 
 
@@ -152,6 +155,7 @@ export class OrderEngine {
             console.error('actionHandler: ', 'не передан action код');
             res.status(500);
             res.send({ error: 'Ошибка: Не передан код действия' });
+            return;
         }
 
         try {
@@ -226,6 +230,7 @@ export class OrderEngine {
             this.getOrdersHandler.bind(this));
 
         this.orderRouter.post('/', 
+            jsonparser,
             this.ctx.authorizationEngine.checkAccess.bind(this.ctx.authorizationEngine, null),
             this.actionHandler.bind(this));
         return this.orderRouter;
