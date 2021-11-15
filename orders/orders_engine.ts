@@ -1,5 +1,6 @@
 
 import * as express from "express";
+import uuid = require('uuid');
 import { CacheEngine } from "../cache.engine/cache_engine";
 import { Response, Request, Router } from "express";
 import { DataBaseService } from "../db/sql";
@@ -133,9 +134,9 @@ export class OrderEngine {
                     : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.deleted)
 
             case ODRER_ACTIONS.SUBMIT:
-                return id 
-                    ? this.changeStatusOrderById(id, STATUSES.waiting)
-                    : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.waiting)
+                const session_id = await this.getSessionByToken(token);
+                if(!session_id) throw new Error('session not found');
+                return this.submitGroupOrdersBySessionID(session_id, STATUSES.waiting);
 
             case ODRER_ACTIONS.SENDBYORG:
                 return id 
@@ -182,6 +183,16 @@ export class OrderEngine {
         const q = `UPDATE \`orders\` SET \`status\`= \"${newStatus}\" WHERE \`id\`=${id}`;
         return this.ctx.dbe.query<OkPacket>(q).toPromise();
     }
+
+    submitGroupOrdersBySessionID(session_id: number, newStatus: StatusType): Promise<OkPacket> {
+        const groupToken: string = uuid.v4();
+        const q = ` UPDATE \`orders\` 
+                    SET \`status\`= \"${newStatus}\",
+                    \`group_token\`= \"${groupToken}\"
+                    WHERE \`session_id\` = ${session_id}`;
+        return this.ctx.dbe.query<OkPacket>(q).toPromise();
+    }
+
 
     async changeStatusOrderByPair(
         token: string,
