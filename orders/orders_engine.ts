@@ -33,42 +33,29 @@ export class OrderEngine {
     }
 
     async getOrdersByUser(uid: number): Promise<Order[]> {
-        const cacheKey = `orders_by_user_${uid}`;
         const fetchFromDB = (): Promise<Order[]> => {
             let q =
                 `SELECT * 
                 FROM \`orders\` 
                 WHERE user_id = ${uid}`;
 
-            return this.dbe.queryList<Order>(q).pipe(
-                tap(data => this.ce.saveCacheData(cacheKey, data)),
-            ).toPromise();
+            return this.dbe.queryList<Order>(q).toPromise();
         };
-        const existInCache = this.ce.checkCache(cacheKey);
-
-        return existInCache
-            ? this.ce.getCachedByKey<Order[]>(cacheKey).toPromise()
-            : fetchFromDB()
-        
+       
+        return fetchFromDB();
     }
 
     async getOrdersBySession(sid: number): Promise<Order[]> {
-        const cacheKey = `orders_by_session_${sid}`;
         const fetchFromDB = (): Promise<Order[]> => {
             let q =
                 `SELECT * 
                 FROM \`orders\` 
                 WHERE session_id = ${sid}`;
 
-            return this.dbe.queryList<Order>(q).pipe(
-                tap(data => this.ce.saveCacheData(cacheKey, data)),
-            ).toPromise();
+            return this.dbe.queryList<Order>(q).toPromise();
         };
-        const existInCache = this.ce.checkCache(cacheKey);
 
-        return existInCache
-            ? this.ce.getCachedByKey<Order[]>(cacheKey).toPromise()
-            : fetchFromDB()
+        return fetchFromDB();
         
     }
 
