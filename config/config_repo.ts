@@ -16,21 +16,23 @@ export interface Consumer {
     key: string;
     busKey: string;
     entityKey: string;
-    restrictors?: Restrictor[];
+    restrictors?: Restrictor[]; // temporary unused
     priority?: PriorityFloor;
 }
 
+export type SelectMode = 'multi' | 'single';
 export interface TabConfig {
     key: string;
     title: string;
     floors: TabFloorSetting[];
-    required?: boolean;
+    selectMode?: SelectMode;
 }
 
 export interface TabFloorSetting {
     title: string;
     consumerKeys: string[];
     required?: boolean;
+    selectMode?: SelectMode;
     entityType?: 'person' | 'placement' | 'other';
 }
 
@@ -101,6 +103,7 @@ export const config: { [key in SectionKeys]: Config } = {
             {
                 key: 'doctors',
                 title: 'Специалисты',
+                selectMode: 'multi',
                 floors: [
                     {
                         title: 'Акушеры',
@@ -113,6 +116,7 @@ export const config: { [key in SectionKeys]: Config } = {
             {
                 key: 'placement',
                 title: 'Размещение',
+                selectMode: 'multi',
                 floors: [
                     {
                         title: null,
@@ -125,6 +129,7 @@ export const config: { [key in SectionKeys]: Config } = {
             {
                 key: 'birthtype',
                 title: 'Вид родов',
+                selectMode: 'multi',
                 floors: [
                     {
                         title: null,
