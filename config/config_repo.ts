@@ -29,6 +29,7 @@ export interface TabConfig {
 }
 
 export interface TabFloorSetting {
+    key: string;
     title: string;
     consumerKeys: string[];
     required?: boolean;
@@ -106,6 +107,7 @@ export const config: { [key in SectionKeys]: Config } = {
                 selectMode: 'multi',
                 floors: [
                     {
+                        key: 'doctors',
                         title: 'Акушеры',
                         entityType: 'person',
                         consumerKeys: ['doctors1'],
@@ -119,6 +121,7 @@ export const config: { [key in SectionKeys]: Config } = {
                 selectMode: 'multi',
                 floors: [
                     {
+                        key: 'placement',
                         title: null,
                         entityType: 'placement',
                         consumerKeys: ['placement'],
@@ -132,6 +135,7 @@ export const config: { [key in SectionKeys]: Config } = {
                 selectMode: 'multi',
                 floors: [
                     {
+                        key: 'other',
                         title: null,
                         entityType: 'other',
                         consumerKeys: ['birthtype'],

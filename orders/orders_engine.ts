@@ -16,6 +16,8 @@ export interface OrderPayload {
     action: ODRER_ACTIONS;
     ent_key: EntityKeys;
     ent_id: number;
+    tab_key: string;
+    floor_key: string;
     id?: number;
     count?: number;
 }
@@ -157,12 +159,35 @@ export class OrderEngine {
     }
 
     async addOrderToUserCart(token: string, payload: OrderPayload): Promise<OkPacket> {
-        const { ent_id, ent_key } = payload;
+        const { 
+            ent_id, 
+            ent_key,
+            tab_key,
+            floor_key,
+        } = payload;
         const user_id = await this.getUserIDBySession(token);
         const session_id = await this.getSessionByToken(token);
         const q = ` INSERT INTO \`orders\` 
-                    (\`user_id\`, \`session_id\`, \`slot_entity_id\`, \`slot_entity_key\`, \`refferer\`, \`status\`)
-                    VALUES (${user_id}, ${session_id}, ${ent_id}, "${ent_key}", ${user_id}, "pending")`;
+                    (
+                        \`user_id\`, 
+                        \`session_id\`, 
+                        \`slot_entity_id\`, 
+                        \`slot_entity_key\`, 
+                        \`refferer\`, 
+                        \`status\`,
+                        \`tab_key\`,
+                        \`floor_key\`
+                    )
+                    VALUES (
+                        ${user_id}, 
+                        ${session_id}, 
+                        ${ent_id}, 
+                        "${ent_key}", 
+                        ${user_id}, 
+                        "pending",
+                        "${tab_key}",
+                        "${floor_key}"
+                    )`;
         return this.ctx.dbe.query<OkPacket>(q).toPromise();
     }
 
@@ -170,16 +195,6 @@ export class OrderEngine {
         const q = `UPDATE \`orders\` SET \`status\`= \"${newStatus}\" WHERE \`id\`=${id}`;
         return this.ctx.dbe.query<OkPacket>(q).toPromise();
     }
-
-    submitGroupOrdersBySessionID(session_id: number, newStatus: StatusType): Promise<OkPacket> {
-        const groupToken: string = uuid.v4();
-        const q = ` UPDATE \`orders\` 
-                    SET \`status\`= \"${newStatus}\",
-                    \`group_token\`= \"${groupToken}\"
-                    WHERE \`session_id\` = ${session_id}`;
-        return this.ctx.dbe.query<OkPacket>(q).toPromise();
-    }
-
 
     async changeStatusOrderByPair(
         token: string,
@@ -196,6 +211,15 @@ export class OrderEngine {
                     AND \`slot_entity_id\`= ${ent_id}
                     AND \`session_id\` = ${session}`;
 
+        return this.ctx.dbe.query<OkPacket>(q).toPromise();
+    }
+
+    submitGroupOrdersBySessionID(session_id: number, newStatus: StatusType): Promise<OkPacket> {
+        const groupToken: string = uuid.v4();
+        const q = ` UPDATE \`orders\` 
+                    SET \`status\`= \"${newStatus}\",
+                    \`group_token\`= \"${groupToken}\"
+                    WHERE \`session_id\` = ${session_id}`;
         return this.ctx.dbe.query<OkPacket>(q).toPromise();
     }
 
