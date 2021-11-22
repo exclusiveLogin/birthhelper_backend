@@ -18,6 +18,7 @@ export interface OrderPayload {
     ent_id: number;
     tab_key: string;
     floor_key: string;
+    section_key: string;
     id?: number;
     count?: number;
 }
@@ -39,7 +40,8 @@ export class OrderEngine {
             let q =
                 `SELECT * 
                 FROM \`orders\` 
-                WHERE user_id = ${uid}`;
+                WHERE user_id = ${uid} 
+                AND \`status\` != "deleted"`;
 
             return this.dbe.queryList<Order>(q).toPromise();
         };
@@ -52,7 +54,8 @@ export class OrderEngine {
             let q =
                 `SELECT * 
                 FROM \`orders\` 
-                WHERE session_id = ${sid}`;
+                WHERE session_id = ${sid}
+                AND \`status\` != "deleted"`;
 
             return this.dbe.queryList<Order>(q).toPromise();
         };
@@ -130,10 +133,10 @@ export class OrderEngine {
             case ODRER_ACTIONS.SENDBYORG:
                 return id 
                     ? this.changeStatusOrderById(id, STATUSES.inprogress)
-                    : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.inprogress)
-        }
-        
-        return Promise.reject('Action is unknown');
+                    : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.inprogress);
+            default:
+                return Promise.reject('Action is unknown');
+        }    
     }
 
     async actionHandler(req: Request, res: Response): Promise<void> {
@@ -164,6 +167,7 @@ export class OrderEngine {
             ent_key,
             tab_key,
             floor_key,
+            section_key,
         } = payload;
         const user_id = await this.getUserIDBySession(token);
         const session_id = await this.getSessionByToken(token);
@@ -176,7 +180,8 @@ export class OrderEngine {
                         \`refferer\`, 
                         \`status\`,
                         \`tab_key\`,
-                        \`floor_key\`
+                        \`floor_key\`,
+                        \`section_key\`
                     )
                     VALUES (
                         ${user_id}, 
@@ -186,7 +191,8 @@ export class OrderEngine {
                         ${user_id}, 
                         "pending",
                         "${tab_key}",
-                        "${floor_key}"
+                        "${floor_key}",
+                        "${section_key}"
                     )`;
         return this.ctx.dbe.query<OkPacket>(q).toPromise();
     }
