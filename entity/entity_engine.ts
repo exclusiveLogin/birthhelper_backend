@@ -449,6 +449,8 @@ export class EntityEngine {
                                 ...ent,
                                 _contragent: contragents.filter(_ => !!_).find(_ => _.id.toString() === ent[contragentIDKey]?.toString()),
                                 _contragent_entity_key: contragentEntity,
+                                _contragent_id_key: contragentIDKey,
+                                _entity_id_key: entityIDKey,
                                 _entity: mode === "entity" 
                                     ? entities.filter(_ => !!_).find($ => $.id.toString() === ent[entityIDKey]?.toString())
                                     : containers.filter(_ => !!_).find($ => $.id?.toString() === ent[entityIDKey]?.toString()),
