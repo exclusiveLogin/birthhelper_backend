@@ -25,6 +25,7 @@ export interface TabConfig {
     key: string;
     title: string;
     floors: TabFloorSetting[];
+    required?: boolean;
     selectMode?: SelectMode;
 }
 
