@@ -14,7 +14,7 @@ export interface Slot extends Cached{
     db: string; // таблица слотов 
 
     contragent_id_key: string; // название поля для хранения ссылки на КА
-    contragent_entity: EntityKeys; // ключ сущности КА (section)
+    contragent_entity_key: EntityKeys; // ключ сущности КА (section)
     container_name: ContainerKeys, // Имя контейнера если есть режим поакетного слота
 
     entity_key: EntityKeys; // ключ сущности
@@ -63,7 +63,7 @@ export const slots: SlotRepo = {
         }, //поля обязательные для слота
         entity_key: 'ent_services', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
-        contragent_entity: 'ent_clinics',
+        contragent_entity_key: 'ent_clinics',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
@@ -89,7 +89,7 @@ export const slots: SlotRepo = {
         }, //поля обязательные для слота
         entity_key: 'ent_doctor', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
-        contragent_entity: 'ent_clinics',
+        contragent_entity_key: 'ent_clinics',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
@@ -115,7 +115,7 @@ export const slots: SlotRepo = {
         }, //поля обязательные для слота
         entity_key: 'ent_birthtype', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
-        contragent_entity: 'ent_clinics',
+        contragent_entity_key: 'ent_clinics',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
