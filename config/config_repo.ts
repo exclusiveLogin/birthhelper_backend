@@ -105,7 +105,7 @@ export const config: { [key in SectionKeys]: Config } = {
             {
                 key: 'doctors',
                 title: 'Специалисты',
-                selectMode: 'multi',
+                selectMode: 'single',
                 floors: [
                     {
                         key: 'doctors',
