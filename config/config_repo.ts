@@ -27,6 +27,10 @@ export interface TabConfig {
     floors: TabFloorSetting[];
     required?: boolean;
     selectMode?: SelectMode;
+    poorErrorMessage?: string;
+    richErrorMessage?: string;
+    lockMessage?: string;
+    defaultMessage?: string;
 }
 
 export interface TabFloorSetting {
@@ -36,6 +40,10 @@ export interface TabFloorSetting {
     required?: boolean;
     selectMode?: SelectMode;
     entityType?: 'person' | 'placement' | 'other';
+    poorErrorMessage?: string;
+    richErrorMessage?: string;
+    lockMessage?: string;
+    defaultMessage?: string;
 }
 
 export interface Config {
@@ -113,6 +121,10 @@ export const config: { [key in SectionKeys]: Config } = {
                         entityType: 'person',
                         consumerKeys: ['doctors1'],
                         required: true,
+                        selectMode: 'single',
+                        defaultMessage: 'Вы можете выбрать не более одного специалиста',
+                        poorErrorMessage: 'Необходимо выбрать минимум одного специалиста',
+                        lockMessage: 'Вы уже выбрали необходимого специалиста',
                     },
                 ],
             },
