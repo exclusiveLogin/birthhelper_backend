@@ -32,6 +32,7 @@ export interface EntityFilter {
 
 export const EntityRepoKeys = [
     'ent_services',
+    'ent_services_placement',
     'ent_doctor',
     'ent_service_containers',
     'ent_clinics',

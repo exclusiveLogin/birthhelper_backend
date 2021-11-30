@@ -41,6 +41,43 @@ export const entityRepo: EntityRepo = {
         ]
     },
 
+    ent_services_placement: {
+        db_name: 'services',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
+        filters: [
+            {
+                name: 'slot_category_type',
+                title: 'Тип услуги',
+                type: 'id',
+                db_name: 'dict_slot_category_type',
+                readonly: true,
+                value: '2',
+
+            },
+        ],
+        fields:[ 
+            { key: 'id', title: 'ID услуги', type: 'id', readonly: true, showOnTable: false }, 
+            { key: 'title', type: 'string', title: 'Название услуги', required: true, showOnTable: true }, 
+            { key: 'description', title: 'Описание услуги', type: 'text', showOnTable: false }, 
+            { key: 'description_ext1', title: 'Описание услуги расширенное 1', type: 'text', showOnTable: false }, 
+            { key: 'description_ext2', title: 'Описание услуги расширенное 2', type: 'text', showOnTable: false }, 
+            { key: 'image_id', title: 'Прикрепленное изображение', type: 'img', showOnTable: false, loadEntity: true},
+            {
+                key: 'slot_category_type',
+                title: 'Вид услуги в конструкторе',
+                required: true,
+                type: 'id',
+                useDict: true,
+                canBeNull: false,
+                showOnTable: true,
+                dctKey: 'dict_slot_category_type',
+                readonly: true,
+                initData: 2,
+            },
+        ]
+    },
+
     ent_doctor: {
         db_name: 'doctors',
         filters: [
@@ -245,9 +282,10 @@ export const entityRepo: EntityRepo = {
         fields: [
             { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
             { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
+            { key: 'image_id', title: 'Прикрепленное изображение', type: 'img', showOnTable: false, loadEntity: true},
+            { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
             { key: 'service_id', type: 'string', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
             { key: 'contragent_id', type: 'id', title: 'id клиники', required: true, showOnTable: true, readonly: true },
-            { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
             {
                 key: 'entity_type',
                 title: 'Тип услуги',
@@ -426,8 +464,8 @@ export const entityRepo: EntityRepo = {
                     {
                         name: 'clinic_id',
                         title: 'ID клиники',
-                        db_name: 'clinics',
-                        type: 'string',
+                        db_name: 'dict_clinics',
+                        type: 'id',
                         readonly: true,
                         formLink: {
                             formKey: 'editor',
