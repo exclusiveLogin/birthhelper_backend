@@ -47,6 +47,7 @@ export const EntityRepoKeys = [
     'ent_images',
     'ent_files',
     'ent_birthtype',
+    'ent_birth_additional_slots',
     'ent_doctor_position',
     'ent_doctor_category',
     'ent_specialities_clinic',

@@ -16,6 +16,8 @@ export const entityRepo: EntityRepo = {
             { key: 'id', title: 'ID услуги', type: 'id', readonly: true, showOnTable: false }, 
             { key: 'title', type: 'string', title: 'Название услуги', required: true, showOnTable: true }, 
             { key: 'description', title: 'Описание услуги', type: 'text', showOnTable: true }, 
+            { key: 'description_ext1', title: 'Описание услуги расширенное 1', type: 'text', showOnTable: false }, 
+            { key: 'description_ext2', title: 'Описание услуги расширенное 2', type: 'text', showOnTable: false }, 
             { key: 'article_id', type: 'id', hide: true, showOnTable: false }, 
             { key: 'image_id', title: 'Прикрепленное изображение', type: 'img', showOnTable: false, loadEntity: true},
             { 
@@ -414,6 +416,77 @@ export const entityRepo: EntityRepo = {
         ],
     },
 
+    ent_birth_additional_slots: {
+        db_name: 'service_slot',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
+        filters: [],
+        container: null,
+        slot: 'slot_birth_additional',
+        fields: [
+            { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
+            { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
+            { key: 'service_id', type: 'string', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
+            { key: 'contragent_id', type: 'id', title: 'id клиники', required: true, showOnTable: true, readonly: true },
+            { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
+            {
+                key: 'entity_type',
+                title: 'Тип услуги',
+                required: true,
+                type: 'id',
+                initData: 1,
+                readonly: true,
+                useDict: true,
+                canBeNull: false,
+                showOnTable: true,
+                dctKey: 'dict_entity_type'
+            },
+            {
+                key: 'slot_category_type',
+                title: 'Вид услуги в конструкторе',
+                required: true,
+                type: 'id',
+                useDict: true,
+                canBeNull: false,
+                showOnTable: true,
+                dctKey: 'dict_slot_category_type',
+                readonly: true,
+                initData: 4,
+            },
+        ],
+        links: [
+            {
+                filters: [
+                    {
+                        name: 'slot_category_type',
+                        title: 'Тип услуги',
+                        type: 'id',
+                        db_name: 'dict_slot_category_type',
+                        readonly: true,
+                        value: 4,
+                    }
+                ],
+                type: 'repo',
+                title: 'Таблица дополнительных услуг',
+                entKey: 'ent_services',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'service_id',
+                conditionField: 'entity_type',
+                conditionKey: 'name',
+                conditionValue: 'entity'
+            },
+            {
+                type: 'repo',
+                title: 'Таблица клиник системы',
+                entKey: 'ent_clinics',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'contragent_id'
+            },
+        ],
+    },
+
     ent_doctor_slots: {
         db_name: 'service_slot',
         deleteAffectionSectionKeys: ['clinic'],
@@ -547,6 +620,10 @@ export const entityRepo: EntityRepo = {
             { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },
             { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
             { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
+            { key: 'description_ext1', title: 'Описание расширенное 1', type: 'text', showOnTable: false }, 
+            { key: 'description_ext2', title: 'Описание расширенное 2', type: 'text', showOnTable: false }, 
+            { key: 'advantage', title: 'Преимущества', type: 'text', showOnTable: false }, 
+            { key: 'lack', title: 'Недостатки', type: 'text', showOnTable: false }, 
         ]
     },
 
