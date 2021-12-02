@@ -626,7 +626,8 @@ export const entityRepo: EntityRepo = {
             { key: 'description_ext1', title: 'Описание расширенное 1', type: 'text', showOnTable: false }, 
             { key: 'description_ext2', title: 'Описание расширенное 2', type: 'text', showOnTable: false }, 
             { key: 'advantage', title: 'Преимущества', type: 'text', showOnTable: false }, 
-            { key: 'lack', title: 'Недостатки', type: 'text', showOnTable: false }, 
+            { key: 'lack', title: 'Недостатки', type: 'text', showOnTable: false },
+            { key: 'motivator', title: 'Мотиватор', type: 'string' },
         ]
     },
 
