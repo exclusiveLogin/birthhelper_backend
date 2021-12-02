@@ -621,6 +621,7 @@ export const entityRepo: EntityRepo = {
         fields: [
             { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },
             { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
+            { key: 'image_id', title: 'Фото', type: 'img', showOnTable: false, loadEntity: true },
             { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
             { key: 'description_ext1', title: 'Описание расширенное 1', type: 'text', showOnTable: false }, 
             { key: 'description_ext2', title: 'Описание расширенное 2', type: 'text', showOnTable: false }, 
