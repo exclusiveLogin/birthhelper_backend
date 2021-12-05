@@ -5,7 +5,6 @@ import { CacheEngine } from "../cache.engine/cache_engine";
 import { Response, Request, Router } from "express";
 import { DataBaseService } from "../db/sql";
 import { Context } from "../search.engine/config";
-import { tap } from "rxjs/operators";
 import { ODRER_ACTIONS, Order, STATUSES, StatusType } from "./orders.model";
 import { EntityKeys } from "../entity/entity_repo.model";
 import { OkPacket } from "mysql";
@@ -210,14 +209,23 @@ export class OrderEngine {
     ): Promise<OkPacket> {
         const user = await this.getUserIDBySession(token);
         const session = await this.getSessionByToken(token);
-        const q =  `UPDATE \`orders\` 
-                    SET \`status\`= \"${newStatus}\",
-                        \`user_id\` = ${user} 
+        const authMode = await this.userISAuthorized(user);
+
+        const q_session = `UPDATE \`orders\` 
+                    SET \`status\`= \"${newStatus}\"
                     WHERE \`slot_entity_key\`= "${ent_key}"
                     AND \`slot_entity_id\`= ${ent_id}
                     AND \`session_id\` = ${session}`;
 
-        return this.ctx.dbe.query<OkPacket>(q).toPromise();
+        const q_user = `UPDATE \`orders\` 
+                    SET \`status\`= \"${newStatus}\"
+                    WHERE \`slot_entity_key\`= "${ent_key}"
+                    AND \`slot_entity_id\`= ${ent_id}
+                    AND \`user_id\` = ${user}`;
+
+        return authMode 
+            ? this.ctx.dbe.query<OkPacket>(q_user).toPromise() 
+            : this.ctx.dbe.query<OkPacket>(q_session).toPromise();
     }
 
     submitGroupOrdersBySessionID(session_id: number, newStatus: StatusType): Promise<OkPacket> {
