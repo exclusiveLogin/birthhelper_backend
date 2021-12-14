@@ -85,6 +85,14 @@ export class AuthorizationEngine {
         ).toPromise();
     }
 
+    async getSessionByToken(token: string): Promise<number> {
+        const q = `SELECT * FROM \`sessions\` WHERE \`token\` = "${token}"`;
+
+        return this.context.dbe.queryList(q).pipe(
+            map(result => (result as any as UserSession)?.[0]?.id),
+        ).toPromise();
+    }
+
     async getRoleByUserId(user_id: number): Promise<UserRole> {
         const q = `SELECT \`roles\`.*, \`users\`.\`id\` as user_id FROM users, roles WHERE users.id = ${user_id} AND users.role = roles.id`;
         return this.context.dbe.queryList<UserRole>(q).pipe(

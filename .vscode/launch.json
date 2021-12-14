@@ -11,7 +11,8 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}\\server.ts",
+            "program": "${workspaceFolder}/dist/out-tsc/server.js",
+            "env": { "HOST": "185.178.46.248"},
             "preLaunchTask": "npm: build",
             "outFiles": [
                 "${workspaceFolder}/dist/out-tsc/**/*.js"

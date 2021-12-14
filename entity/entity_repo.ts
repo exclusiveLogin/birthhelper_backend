@@ -16,6 +16,8 @@ export const entityRepo: EntityRepo = {
             { key: 'id', title: 'ID услуги', type: 'id', readonly: true, showOnTable: false }, 
             { key: 'title', type: 'string', title: 'Название услуги', required: true, showOnTable: true }, 
             { key: 'description', title: 'Описание услуги', type: 'text', showOnTable: true }, 
+            { key: 'description_ext1', title: 'Описание услуги расширенное 1', type: 'text', showOnTable: false }, 
+            { key: 'description_ext2', title: 'Описание услуги расширенное 2', type: 'text', showOnTable: false }, 
             { key: 'article_id', type: 'id', hide: true, showOnTable: false }, 
             { key: 'image_id', title: 'Прикрепленное изображение', type: 'img', showOnTable: false, loadEntity: true},
             { 
@@ -41,6 +43,43 @@ export const entityRepo: EntityRepo = {
         ]
     },
 
+    ent_services_placement: {
+        db_name: 'services',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
+        filters: [
+            {
+                name: 'slot_category_type',
+                title: 'Тип услуги',
+                type: 'id',
+                db_name: 'dict_slot_category_type',
+                readonly: true,
+                value: '2',
+
+            },
+        ],
+        fields:[ 
+            { key: 'id', title: 'ID услуги', type: 'id', readonly: true, showOnTable: false }, 
+            { key: 'title', type: 'string', title: 'Название услуги', required: true, showOnTable: true }, 
+            { key: 'description', title: 'Описание услуги', type: 'text', showOnTable: false }, 
+            { key: 'description_ext1', title: 'Описание услуги расширенное 1', type: 'text', showOnTable: false }, 
+            { key: 'description_ext2', title: 'Описание услуги расширенное 2', type: 'text', showOnTable: false }, 
+            { key: 'image_id', title: 'Прикрепленное изображение', type: 'img', showOnTable: false, loadEntity: true},
+            {
+                key: 'slot_category_type',
+                title: 'Вид услуги в конструкторе',
+                required: true,
+                type: 'id',
+                useDict: true,
+                canBeNull: false,
+                showOnTable: true,
+                dctKey: 'dict_slot_category_type',
+                readonly: true,
+                initData: 2,
+            },
+        ]
+    },
+
     ent_doctor: {
         db_name: 'doctors',
         filters: [
@@ -63,7 +102,9 @@ export const entityRepo: EntityRepo = {
             { key: 'experience', title: 'Стаж работы', type: 'string', showOnTable: false },
             { key: 'count', title: 'Количество родов', type: 'string', showOnTable: false },
             { key: 'description_education', title: 'Образование', type: 'text', showOnTable: false },
-            { key: 'description_experience', title: 'Профессиональные навыки', type: 'text', showOnTable: false },
+            { key: 'description_experience', title: 'Описание опыта', type: 'text', showOnTable: false },
+            { key: 'description_pro', title: 'Профессиональные навыки', type: 'text', showOnTable: false },
+            { key: 'description_services', title: 'Описание услуг', type: 'text', showOnTable: false },
             { key: 'category', title: 'Категория врача', type: 'id', useDict: true, dctKey: 'dict_doctor_category_type', showOnTable: true, loadEntity: true },
             { key: 'position', title: 'Должность врача', type: 'id', useDict: true, dctKey: 'dict_doctor_position_type', showOnTable: true, loadEntity: true },
             { key: 'clinic_id', type: 'id', title: 'Клиника', showOnTable: true, useDict: true, dctKey: 'dict_clinics' },
@@ -245,9 +286,10 @@ export const entityRepo: EntityRepo = {
         fields: [
             { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
             { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
+            { key: 'image_id', title: 'Прикрепленное изображение', type: 'img', showOnTable: false, loadEntity: true},
+            { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
             { key: 'service_id', type: 'string', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
             { key: 'contragent_id', type: 'id', title: 'id клиники', required: true, showOnTable: true, readonly: true },
-            { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
             {
                 key: 'entity_type',
                 title: 'Тип услуги',
@@ -376,6 +418,77 @@ export const entityRepo: EntityRepo = {
         ],
     },
 
+    ent_birth_additional_slots: {
+        db_name: 'service_slot',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
+        filters: [],
+        container: null,
+        slot: 'slot_birth_additional',
+        fields: [
+            { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
+            { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
+            { key: 'service_id', type: 'string', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
+            { key: 'contragent_id', type: 'id', title: 'id клиники', required: true, showOnTable: true, readonly: true },
+            { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
+            {
+                key: 'entity_type',
+                title: 'Тип услуги',
+                required: true,
+                type: 'id',
+                initData: 1,
+                readonly: true,
+                useDict: true,
+                canBeNull: false,
+                showOnTable: true,
+                dctKey: 'dict_entity_type'
+            },
+            {
+                key: 'slot_category_type',
+                title: 'Вид услуги в конструкторе',
+                required: true,
+                type: 'id',
+                useDict: true,
+                canBeNull: false,
+                showOnTable: true,
+                dctKey: 'dict_slot_category_type',
+                readonly: true,
+                initData: 4,
+            },
+        ],
+        links: [
+            {
+                filters: [
+                    {
+                        name: 'slot_category_type',
+                        title: 'Тип услуги',
+                        type: 'id',
+                        db_name: 'dict_slot_category_type',
+                        readonly: true,
+                        value: 4,
+                    }
+                ],
+                type: 'repo',
+                title: 'Таблица дополнительных услуг',
+                entKey: 'ent_services',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'service_id',
+                conditionField: 'entity_type',
+                conditionKey: 'name',
+                conditionValue: 'entity'
+            },
+            {
+                type: 'repo',
+                title: 'Таблица клиник системы',
+                entKey: 'ent_clinics',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'contragent_id'
+            },
+        ],
+    },
+
     ent_doctor_slots: {
         db_name: 'service_slot',
         deleteAffectionSectionKeys: ['clinic'],
@@ -426,8 +539,8 @@ export const entityRepo: EntityRepo = {
                     {
                         name: 'clinic_id',
                         title: 'ID клиники',
-                        db_name: 'clinics',
-                        type: 'string',
+                        db_name: 'dict_clinics',
+                        type: 'id',
                         readonly: true,
                         formLink: {
                             formKey: 'editor',
@@ -508,7 +621,13 @@ export const entityRepo: EntityRepo = {
         fields: [
             { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },
             { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
+            { key: 'image_id', title: 'Фото', type: 'img', showOnTable: false, loadEntity: true },
             { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
+            { key: 'description_ext1', title: 'Описание расширенное 1', type: 'text', showOnTable: false }, 
+            { key: 'description_ext2', title: 'Описание расширенное 2', type: 'text', showOnTable: false }, 
+            { key: 'advantage', title: 'Преимущества', type: 'text', showOnTable: false }, 
+            { key: 'lack', title: 'Недостатки', type: 'text', showOnTable: false },
+            { key: 'motivator', title: 'Мотиватор', type: 'string' },
         ]
     },
 

@@ -16,22 +16,34 @@ export interface Consumer {
     key: string;
     busKey: string;
     entityKey: string;
-    restrictors?: Restrictor[];
+    restrictors?: Restrictor[]; // temporary unused
     priority?: PriorityFloor;
 }
 
+export type SelectMode = 'multi' | 'single';
 export interface TabConfig {
     key: string;
     title: string;
     floors: TabFloorSetting[];
     required?: boolean;
+    selectMode?: SelectMode;
+    poorErrorMessage?: string;
+    richErrorMessage?: string;
+    lockMessage?: string;
+    defaultMessage?: string;
 }
 
 export interface TabFloorSetting {
+    key: string;
     title: string;
     consumerKeys: string[];
     required?: boolean;
+    selectMode?: SelectMode;
     entityType?: 'person' | 'placement' | 'other';
+    poorErrorMessage?: string;
+    richErrorMessage?: string;
+    lockMessage?: string;
+    defaultMessage?: string;
 }
 
 export interface Config {
@@ -101,20 +113,28 @@ export const config: { [key in SectionKeys]: Config } = {
             {
                 key: 'doctors',
                 title: 'Специалисты',
+                selectMode: 'single',
                 floors: [
                     {
+                        key: 'doctors',
                         title: 'Акушеры',
                         entityType: 'person',
                         consumerKeys: ['doctors1'],
                         required: true,
+                        selectMode: 'single',
+                        defaultMessage: 'Вы можете выбрать не более одного специалиста',
+                        poorErrorMessage: 'Необходимо выбрать минимум одного специалиста',
+                        lockMessage: 'Вы уже выбрали необходимого специалиста',
                     },
                 ],
             },
             {
                 key: 'placement',
                 title: 'Размещение',
+                selectMode: 'multi',
                 floors: [
                     {
+                        key: 'placement',
                         title: null,
                         entityType: 'placement',
                         consumerKeys: ['placement'],
@@ -125,8 +145,10 @@ export const config: { [key in SectionKeys]: Config } = {
             {
                 key: 'birthtype',
                 title: 'Вид родов',
+                selectMode: 'multi',
                 floors: [
                     {
+                        key: 'other',
                         title: null,
                         entityType: 'other',
                         consumerKeys: ['birthtype'],

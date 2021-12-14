@@ -404,7 +404,7 @@ export class EntityEngine {
         const contragentIDKey = config.contragent_id_key;
         const entityIDKey = config.entity_id_key;
         const entityKey = config.entity_key;
-        const contragentEntity = config.contragent_entity;
+        const contragentEntity = config.contragent_entity_key;
         const containerName = config.container_name;
 
 
@@ -448,9 +448,13 @@ export class EntityEngine {
                             return {
                                 ...ent,
                                 _contragent: contragents.filter(_ => !!_).find(_ => _.id.toString() === ent[contragentIDKey]?.toString()),
-                                _entity: mode === "entity" ?
-                                    entities.filter(_ => !!_).find($ => $.id.toString() === ent[entityIDKey]?.toString()) :
-                                    containers.filter(_ => !!_).find($ => $.id?.toString() === ent[entityIDKey]?.toString()),
+                                _contragent_entity_key: contragentEntity,
+                                _contragent_id_key: contragentIDKey,
+                                _entity_id_key: entityIDKey,
+                                _entity: mode === "entity" 
+                                    ? entities.filter(_ => !!_).find($ => $.id.toString() === ent[entityIDKey]?.toString())
+                                    : containers.filter(_ => !!_).find($ => $.id?.toString() === ent[entityIDKey]?.toString()),
+                                _entity_key: entityKey,
                             }
                         });
                     }),
