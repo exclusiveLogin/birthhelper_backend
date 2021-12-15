@@ -73,6 +73,25 @@ export class OrderEngine {
             : this.getOrdersBySession(session);
     }
 
+    async clearOrders(token: string): Promise<OkPacket> {
+        const user = await this.getUserIDBySession(token);
+        const session = await this.getSessionByToken(token);
+        const authMode = await this.userISAuthorized(user);
+
+        const q_session = `UPDATE \`orders\` 
+                    SET \`status\`=\"deleted\"
+                    WHERE \`session_id\` = ${session}`;
+
+        const q_user = `UPDATE \`orders\` 
+                    SET \`status\`=\"deleted\"
+                    WHERE \`user_id\` = ${user}`;
+
+        return authMode 
+            ? this.ctx.dbe.query<OkPacket>(q_user).toPromise() 
+            : this.ctx.dbe.query<OkPacket>(q_session).toPromise();
+    }
+
+
 
     async getSessionByToken(token: string): Promise<number> {
         return token ? this.ctx.authorizationEngine.getSessionByToken(token) : null;
@@ -99,6 +118,8 @@ export class OrderEngine {
         switch (action) {
             case ODRER_ACTIONS.ADD:
                 return this.addOrderToUserCart(token, payload);
+            case ODRER_ACTIONS.CLEAR:
+                return this.clearOrders(token);
             case ODRER_ACTIONS.CANCEL:
                 return id 
                     ? this.changeStatusOrderById(id, STATUSES.canceled)

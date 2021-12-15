@@ -3,6 +3,7 @@ import { Entity } from "../entity/entity_engine";
 export enum ODRER_ACTIONS {
     ADD = 'ADD',
     REMOVE = 'REMOVE',
+    CLEAR = 'CLEAR',
     SUBMIT = 'SUBMIT',
     RESOLVE = 'RESOLVE',
     REJECT = 'REJECT',
