@@ -29,6 +29,11 @@ export class AuthorizationEngine {
         next();
     }
 
+    sendTokenNotValid(response: Response, reason?: string) {
+        response.status(401);
+        response.send({auth: false, error: reason ? reason : 'Токен устарел'});
+    }
+
     sendNotPermitted(response: Response, reason?: string) {
         response.status(403);
         response.send({auth: false, error: reason ? reason : 'Запрошенное действие не разрешено'});
@@ -240,6 +245,11 @@ export class AuthorizationEngine {
     async roleHandler(req, res) {
         try {
             const token = await this.getToken(req);
+            const session = await this.getSessionByToken(token);
+            if(!session) {
+                this.sendTokenNotValid(res, 'Токен сессии не верный или устарел');
+                return;
+            }
             const role = await this.getRoleByToken(token);
             res.send(role);
             
@@ -252,6 +262,11 @@ export class AuthorizationEngine {
     async userHandler(req, res) {
         try {
             const token = await this.getToken(req);
+            const session = await this.getSessionByToken(token);
+            if(!session) {
+                this.sendTokenNotValid(res, 'Токен сессии не верный или устарел');
+                return;
+            }
             const user_id = await this.getUserIdByToken(token);
             const user = await this.getUserById(user_id);
             delete user.password;
@@ -417,8 +432,14 @@ export class AuthorizationEngine {
         console.log('post auth', req.body);
         const userLogin: string = req.body['login'];
         const userPassword: string = req.body['password'];
-        let token = await this.getToken(req);
+        let token = null;
         let userId: number = null;
+
+        try {
+            token =  await this.getToken(req);
+        } catch (e) {
+            console.log('postHandler', e);
+        }
 
         if(userLogin && userPassword && token){
             userId = await this.getUserIdByCredential(userLogin, userPassword);
