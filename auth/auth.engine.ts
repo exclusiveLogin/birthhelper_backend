@@ -29,6 +29,11 @@ export class AuthorizationEngine {
         next();
     }
 
+    sendTokenNotValid(response: Response, reason?: string) {
+        response.status(401);
+        response.send({auth: false, error: reason ? reason : 'Токен устарел'});
+    }
+
     sendNotPermitted(response: Response, reason?: string) {
         response.status(403);
         response.send({auth: false, error: reason ? reason : 'Запрошенное действие не разрешено'});
@@ -216,13 +221,35 @@ export class AuthorizationEngine {
         ).toPromise();
     }
 
+    async changeUserForSession(token, userId): Promise<OkPacket> {
+        // проверяем есть ли сессия
+        const sessionId = await this.getSessionByToken(token);
+        if(!sessionId) return Promise.reject('Активная сессия не найдена');
+
+        const q = `UPDATE \`sessions\` SET \`user_id\` = ${userId} WHERE \`id\` = ${sessionId}`;
+        return this.context.dbe.query<OkPacket>(q).toPromise();
+    }
+
+    async changeUserToGuestForAllSessions(userId): Promise<OkPacket> {
+        const guestID = await this.getGuestID();
+        const q = `UPDATE \`sessions\` SET \`user_id\` = ${guestID} WHERE \`user_id\` = ${userId}`;
+        return this.context.dbe.query<OkPacket>(q).toPromise();
+    }
+
+    // Генератор токена
     async uuidHandler(req, res) {
         res.send({uuid: uuid.v4()});
     }
 
+    // Получение данный роли 
     async roleHandler(req, res) {
         try {
             const token = await this.getToken(req);
+            const session = await this.getSessionByToken(token);
+            if(!session) {
+                this.sendTokenNotValid(res, 'Токен сессии не верный или устарел');
+                return;
+            }
             const role = await this.getRoleByToken(token);
             res.send(role);
             
@@ -231,9 +258,15 @@ export class AuthorizationEngine {
         }
     }
 
+    // Получение данных пользователя
     async userHandler(req, res) {
         try {
             const token = await this.getToken(req);
+            const session = await this.getSessionByToken(token);
+            if(!session) {
+                this.sendTokenNotValid(res, 'Токен сессии не верный или устарел');
+                return;
+            }
             const user_id = await this.getUserIdByToken(token);
             const user = await this.getUserById(user_id);
             delete user.password;
@@ -249,7 +282,11 @@ export class AuthorizationEngine {
         console.log('delete auth', req.headers);
         try {
             const token = await this.getToken(req);
-            await this.cleanCurrentSession(token);
+            const guestID = await this.getGuestID();
+
+            await this.changeUserForSession(token, guestID);
+
+            // await this.cleanCurrentSession(token);
             res.send(JSON.stringify({
                 exit: true,
                 msg: 'Сессия завершениа',
@@ -270,7 +307,7 @@ export class AuthorizationEngine {
             const guest = await this.getGuestID();
 
             if(guest !== user_id) {
-                await this.cleanOldTokens(user_id);
+                await this.changeUserToGuestForAllSessions(user_id);
             }
             
             res.send(JSON.stringify({
@@ -314,30 +351,35 @@ export class AuthorizationEngine {
         console.log('patch auth', req.body);
         const userLogin: string = req.body['login'];
         const userPassword: string = req.body['password'];
-        if (userLogin && userPassword) {
-            // получаем id юзера
-            const userId = await this.getUserIdByCredential(userLogin, userPassword);
-            if (userId) {
-                await this.changePasswordForUser(userLogin, userPassword);
-                await this.cleanOldTokens(userId);
-                const token = await this.createNewSession(userId);
-                res.send(JSON.stringify({
-                    changePassword: true,
-                    login: userLogin,
-                    token,
-                    id: userId,
-                }))
-
-            } else {
-                res.status(500);
-
-                res.send(JSON.stringify({
-                    changePassword: false,
-                    error: 'Не верные данные для смены пароля',
-                    login: userLogin,
-                }));
+        
+        try {
+            const token = await this.getToken(req);
+            if (userLogin && userPassword) {
+                // получаем id юзера
+                const userId = await this.getUserIdByCredential(userLogin, userPassword);
+                if (userId) {
+                    await this.changePasswordForUser(userLogin, userPassword);
+                    res.send(JSON.stringify({
+                        changePassword: true,
+                        login: userLogin,
+                        token,
+                        id: userId,
+                    }));
+                } else {
+                    res.status(500);
+                    res.send(JSON.stringify({
+                        changePassword: false,
+                        error: 'Не верные данные для смены пароля',
+                        login: userLogin,
+                    }));
+                }
             }
+        } catch (e) {
+            console.log('patchHandler', e);
+            this.sendNotPermitted(res, e);
         }
+
+        
     }
 
     // регистрация ... новый юзверь
@@ -390,25 +432,45 @@ export class AuthorizationEngine {
         console.log('post auth', req.body);
         const userLogin: string = req.body['login'];
         const userPassword: string = req.body['password'];
+        let token = null;
+        let userId: number = null;
 
-        const userId =  (userLogin && userPassword) ?
-            await this.getUserIdByCredential(userLogin, userPassword) :
-            await this.getGuestID();
+        try {
+            token =  await this.getToken(req);
+        } catch (e) {
+            console.log('postHandler', e);
+        }
+
+        if(userLogin && userPassword && token){
+            userId = await this.getUserIdByCredential(userLogin, userPassword);
+        } else {
+            userId = await this.getGuestID();
+            token = await this.createNewSession(userId);
+        }
 
         if (userId) {
-            const token = await this.createNewSession(userId);
-            res.send({
-                auth: true,
-                token,
-                login: userLogin,
-                id: userId,
-            })
+            try{
+                await this.changeUserForSession(token, userId);
+                res.send(JSON.stringify({
+                    auth: true,
+                    token,
+                    login: userLogin,
+                    id: userId,
+                }));
+            } catch (error) {
+                res.status(401);
+                res.send(JSON.stringify({
+                    auth: false,
+                    login: userLogin,
+                    error,
+                }));
+            }
         } else {
             res.status(401);
             res.send(JSON.stringify({
                 auth: false,
                 login: userLogin,
-                error: 'Логин и пароль не совпадают',
+                error: 'Логин и пароль не совпадают либо токен не ',
             }));
         }
     }
