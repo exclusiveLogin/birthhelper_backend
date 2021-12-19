@@ -85,6 +85,12 @@ export const config: { [key in SectionKeys]: Config } = {
                 entityKey: 'ent_birth_type_slots',
                 restrictors: [],
             },
+            {
+                key: 'other',
+                busKey: 'bus_other_any',
+                entityKey: 'ent_birth_additional_slots',
+                restrictors: [],
+            },
         ],
         consumers: [
             {
@@ -111,14 +117,6 @@ export const config: { [key in SectionKeys]: Config } = {
                 }
             },
             {
-                key: 'doctors2',
-                title: null,
-                busKey: 'bus_doctors_any',
-                entityKey: 'ent_doctor_slots',
-                priority: 'mid',
-                restrictors: [],
-            },
-            {
                 key: 'placement',
                 title: null,
                 busKey: 'bus_placement_any',
@@ -130,6 +128,14 @@ export const config: { [key in SectionKeys]: Config } = {
                 key: 'birthtype',
                 title: null,
                 busKey: 'bus_birthtype_any',
+                entityKey: 'ent_birth_type_slots',
+                priority: 'mid',
+                restrictors: [],
+            },
+            {
+                key: 'other',
+                title: null,
+                busKey: 'bus_other_any',
                 entityKey: 'ent_birth_type_slots',
                 priority: 'mid',
                 restrictors: [],
@@ -163,10 +169,24 @@ export const config: { [key in SectionKeys]: Config } = {
                 selectMode: 'multi',
                 floors: [
                     {
-                        key: 'other',
+                        key: 'birthtype',
                         title: null,
                         entityType: 'other',
                         consumerKeys: ['birthtype'],
+                        required: true,
+                    },
+                ],
+            },
+            {
+                key: 'other',
+                title: 'Дополнительные услуги',
+                selectMode: 'multi',
+                floors: [
+                    {
+                        key: 'other',
+                        title: null,
+                        entityType: 'other',
+                        consumerKeys: ['other'],
                         required: true,
                     },
                 ],
