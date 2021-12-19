@@ -11,12 +11,24 @@ export interface Provider {
     restrictors: Restrictor[];
 }
 
+export interface RestrictorDictConfig {
+    dictKey: string;
+    tabKey: string;
+    floorSettings: TabFloorSetting;
+    entityFieldKey: string;
+    idKey?: string;
+    titleKey?: string;
+    orders?: number[]; // ids orders in dict prediction
+    required?: number[];// ids required dict category
+    selectModeMap?: {id: number, selectMode: SelectMode}[];
+}
 export interface Consumer {
     title: string;
     key: string;
     busKey: string;
     entityKey: string;
     restrictors?: Restrictor[]; // temporary unused
+    restrictorsDict?: RestrictorDictConfig;
     priority?: PriorityFloor;
 }
 
@@ -81,7 +93,22 @@ export const config: { [key in SectionKeys]: Config } = {
                 busKey: 'bus_doctors_any',
                 entityKey: 'ent_doctor_slots',
                 priority: 'mid',
-                restrictors: [],
+                restrictorsDict: {
+                    dictKey: 'dict_doctor_position_type',
+                    tabKey: 'doctors',
+                    entityFieldKey: 'position',
+                    floorSettings: {
+                        key: null,
+                        title: null,
+                        entityType: 'person',
+                        consumerKeys: [],
+                        required: true,
+                        selectMode: 'single',
+                        defaultMessage: 'Вы можете выбрать не более одного специалиста',
+                        poorErrorMessage: 'Необходимо выбрать минимум одного специалиста',
+                        lockMessage: 'Вы уже выбрали необходимого специалиста',
+                    }
+                }
             },
             {
                 key: 'doctors2',
@@ -114,19 +141,7 @@ export const config: { [key in SectionKeys]: Config } = {
                 key: 'doctors',
                 title: 'Специалисты',
                 selectMode: 'single',
-                floors: [
-                    {
-                        key: 'doctors',
-                        title: 'Акушеры',
-                        entityType: 'person',
-                        consumerKeys: ['doctors1'],
-                        required: true,
-                        selectMode: 'single',
-                        defaultMessage: 'Вы можете выбрать не более одного специалиста',
-                        poorErrorMessage: 'Необходимо выбрать минимум одного специалиста',
-                        lockMessage: 'Вы уже выбрали необходимого специалиста',
-                    },
-                ],
+                floors: [],
             },
             {
                 key: 'placement',
