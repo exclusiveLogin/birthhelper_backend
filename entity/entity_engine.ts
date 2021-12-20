@@ -610,14 +610,14 @@ export class EntityEngine {
 
             let meta = req.body && JSON.parse(req.body.meta);
 
-            let {title = 'Без названия', description = 'Без описания'} = meta;
+            let {title = 'Без названия', description = 'Без описания', folder = '/'}  = meta;
             console.log('meta:', meta);
             console.log('dir: ', path.resolve("uploads/"));
             try {
                 const upload = await s3.Upload({
                     path: path.resolve("uploads/" , req.file.filename),
                     save_name: true,
-                }, '/');
+                }, folder);
                 console.log("S3 upload result:", upload, 'dir: ', path.resolve("uploads/", req.file.filename));
                 fields.push('aws');
                 values.push(`\"${upload.Location}\"`);
