@@ -535,6 +535,7 @@ export class EntityEngine {
                                     if(targetConfigField) {
                                         if(targetConfigField.type === 'img') {
                                             t_row.filename = d.value?.[0]?.filename ?? null;
+                                            t_row.aws = d.value?.[0]?.aws ?? null;
                                         }
                                     }
                                 }
