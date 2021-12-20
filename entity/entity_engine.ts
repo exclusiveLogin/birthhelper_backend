@@ -1,6 +1,3 @@
-import * as express from "express";
-
-const bodyParser = require('body-parser');
 import validator from 'validator';
 import {Router} from 'express';
 import fs from "fs";
@@ -19,12 +16,27 @@ import { containers } from "../container/container_repo";
 import { Slot, slots } from "../slot/slot_repo";
 import { dictionaries } from "../dictionary/dictionary_repo";
 import { ContainerRecordSrc } from "../container/container_engine";
+import * as express from "express";
+const path = require('path');
+const bodyParser = require('body-parser');
+
 const jsonparser = bodyParser.json();
+
+const EasyYandexS3 = require("easy-yandex-s3");
+var s3 = new EasyYandexS3({
+    auth: {
+        accessKeyId: "2394_1iRfVPqBmWb254J",
+        secretAccessKey: "qKhk-DlvydnO4pccwir_iJgHi1SGcuBzM-AERsYL",
+    },
+    Bucket: "birhhelper-storage", // Название бакета
+    debug: true // Дебаг в консоли
+});
 
 const entities = entityRepo;
 const sanitizer = validator.escape;
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
+
         cb(null, 'uploads/')
     },
     filename: function (req, file, cb) {
@@ -173,7 +185,7 @@ export class EntityEngine {
         keys.forEach(k => this.cacheEngine.softClearBykey(k));
         sections.forEach(k => this.searchEngine.resetSearchStoreBySection(k));
         sections.forEach(k => this.searchEngine.resetSummaryStoreBySection(k));
-    } 
+    }
 
     async createEntity(name, data) {
         if(!data) return Promise.reject('Нет данных для создания или изменеиня сущности');
@@ -270,7 +282,7 @@ export class EntityEngine {
     getEntitiesByIds(ids: number[], key: string, skip = 0): Observable<Entity[]> {
         const db = entities[key].db_name;
         const cacheKey = cacheKeyGenerator(key, 'hash', ids);
-    
+
         ids = ids.splice(skip, 20);
         const whereStr = ids.length ? `${ids.map(id => 'id = ' + id).join(' OR ')}` : null;
 
@@ -295,12 +307,12 @@ export class EntityEngine {
             slotConfig?.resrtictorsSlot.forEach(slot => _[slot.key] = slot.value);
             filters = filters ? {...filters, ..._} : {..._};
         }
-        
+
         let likeStr = [...generateQStr(key, filters, 'string'), ...generateQStr(key, filters, 'flag')].join(' AND ');
         let whereStr = [...generateQStr(key, filters, 'id')].join(' AND ');
         let limstr = `${!!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip : ' LIMIT ' + limit}`;
 
-        // default query    
+        // default query
         const q = `SELECT 
                 * 
                 FROM \`${ db }\` 
@@ -309,7 +321,7 @@ export class EntityEngine {
                 ${limstr}`;
 
         console.log('getEntityPortion: ', q);
-       
+
         return this.context.dbe.queryList<Entity>(q);
     }
 
@@ -333,18 +345,18 @@ export class EntityEngine {
         // если есть EID это превалирует над всеми остальными источниками. Hash будет проигнорирован
         let provider: Observable<Entity[]> = eid && this.getEntitiesByIds([eid], key, skip);
 
-        // Если есть претендентный hash пробуем получить провадер на ids 
+        // Если есть претендентный hash пробуем получить провадер на ids
         if(hash){
             const ids$ = this.searchEngine.getEntitiesIDByHash(searchKey, hash);
-            provider = provider ?? ids$ ? 
+            provider = provider ?? ids$ ?
                 ids$.pipe(switchMap(_ => this.getEntitiesByIds(_, key, skip))) :
                 null;
             // если после попытки у нас провайдер пустой возвращаем ответ внешнему коду
             if(!provider) return null;
         }
-            
+
         provider = provider ?? this.getEntityPortion(key, filters, skip, limit);
-        
+
         // ОБОГОЩАЕМ сущности
         provider = this.metanizer(provider, fields, calc);
 
@@ -361,11 +373,11 @@ export class EntityEngine {
         const filters = getFiltersByRequest(req);
 
         console.log('queryEntityHandler filters:', filters);
-       
+
         if (!!entKey) {
             const hash = req.query.hash;
             const eid = req.params.eid;
-    
+
             console.log('queryEntityHandler hash: ', req.params);
 
             const provider = this.getEntities(entKey, hash, filters, eid);
@@ -413,7 +425,7 @@ export class EntityEngine {
                 const contragentProviders = entities.map(ent => {
                     const contragentID = ent?.[contragentIDKey];
                     console.log('contragentProviders', ent, contragentID);
-                    return contragentID ? 
+                    return contragentID ?
                         this.getEntities(contragentEntity, null, null, contragentID).pipe(map(data => data[0]), filter(d => !!d)) :
                         null;
                 });
@@ -428,15 +440,15 @@ export class EntityEngine {
                     const mode: slotMode = ent.entity_type === 1 ? 'entity' : 'container';
 
                     const entityID = ent?.[entityIDKey];
-                   
-                    return mode === "container" && containerName && entityID ? 
+
+                    return mode === "container" && containerName && entityID ?
                         from(this.context.containerEngine.getContainer(containers[containerName], entityID)) : null;
                 })
 
                 console.log('containersProviders', containersProviders);
-                
+
                 return forkJoin([
-                        of(entities), 
+                        of(entities),
                         contragentProviders.filter(p => !!p).length ? forkJoin(contragentProviders.filter(p => !!p)) : of(null as Entity[]),
                         entitiesProviders.filter(p => !!p).length ? forkJoin(entitiesProviders.filter(p => !!p)) : of(null as Entity[][]),
                         containersProviders.filter(p => !!p).length ? forkJoin(containersProviders.filter(p => !!p)) : of(null as ContainerRecordSrc[]),
@@ -451,7 +463,7 @@ export class EntityEngine {
                                 _contragent_entity_key: contragentEntity,
                                 _contragent_id_key: contragentIDKey,
                                 _entity_id_key: entityIDKey,
-                                _entity: mode === "entity" 
+                                _entity: mode === "entity"
                                     ? entities.filter(_ => !!_).find($ => $.id.toString() === ent[entityIDKey]?.toString())
                                     : containers.filter(_ => !!_).find($ => $.id?.toString() === ent[entityIDKey]?.toString()),
                                 _entity_key: entityKey,
@@ -462,7 +474,7 @@ export class EntityEngine {
             }),
         );
     }
-    
+
     metanizer(pipeline: Observable<Entity[]>, fields: EntityField[], calc: EntityCalc[]): Observable<Entity[]> {
         return pipeline.pipe(
             // FK
@@ -480,7 +492,7 @@ export class EntityEngine {
 
                         if (targetReq?.loadEntity && value) {
                             if (targetReq?.type === 'img') {
-                                const q = `SELECT \`images\`.*, \`files\`.\`filename\` 
+                                const q = `SELECT \`images\`.*, \`files\`.\`filename\`, \`files\`.\`aws\`
                                                 FROM \`files\` 
                                                 INNER JOIN \`images\` 
                                                 ON \`images\`.\`file_id\` = \`files\`.\`id\` 
@@ -599,6 +611,18 @@ export class EntityEngine {
 
             let {title = 'Без названия', description = 'Без описания'} = meta;
             console.log('meta:', meta);
+            console.log('dir: ', path.resolve("uploads/"));
+            try {
+                const upload = await s3.Upload({
+                    path: path.resolve("uploads/" , req.file.filename),
+                    save_name: true,
+                }, '/');
+                console.log("S3 upload result:", upload, 'dir: ', path.resolve("uploads/", req.file.filename));
+                fields.push('aws');
+                values.push(`\"${upload.Location}\"`);
+            }catch (e) {
+                console.log("S3 upload error:", e);
+            }
 
             let q = `INSERT INTO \`${ 'files' }\` (\`${ fields.join('\`, \`') }\`) VALUES ( ${ values.join(',') } )`;
 
