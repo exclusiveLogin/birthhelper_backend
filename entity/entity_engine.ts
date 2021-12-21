@@ -614,14 +614,14 @@ export class EntityEngine {
             (req.file && req.file.mimetype === 'image/jpeg') ||
             (req.file && req.file.mimetype === 'image/jpg')
         ) {
-
-            let fields = ['filename', 'folder', 'type'];
-            let values = [`"${req.file.filename}"`, `"uploads"`, `"${req.file.mimetype}"`];
-
             let meta = req.body && JSON.parse(req.body.meta);
 
             let {title = 'Без названия', description = 'Без описания', folder = '/'}  = meta;
             console.log('meta:', meta);
+
+            let fields = ['filename', 'folder', 'type'];
+            let values = [`"${req.file.filename}"`, `${folder}`, `"${req.file.mimetype}"`];
+
             try {
                 const upload = await s3.Upload({
                     path: path.resolve(`uploads${folder}` , req.file.filename),
