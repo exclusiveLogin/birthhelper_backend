@@ -502,7 +502,7 @@ export class EntityEngine {
 
                         if (targetReq?.loadEntity && value) {
                             if (targetReq?.type === 'img') {
-                                const q = `SELECT \`images\`.*, \`files\`.\`filename\`, \`files\`.\`aws\`
+                                const q = `SELECT \`images\`.*, \`files\`.\`filename\`, \`files\`.\`aws\`, \`files\`.\`folder\`
                                                 FROM \`files\` 
                                                 INNER JOIN \`images\` 
                                                 ON \`images\`.\`file_id\` = \`files\`.\`id\` 
