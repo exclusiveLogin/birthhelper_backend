@@ -20,6 +20,14 @@ import * as express from "express";
 const path = require('path');
 const bodyParser = require('body-parser');
 
+const folders = ['./uploads/system-images', './uploads/user-images', './uploads/files'];
+
+folders.forEach(dir => {
+    if (!fs.existsSync(dir)){
+        fs.mkdirSync(dir, { recursive: true });
+    }
+});
+
 const jsonparser = bodyParser.json();
 
 const EasyYandexS3 = require("easy-yandex-s3");
@@ -36,8 +44,10 @@ const entities = entityRepo;
 const sanitizer = validator.escape;
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-
-        cb(null, 'uploads/')
+        let meta = req.body && JSON.parse(req?.body?.meta ?? {});
+        console.log('META: ', meta);
+        let {folder = '/'}  = meta;
+        cb(null, `uploads${folder}`);
     },
     filename: function (req, file, cb) {
         const originalname = file.originalname.split('.');
@@ -612,13 +622,12 @@ export class EntityEngine {
 
             let {title = 'Без названия', description = 'Без описания', folder = '/'}  = meta;
             console.log('meta:', meta);
-            console.log('dir: ', path.resolve("uploads/"));
             try {
                 const upload = await s3.Upload({
-                    path: path.resolve("uploads/" , req.file.filename),
+                    path: path.resolve(`uploads${folder}` , req.file.filename),
                     save_name: true,
                 }, folder);
-                console.log("S3 upload result:", upload, 'dir: ', path.resolve("uploads/", req.file.filename));
+                console.log("S3 upload result:", upload);
                 fields.push('aws');
                 values.push(`\"${upload.Location}\"`);
             }catch (e) {
@@ -703,6 +712,7 @@ export class EntityEngine {
             this.queryEntityHandler.bind(this));
 
         entity.post('/file',
+            jsonparser,
             this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
             this.checkUploadsFSHandler.bind(this),
             upload.single('photo'),
