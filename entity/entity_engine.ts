@@ -621,7 +621,7 @@ export class EntityEngine {
             console.log('meta:', meta);
 
             let fields = ['filename', 'folder', 'type'];
-            let values = [`"${req.file.filename}"`, `${folder}`, `"${req.file.mimetype}"`];
+            let values = [`"${req.file.filename}"`, `"${folder}"`, `"${req.file.mimetype}"`];
 
             try {
                 const upload = await s3.Upload({
