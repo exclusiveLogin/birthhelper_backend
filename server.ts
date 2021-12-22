@@ -49,13 +49,18 @@ function jsonHeaders(req, res, next) {
     res.contentType('json');
     next();
 }
-app.use(cors(), jsonHeaders);
-app.use('/search', context.searchEngine.getRouter());
-app.use('/admin', getAdminMiddleware(context));
-app.use('/api', getAPIMiddleware(context));
-app.use('/order', context.orderEngine.getRouter());
-app.use('/auth', context.authorizationEngine.getRouter());
-app.use('/static', express.static('/usr/src/app/uploads/',{ fallthrough: false }), (err, req, res, next) => {
+function imageHeaders(res) {
+    res.set('maxAge', ''+oneWeek);
+    res.type("jpg");
+}
+const oneWeek = 604800000;
+app.use(cors());
+app.use('/search', jsonHeaders, context.searchEngine.getRouter());
+app.use('/admin', jsonHeaders, getAdminMiddleware(context));
+app.use('/api', jsonHeaders, getAPIMiddleware(context));
+app.use('/order', jsonHeaders, context.orderEngine.getRouter());
+app.use('/auth', jsonHeaders, context.authorizationEngine.getRouter());
+app.use('/static', express.static('/usr/src/app/uploads/',{ fallthrough: false, maxAge: oneWeek, setHeaders: imageHeaders }), (err, req, res, next) => {
     console.log('err static:', err);
     if(err.status === 404){
         console.log('Error 404 отдаем заглушку');
