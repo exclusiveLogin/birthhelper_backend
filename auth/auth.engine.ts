@@ -137,7 +137,7 @@ export class AuthorizationEngine {
     async getUserIdByActivation(activation: string): Promise<number> {
         const q = `SELECT * FROM \`users\` WHERE \`activation\` = "${activation}"`;
 
-        console.log('getUserIdByActivation: ', q);
+        // console.log('getUserIdByActivation: ', q);
 
         return this.context.dbe.queryList(q).pipe(
             map(result => (result as any as IUser)?.[0]?.id),
@@ -154,7 +154,7 @@ export class AuthorizationEngine {
 
     async checkUserExist(login: string): Promise<boolean> {
         const q = `SELECT * FROM \`users\` WHERE \`login\` = "${login}"`;
-        console.log('q: ', q);
+        // console.log('q: ', q);
 
         return this.context.dbe.queryList(q).pipe(
             map(result => !!(result as any as IUser)?.[0]?.id),
@@ -279,7 +279,7 @@ export class AuthorizationEngine {
 
     // выход из сессии
     async deleteHandler(req, res) {
-        console.log('delete auth', req.headers);
+        // console.log('delete auth', req.headers);
         try {
             const token = await this.getToken(req);
             const guestID = await this.getGuestID();
@@ -438,7 +438,7 @@ export class AuthorizationEngine {
         try {
             token =  await this.getToken(req);
         } catch (e) {
-            console.log('postHandler', e);
+            console.log('postHandler ERROR', e);
         }
 
         if(userLogin && userPassword && token){

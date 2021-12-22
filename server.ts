@@ -61,9 +61,9 @@ app.use('/api', jsonHeaders, getAPIMiddleware(context));
 app.use('/order', jsonHeaders, context.orderEngine.getRouter());
 app.use('/auth', jsonHeaders, context.authorizationEngine.getRouter());
 app.use('/static', express.static('/usr/src/app/uploads/',{ fallthrough: false, maxAge: oneWeek, setHeaders: imageHeaders }), (err, req, res, next) => {
-    console.log('err static:', err);
+    // console.log('err static:', err);
     if(err.status === 404){
-        console.log('Error 404 отдаем заглушку');
+        // console.log('Error 404 отдаем заглушку');
         fs.createReadStream('assets/noimage.png').pipe(res);
     }
 });

@@ -45,7 +45,7 @@ const sanitizer = validator.escape;
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         let meta = req.body && JSON.parse(req?.body?.meta ?? {});
-        console.log('META: ', meta);
+        // console.log('META: ', meta);
         let {folder = '/'}  = meta;
         cb(null, `uploads${folder}`);
     },
@@ -135,9 +135,9 @@ export class EntityEngine {
                         ${(whereStr) ? 'WHERE ' + whereStr : ''} 
                         ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} `;
 
-            console.log('getSetFromDB', q);
+            // console.log('getSetFromDB', q);
             return this.context.dbe.queryList<Entity>(q).pipe(
-                tap(data => console.log('getSetFromDB result:', data)),
+                // tap(data => console.log('getSetFromDB result:', data)),
                 map(result => result?.[0]?.cnt ?? 0));
         }
 
@@ -276,7 +276,7 @@ export class EntityEngine {
     }
 
     async deleteEntityHandler(req, res) {
-        console.log('delete middle', req.body);
+        // console.log('delete middle', req.body);
         const id = req?.body?.id;
         const name = req.params.id;
 
@@ -330,7 +330,7 @@ export class EntityEngine {
                 ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} 
                 ${limstr}`;
 
-        console.log('getEntityPortion: ', q);
+        // console.log('getEntityPortion: ', q);
 
         return this.context.dbe.queryList<Entity>(q);
     }
@@ -382,13 +382,13 @@ export class EntityEngine {
         const entKey = getKeyByRequest(req) as EntityKeys;
         const filters = getFiltersByRequest(req);
 
-        console.log('queryEntityHandler filters:', filters);
+        // console.log('queryEntityHandler filters:', filters);
 
         if (!!entKey) {
             const hash = req.query.hash;
             const eid = req.params.eid;
 
-            console.log('queryEntityHandler hash: ', req.params);
+            // console.log('queryEntityHandler hash: ', req.params);
 
             const provider = this.getEntities(entKey, hash, filters, eid);
 
@@ -434,7 +434,7 @@ export class EntityEngine {
             switchMap((entities) => {
                 const contragentProviders = entities.map(ent => {
                     const contragentID = ent?.[contragentIDKey];
-                    console.log('contragentProviders', ent, contragentID);
+                    // console.log('contragentProviders', ent, contragentID);
                     return contragentID ?
                         this.getEntities(contragentEntity, null, null, contragentID).pipe(map(data => data[0]), filter(d => !!d)) :
                         null;
@@ -455,7 +455,7 @@ export class EntityEngine {
                         from(this.context.containerEngine.getContainer(containers[containerName], entityID)) : null;
                 })
 
-                console.log('containersProviders', containersProviders);
+                // console.log('containersProviders', containersProviders);
 
                 return forkJoin([
                         of(entities),
@@ -464,7 +464,7 @@ export class EntityEngine {
                         containersProviders.filter(p => !!p).length ? forkJoin(containersProviders.filter(p => !!p)) : of(null as ContainerRecordSrc[]),
                     ]).pipe(
                     map(([ents, contragents, entities, containers]) => {
-                        console.log('results containers:', entities, containers);
+                        // console.log('results containers:', entities, containers);
                         return ents.map(ent => {
                             const mode: slotMode = ent.entity_type === 1 ? 'entity' : 'container';
                             return {
@@ -489,7 +489,7 @@ export class EntityEngine {
         return pipeline.pipe(
             // FK
             switchMap((data: Entity[]) => {
-                console.log('FK tick', data.length);
+                // console.log('FK tick', data.length);
                 const qs: Observable<FKEntity>[] = []
                 data.forEach(row => {
                     Object.keys(row).forEach(k => {
@@ -529,7 +529,7 @@ export class EntityEngine {
                     })
                 })
 
-                console.log('FK que count', qs.length);
+                // console.log('FK que count', qs.length);
                 return qs.length ?
                     forkJoin(qs).pipe(
                         take(1),
@@ -558,7 +558,7 @@ export class EntityEngine {
             // CALC
             switchMap((data: Entity[]) => {
                 if (!calc) return of(data);
-                console.log('CALC tick', data.length);
+                // console.log('CALC tick', data.length);
                 const qs: Observable<CalcEntity>[] = []
                 data.forEach(row => {
                     const id = row.id;
@@ -580,7 +580,7 @@ export class EntityEngine {
                     });
                 })
 
-                console.log('CALC que count', qs.length);
+                // console.log('CALC que count', qs.length);
 
                 return qs.length ?
                     forkJoin(qs).pipe(
@@ -618,7 +618,7 @@ export class EntityEngine {
             let meta = req.body && JSON.parse(req.body.meta);
 
             let {title = 'Без названия', description = 'Без описания', folder = '/'}  = meta;
-            console.log('meta:', meta);
+            // console.log('meta:', meta);
 
             let fields = ['filename', 'folder', 'type'];
             let values = [`"${req.file.filename}"`, `"${folder}"`, `"${req.file.mimetype}"`];
@@ -628,7 +628,7 @@ export class EntityEngine {
                     path: path.resolve(`uploads${folder}` , req.file.filename),
                     save_name: true,
                 }, folder);
-                console.log("S3 upload result:", upload);
+                // console.log("S3 upload result:", upload);
                 fields.push('aws');
                 values.push(`\"${upload.Location}\"`);
             }catch (e) {
@@ -637,7 +637,7 @@ export class EntityEngine {
 
             let q = `INSERT INTO \`${ 'files' }\` (\`${ fields.join('\`, \`') }\`) VALUES ( ${ values.join(',') } )`;
 
-            console.log('save file in db: ', q);
+            // console.log('save file in db: ', q);
 
             try {
                 const result = await this.context.dbe.queryList(q).toPromise();

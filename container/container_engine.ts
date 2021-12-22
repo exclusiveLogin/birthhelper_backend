@@ -55,7 +55,7 @@ export class ContainerEngine {
                             ON \`${containerParams.db_links}\`.\`${containerParams.container_id_key}\` = \`${containerParams.db_entity}\`.\`id\`
                             WHERE \`${containerParams.db_links}\`.\`container_id\`=${id}`;
 
-        console.log('qi: ', qi);
+        // console.log('qi: ', qi);
 
         const containerRecordList = await this.context.dbe.queryList<ContainerRecordItem>(qi).toPromise() ?? [];
 
@@ -70,7 +70,7 @@ export class ContainerEngine {
         });
 
         repo.items = containerRecordList;
-        console.log('getContainer entity: ', repo);
+        // console.log('getContainer entity: ', repo);
     
         return repo;
 
@@ -90,7 +90,7 @@ export class ContainerEngine {
 
             const promisesList = () => ids.map(cur_id => {
                 const q = `INSERT INTO \`${links_db}\` (\`container_id\`, \`${id_key}\` ) VALUES(${id_container}, ${cur_id})`;
-                console.log('simpleSaveContainer promisesList q:', q);
+                // console.log('simpleSaveContainer promisesList q:', q);
 
                 return this.context.dbe.queryList(q)
                     .pipe(
@@ -111,7 +111,7 @@ export class ContainerEngine {
     }
 
     async saveContainerHandler(req, res) {
-        console.log('saveContainerHandler ', req.body, req.params);
+        // console.log('saveContainerHandler ', req.body, req.params);
         //проверка валидности ключа сущности для контейнера
         const data = req.body;
         if (!!containers[req.params.name] && data.ids) {
@@ -169,7 +169,7 @@ export class ContainerEngine {
 
     async deleteContainerHandler(req, res) {
         if (req.params.cid && req.params.name) {
-            console.log('delete params:', req.params);
+            // console.log('delete params:', req.params);
             const id = req.params.cid;
             const name = req.params.name;
 
@@ -186,7 +186,7 @@ export class ContainerEngine {
     }
 
     async getContainerHandler(req, res) {
-        console.log('getContainer', req.params);
+        // console.log('getContainer', req.params);
         if (!req.params.name) {
             res.status(500);
             res.end(JSON.stringify({error: 'ошибка доступа : не указан контейнер'}));

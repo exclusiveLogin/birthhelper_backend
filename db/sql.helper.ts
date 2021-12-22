@@ -10,14 +10,14 @@ export type reqType = 'string' | 'id' | 'flag';
 export type qstrType = 'entity' | 'dictionary';
 
 export function concatFn(arrA, arrB, isStr?: boolean) {
-    console.log('A:', arrA, 'B:', arrB);
+    // console.log('A:', arrA, 'B:', arrB);
     if (arrA && arrA.length && arrB && arrB.length) {
         let fine = [];
         for (let i = 0; i < arrA.length; i++) {
             fine.push((isStr ? `${arrA[i]} LIKE "%${arrB[i]}%"` : `${arrA[i]} = ${arrB[i]}`));
         }
 
-        console.log('concatFn fine:', fine);
+        // console.log('concatFn fine:', fine);
         return fine;
     }
     return [];
