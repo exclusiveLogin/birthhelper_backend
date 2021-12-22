@@ -103,6 +103,7 @@ export const config: { [key in SectionKeys]: Config } = {
                     dictKey: 'dict_doctor_position_type',
                     tabKey: 'doctors',
                     entityFieldKey: 'position',
+                    required: [1],
                     floorSettings: {
                         key: null,
                         title: null,
