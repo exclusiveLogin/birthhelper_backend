@@ -285,6 +285,7 @@ export const entityRepo: EntityRepo = {
         slot: 'slot_placement',
         fields: [
             { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
+            { key: 'active', title: 'Активный слот', type: 'flag', showOnTable: false  },
             { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
             { key: 'image_id', title: 'Прикрепленное изображение', type: 'img', showOnTable: false, loadEntity: true},
             { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
@@ -366,6 +367,7 @@ export const entityRepo: EntityRepo = {
         slot: 'slot_birth_type',
         fields: [
             { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
+            { key: 'active', title: 'Активный слот', type: 'flag', showOnTable: false  },
             { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
             { key: 'service_id', type: 'string', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
             { key: 'contragent_id', type: 'id', title: 'id клиники', required: true, showOnTable: true, readonly: true },
@@ -427,6 +429,7 @@ export const entityRepo: EntityRepo = {
         slot: 'slot_birth_additional',
         fields: [
             { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
+            { key: 'active', title: 'Активный слот', type: 'flag', showOnTable: false  },
             { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
             { key: 'service_id', type: 'string', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
             { key: 'contragent_id', type: 'id', title: 'id клиники', required: true, showOnTable: true, readonly: true },
@@ -498,6 +501,7 @@ export const entityRepo: EntityRepo = {
         slot: 'slot_doctors',
         fields: [
             { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
+            { key: 'active', title: 'Активный слот', type: 'flag', showOnTable: false  },
             { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
             { key: 'service_id', type: 'string', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
             { key: 'contragent_id', type: 'id', title: 'id клиники', required: true, showOnTable: true, readonly: true },
