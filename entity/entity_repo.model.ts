@@ -23,7 +23,7 @@ export interface EntityFilter {
     readonly?: boolean,
     value?: any,
     db_name?: string,
-    override?: boolean,
+    overrideKeys?: string[],
     formLink?: {
         formKey?: string,
         formFieldKey?: string,
@@ -54,7 +54,7 @@ export const EntityRepoKeys = [
     'ent_facilities',
     'ent_slot_category_type',
     'ent_order_status_type',
-    
+
 ] as const;
 
 export type EntityKeys = typeof EntityRepoKeys[number]

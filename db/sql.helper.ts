@@ -80,10 +80,12 @@ export function generateQStr(key: string, filters: FilterParams, type: reqType):
 
     if (!!config) {
         const fields = config.fields;
-        let filtered = Object.keys(filters).filter(k => !(k === 'skip' || k === 'limit'));
-        const overridedKey = filtered.find(k => config.filters.find(f => f.name === k)?.override);
-        if(overridedKey) filtered = [overridedKey];
-        
+        let filtered = Object.keys(filters)
+            .filter(k => !(k === 'skip' || k === 'limit'))
+            .filter(k => config.filters
+                .reduce((a, c) => [...a, ...c?.overrideKeys ?? []], [] )
+                .find(kk => kk !== k));
+
         const keys = [];
         const values = [];
 
