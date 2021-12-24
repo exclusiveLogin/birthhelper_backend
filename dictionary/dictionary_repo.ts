@@ -46,5 +46,7 @@ export const dictionaries: { [key: string]: IDictionary } = {
     dict_facilities_containers_repo: {db: 'facilities_containers_repo'},
     dict_slot_category_type: {db: 'slot_category_type'},
     dict_order_status_type: {db: 'order_status_type'},
-    
+    dict_user_status_type: {db: 'user_status_type'},
+    dict_user_role_type: {db: 'role'},
+
 };

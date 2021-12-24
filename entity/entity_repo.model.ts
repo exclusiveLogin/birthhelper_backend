@@ -31,6 +31,7 @@ export interface EntityFilter {
 }
 
 export const EntityRepoKeys = [
+    'ent_users',
     'ent_services',
     'ent_services_placement',
     'ent_doctor',
@@ -54,14 +55,14 @@ export const EntityRepoKeys = [
     'ent_facilities',
     'ent_slot_category_type',
     'ent_order_status_type',
-
+    'ent_user_status_type',
 ] as const;
 
 export type EntityKeys = typeof EntityRepoKeys[number]
 
 export type EntityRepo = { [key in EntityKeys]: Entity }
 
-export type FieldType = 'string' | 'flag' | 'id' | 'dict' | 'number' | 'text' | 'img';
+export type FieldType = 'string' | 'flag' | 'id' | 'dict' | 'number' | 'text' | 'img' | 'date';
 
 export interface EntityField {
     key: string,

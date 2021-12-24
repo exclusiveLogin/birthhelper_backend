@@ -1,6 +1,65 @@
 import {EntityRepo} from '../entity/entity_repo.model';
 
 export const entityRepo: EntityRepo = {
+    ent_users: {
+        db_name: 'users',
+        filters: [
+            {
+                name: 'login',
+                title: 'Логин',
+                type: 'string',
+            },
+            {
+                name: 'first_name',
+                title: 'Имя',
+                type: 'string',
+            },
+        ],
+        fields:[
+            { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: false },
+            { key: 'active', type: 'flag', title: 'Активный', required: true, showOnTable: true },
+            { key: 'login', type: 'string', title: 'Логин', required: true, showOnTable: true },
+            { key: 'first_name', type: 'string', title: 'Имя', required: false, showOnTable: true },
+            { key: 'last_name', type: 'string', title: 'Фамилия', required: false, showOnTable: true },
+            { key: 'patronymic', type: 'string', title: 'Отчество', required: false, showOnTable: false },
+            { key: 'photo_id', title: 'Аватар', type: 'img', showOnTable: false, loadEntity: true},
+            { key: 'multi_pregnant', title: 'Многоплодная беременность', type: 'flag', showOnTable: false},
+            { key: 'client_birthday_datetime', title: 'День рождения', type: 'date', showOnTable: false},
+            { key: 'conception_datetime', title: 'День зачатия', type: 'date', showOnTable: false},
+            { key: 'has_problems', title: 'Осложнения', type: 'flag', showOnTable: false},
+            { key: 'phone', type: 'string', title: 'Телефон', required: false, showOnTable: false },
+            { key: 'email', type: 'string', title: 'Почта', required: false, showOnTable: false },
+            { key: 'skype', type: 'string', title: 'Skype', required: false, showOnTable: false },
+            { key: 'ch_phone', type: 'flag', title: 'Телефон', required: false, showOnTable: false },
+            { key: 'ch_email', type: 'flag', title: 'Почта', required: false, showOnTable: false },
+            { key: 'ch_skype', type: 'flag', title: 'Skype', required: false, showOnTable: false },
+            { key: 'ch_viber', type: 'flag', title: 'Viber', required: false, showOnTable: false },
+            { key: 'ch_whatsapp', type: 'flag', title: 'WhatsApp', required: false, showOnTable: false },
+            { key: 'ch_telegram', type: 'flag', title: 'Telegram', required: false, showOnTable: false },
+            { key: 'height', type: 'string', title: 'Рост', required: false, showOnTable: false },
+            { key: 'weight', type: 'string', title: 'Вес', required: false, showOnTable: false },
+            { key: 'clothes_size', type: 'string', title: 'Размер одежды', required: false, showOnTable: false },
+            { key: 'shoes_size', type: 'string', title: 'Размер обуви', required: false, showOnTable: false },
+            {
+                key: 'status_type',
+                type: 'id',
+                title: 'Статус пользователя',
+                useDict: true,
+                dctKey: 'dict_user_status_type',
+                canBeNull: true,
+                showOnTable: true
+            },
+            {
+                key: 'role',
+                type: 'id',
+                title: 'Роль пользователя',
+                useDict: true,
+                dctKey: 'dict_user_role_type',
+                canBeNull: true,
+                showOnTable: true
+            },
+        ]
+    },
     ent_services: {
         db_name: 'services',
         deleteAffectionSectionKeys: ['clinic'],
@@ -711,6 +770,18 @@ export const entityRepo: EntityRepo = {
         db_name: 'order_status_type',
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
+        filters: [],
+        container: null,
+        fields: [
+            { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },
+            { key: 'slug', title: 'Ключ', type: 'string', readonly: false, showOnTable: true },
+            { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
+            { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
+        ]
+    },
+
+    ent_user_status_type: {
+        db_name: 'user_status_type',
         filters: [],
         container: null,
         fields: [
