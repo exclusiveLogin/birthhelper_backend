@@ -223,14 +223,15 @@ export class EntityEngine {
         let valArr = Object.keys(data).map(datakey => {
             const targetReq = fields.find(r => r.key === datakey);
             if (!targetReq) return;
-            `"${sanitizer((data[datakey]).toString())}"`;
-            return targetReq.type === 'string' || targetReq.type === 'text' ? `"${sanitizer((data[datakey]).toString())}"` : data[datakey];
+            return (targetReq.type === 'string' || targetReq.type === 'text') && data[datakey]?.toString()  
+                ? `"${sanitizer((data[datakey]).toString())}"` 
+                : data[datakey];
         });
 
         let existArr = concatFn(Object.keys(data), valArr);
         //console.log('existArr: ', existArr);
 
-        const q = `INSERT INTO \`${ db }\` (\`${ Object.keys(data).join('\`, \`') }\`) VALUES ( ${ valArr.join(',') } )`;
+        const q = `INSERT INTO \`${ db }\` (\`${ Object.keys(data).join('\`, \`') }\`) VALUES ( ${ valArr.map(value => value === null ? 'null' : value).join(',') } )`;
         const qi = existArr.join(', ');
         const qf = q + ' ON DUPLICATE KEY UPDATE ' + qi;
 
@@ -256,8 +257,8 @@ export class EntityEngine {
 
         } catch (e) {
             res.status(500);
-            res.send('не удалось определить сущность');
-            console.log('не удалось определить сущность');
+            res.send({error: e});
+            console.log(e);
         }
     }
 

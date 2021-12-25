@@ -18,6 +18,7 @@ export const entityRepo: EntityRepo = {
         fields:[
             { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: false },
             { key: 'active', type: 'flag', title: 'Активный', required: true, showOnTable: true },
+            { key: 'activation', type: 'string', title: 'Код активации', required: false, showOnTable: false, readonly: true },
             { key: 'login', type: 'string', title: 'Логин', required: true, showOnTable: true },
             { key: 'first_name', type: 'string', title: 'Имя', required: false, showOnTable: true },
             { key: 'last_name', type: 'string', title: 'Фамилия', required: false, showOnTable: true },
@@ -40,6 +41,8 @@ export const entityRepo: EntityRepo = {
             { key: 'weight', type: 'string', title: 'Вес', required: false, showOnTable: false },
             { key: 'clothes_size', type: 'string', title: 'Размер одежды', required: false, showOnTable: false },
             { key: 'shoes_size', type: 'string', title: 'Размер обуви', required: false, showOnTable: false },
+            { key: 'datetime_create', type: 'string', title: 'Времая создания', required: false, showOnTable: false },
+            { key: 'datetime_update', type: 'string', title: 'Время обновления', required: false, showOnTable: false },
             {
                 key: 'status_type',
                 type: 'id',
