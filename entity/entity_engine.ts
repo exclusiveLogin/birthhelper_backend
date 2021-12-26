@@ -222,9 +222,12 @@ export class EntityEngine {
 
         let valArr = Object.keys(data).map(datakey => {
             const targetReq = fields.find(r => r.key === datakey);
+            if (targetReq.type === 'id') {
+                data[datakey] = data[datakey] !== null && +data[datakey];
+            }
             if (!targetReq) return;
-            return (targetReq.type === 'string' || targetReq.type === 'text') && data[datakey]?.toString()  
-                ? `"${sanitizer((data[datakey]).toString())}"` 
+            return (targetReq.type === 'string' || targetReq.type === 'text') && data[datakey]?.toString()
+                ? `"${sanitizer((data[datakey]).toString())}"`
                 : data[datakey];
         });
 
