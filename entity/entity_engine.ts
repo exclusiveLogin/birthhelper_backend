@@ -340,7 +340,7 @@ export class EntityEngine {
     }
 
     getEntities(key: EntityKeys, hash: string, filters: FilterParams, eid: number = null): Observable<Entity[]> {
-        console.log('getEntities ', key, hash, filters, eid)
+        // console.log('getEntities ', key, hash, filters, eid)
         const config = entities[key];
 
         if(!config) {
