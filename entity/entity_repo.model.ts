@@ -1,6 +1,12 @@
 import {Cached} from "../cache.engine/cache.model";
 import {SectionKeys} from "../search.engine/config";
 import { SlotKeys } from "../slot/slot_repo";
+export interface Permissions {
+    create: number,
+    delete: number,
+    edit: number,
+    read: number,
+}
 export interface Entity extends Cached {
     db_name: string,
     filters: EntityFilter[],
@@ -14,6 +20,7 @@ export interface Entity extends Cached {
     generateSummariesEnabled?: boolean,
     createAffectionSectionKeys?: SectionKeys[],
     deleteAffectionSectionKeys?: SectionKeys[],
+    permissions?: Permissions,
 }
 
 export interface EntityFilter {

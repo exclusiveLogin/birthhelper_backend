@@ -61,7 +61,13 @@ export const entityRepo: EntityRepo = {
                 canBeNull: true,
                 showOnTable: true
             },
-        ]
+        ],
+        permissions: {
+            create: 7,
+            delete: 7,
+            edit: 3,
+            read: 3,
+        }
     },
     ent_services: {
         db_name: 'services',

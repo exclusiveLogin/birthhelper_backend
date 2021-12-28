@@ -6,8 +6,11 @@ import {Context} from "../search.engine/config";
 import {map, mapTo} from "rxjs/operators";
 import {OkPacket} from "mysql";
 import {Request, Response} from "express";
+import {EntityKeys} from "../entity/entity_repo.model";
 
 const jsonparser = bodyParser.json();
+
+export type REQ_ACTION = 'read' | 'edit' | 'delete' | 'create';
 
 export class AuthorizationEngine {
 
@@ -15,6 +18,27 @@ export class AuthorizationEngine {
 
     async checkAccess(target = 1, req: Request, res: Response, next: Function) {
         try {
+            const entityKey = req.params.id as EntityKeys;
+            const entityConfig = this.context.entityEngine.getEntityParams(entityKey);
+            if (entityConfig?.permissions) {
+                let action: REQ_ACTION;
+                switch (req.method) {
+                    case 'GET':
+                        action = 'read';
+                        break;
+                    case 'POST':
+                        const data = req.body;
+                        action = data.id ? 'edit' : 'create';
+                        break;
+                    case 'DELETE':
+                        action = 'delete';
+                        break;
+                }
+                const tt = entityConfig?.permissions?.[action];
+                if (tt) {
+                    target = tt;
+                }
+            }
             const token = await this.getToken(req);
             const permitted: boolean = await this.hasPermissionByToken(token, target);
             if(!permitted) {
@@ -54,7 +78,7 @@ export class AuthorizationEngine {
         this.auth.get('/user', this.userHandler.bind(this));
 
         this.auth.get('/url', this.urlHandler.bind(this));
-    
+
         this.auth.get('/activation/:code', this.activationHandler.bind(this));
 
         this.auth.delete('/', jsonparser, this.deleteHandler.bind(this));
@@ -210,7 +234,7 @@ export class AuthorizationEngine {
             return Promise.reject('Пользователя с таким кодом активации не найден');
         }
 
-        
+
     }
 
     async changePasswordForUser(userLogin: string, userPassword: string): Promise<null> {
@@ -241,7 +265,7 @@ export class AuthorizationEngine {
         res.send({uuid: uuid.v4()});
     }
 
-    // Получение данный роли 
+    // Получение данный роли
     async roleHandler(req, res) {
         try {
             const token = await this.getToken(req);
@@ -252,7 +276,7 @@ export class AuthorizationEngine {
             }
             const role = await this.getRoleByToken(token);
             res.send(role);
-            
+
         } catch (e) {
             this.sendNotPermitted(res, e);
         }
@@ -309,7 +333,7 @@ export class AuthorizationEngine {
             if(guest !== user_id) {
                 await this.changeUserToGuestForAllSessions(user_id);
             }
-            
+
             res.send(JSON.stringify({
                 exit: true,
                 msg: 'Все сесси текущего пользователя завершены',
@@ -351,7 +375,7 @@ export class AuthorizationEngine {
         console.log('patch auth', req.body);
         const userLogin: string = req.body['login'];
         const userPassword: string = req.body['password'];
-        
+
         try {
             const token = await this.getToken(req);
             if (userLogin && userPassword) {
@@ -379,7 +403,7 @@ export class AuthorizationEngine {
             this.sendNotPermitted(res, e);
         }
 
-        
+
     }
 
     // регистрация ... новый юзверь
@@ -392,7 +416,7 @@ export class AuthorizationEngine {
             const userExist = await this.checkUserExist(userLogin);
             if (!userExist) {
                 const newUser = await this.createNewUser(userLogin, userPassword);
-                
+
                 res.send(JSON.stringify({
                     signup: true,
                     activated: false,
