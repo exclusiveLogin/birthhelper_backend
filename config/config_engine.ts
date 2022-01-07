@@ -1,6 +1,6 @@
 import * as express from "express";
 import { Response, Router } from "express";
-import { Context, SectionKeys } from "../search.engine/config";
+import { Context, SectionKeys } from "../search/config";
 import { Config, config, Consumer, SelectMode, TabFloorSetting } from "./config_repo";
 
 

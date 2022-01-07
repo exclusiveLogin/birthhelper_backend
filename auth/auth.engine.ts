@@ -2,7 +2,7 @@ import express = require('express');
 import uuid = require('uuid');
 import {IUser, UserRole, UserSession} from '../models/user.interface';
 import bodyParser = require('body-parser');
-import {Context} from "../search.engine/config";
+import {Context} from "../search/config";
 import {map, mapTo} from "rxjs/operators";
 import {OkPacket} from "mysql";
 import {Request, Response} from "express";

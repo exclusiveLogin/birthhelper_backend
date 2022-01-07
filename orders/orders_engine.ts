@@ -1,25 +1,30 @@
-
 import * as express from "express";
 import uuid = require('uuid');
 import { CacheEngine } from "../cache.engine/cache_engine";
 import { Response, Request, Router } from "express";
 import { DataBaseService } from "../db/sql";
-import { Context } from "../search.engine/config";
+import { Context } from "../search/config";
 import { ODRER_ACTIONS, Order, STATUSES, StatusType } from "./orders.model";
 import { EntityKeys } from "../entity/entity_repo.model";
 import { OkPacket } from "mysql";
+import {FilterParams} from "../entity/entity_engine";
+import {generateQStr} from "../db/sql.helper";
 const bodyParser = require('body-parser');
 const jsonparser = bodyParser.json();
 
 export interface OrderPayload {
     action: ODRER_ACTIONS;
-    ent_key: EntityKeys;
-    ent_id: number;
-    tab_key: string;
-    floor_key: string;
-    section_key: string;
+    ent_key?: EntityKeys;
+    ent_id?: number;
+    contragent_entity_key?: string,
+    contragent_entity_id?: number,
+    tab_key?: string;
+    floor_key?: string;
+    section_key?: string;
     id?: number;
     count?: number;
+    group_token?: string;
+    filters?: FilterParams;
 }
 export class OrderEngine {
     private orderRouter = express.Router();
@@ -36,7 +41,7 @@ export class OrderEngine {
 
     async getOrdersByUser(uid: number): Promise<Order[]> {
         const fetchFromDB = (): Promise<Order[]> => {
-            let q =
+            const q =
                 `SELECT * 
                 FROM \`orders\` 
                 WHERE user_id = ${uid} 
@@ -44,13 +49,13 @@ export class OrderEngine {
 
             return this.dbe.queryList<Order>(q).toPromise();
         };
-       
+
         return fetchFromDB();
     }
 
     async getOrdersBySession(sid: number): Promise<Order[]> {
         const fetchFromDB = (): Promise<Order[]> => {
-            let q =
+            const q =
                 `SELECT * 
                 FROM \`orders\` 
                 WHERE session_id = ${sid}
@@ -60,16 +65,35 @@ export class OrderEngine {
         };
 
         return fetchFromDB();
-        
+
     }
 
-    async getOrders(token: string): Promise<Order[]> {
+    async getOrdersMany(filters: FilterParams) {
+        const likeStr = [
+            ...generateQStr('ent_orders', filters, 'string'),
+            ...generateQStr('ent_orders', filters, 'flag')].join(' AND ');
+        const whereStr = [
+            ...generateQStr('ent_orders', filters, 'id')].join(' AND ');
+
+        const q =
+            `SELECT * 
+                FROM \`orders\` 
+                ${(whereStr) ? 'WHERE ' + whereStr : ''} 
+                ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} `;
+
+        return this.dbe.queryList<Order>(q).toPromise();
+    }
+
+    async getOrders(token: string, payload?: OrderPayload): Promise<Order[]> {
         const uid = await this.getUserIDBySession(token);
         const authMode = await this.userISAuthorized(uid);
         const session = await this.getSessionByToken(token);
+        if (payload) {
+            return this.getOrdersMany(payload.filters ?? {});
+        }
 
-        return authMode 
-            ? this.getOrdersByUser(uid) 
+        return authMode
+            ? this.getOrdersByUser(uid)
             : this.getOrdersBySession(session);
     }
 
@@ -86,8 +110,8 @@ export class OrderEngine {
                     SET \`status\`=\"deleted\"
                     WHERE \`user_id\` = ${user}`;
 
-        return authMode 
-            ? this.ctx.dbe.query<OkPacket>(q_user).toPromise() 
+        return authMode
+            ? this.ctx.dbe.query<OkPacket>(q_user).toPromise()
             : this.ctx.dbe.query<OkPacket>(q_session).toPromise();
     }
 
@@ -108,40 +132,42 @@ export class OrderEngine {
         return role?.rank > 1;
     }
 
-    async actionToOrder(token: string, action: ODRER_ACTIONS, payload: OrderPayload): Promise<OkPacket> {
+    async actionToOrder(token: string, action: ODRER_ACTIONS, payload: OrderPayload): Promise<OkPacket | Order[]> {
         const {
             id,
             ent_id,
-            ent_key, 
+            ent_key,
         } = payload;
-        
+
         switch (action) {
+            case ODRER_ACTIONS.GET:
+                return this.getOrders(token, payload);
             case ODRER_ACTIONS.ADD:
                 return this.addOrderToUserCart(token, payload);
             case ODRER_ACTIONS.CLEAR:
                 return this.clearOrders(token);
             case ODRER_ACTIONS.CANCEL:
-                return id 
+                return id
                     ? this.changeStatusOrderById(id, STATUSES.canceled)
                     : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.canceled)
 
             case ODRER_ACTIONS.COMPLETE:
-                return id 
+                return id
                     ? this.changeStatusOrderById(id, STATUSES.completed)
                     : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.completed)
 
             case ODRER_ACTIONS.REJECT:
-                return id 
+                return id
                     ? this.changeStatusOrderById(id, STATUSES.rejected)
                     : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.rejected)
 
             case ODRER_ACTIONS.RESOLVE:
-                return id 
+                return id
                     ? this.changeStatusOrderById(id, STATUSES.resolved)
                     : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.resolved)
 
             case ODRER_ACTIONS.REMOVE:
-                return id 
+                return id
                     ? this.changeStatusOrderById(id, STATUSES.deleted)
                     : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.deleted)
 
@@ -151,12 +177,12 @@ export class OrderEngine {
                 return this.submitGroupOrdersBySessionID(session_id, STATUSES.waiting);
 
             case ODRER_ACTIONS.SENDBYORG:
-                return id 
+                return id
                     ? this.changeStatusOrderById(id, STATUSES.inprogress)
                     : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.inprogress);
             default:
                 return Promise.reject('Action is unknown');
-        }    
+        }
     }
 
     async actionHandler(req: Request, res: Response): Promise<void> {
@@ -182,12 +208,14 @@ export class OrderEngine {
     }
 
     async addOrderToUserCart(token: string, payload: OrderPayload): Promise<OkPacket> {
-        const { 
-            ent_id, 
+        const {
+            ent_id,
             ent_key,
             tab_key,
             floor_key,
             section_key,
+            contragent_entity_key,
+            contragent_entity_id,
         } = payload;
         const user_id = await this.getUserIDBySession(token);
         const session_id = await this.getSessionByToken(token);
@@ -201,7 +229,9 @@ export class OrderEngine {
                         \`status\`,
                         \`tab_key\`,
                         \`floor_key\`,
-                        \`section_key\`
+                        \`section_key\`,
+                        \`contragent_entity_key\`,
+                        \`contragent_entity_id\`
                     )
                     VALUES (
                         ${user_id}, 
@@ -212,7 +242,9 @@ export class OrderEngine {
                         "pending",
                         "${tab_key}",
                         "${floor_key}",
-                        "${section_key}"
+                        "${section_key}",
+                        "${contragent_entity_key}",
+                        "${contragent_entity_id}"
                     )`;
         return this.ctx.dbe.query<OkPacket>(q).toPromise();
     }
@@ -244,8 +276,8 @@ export class OrderEngine {
                     AND \`slot_entity_id\`= ${ent_id}
                     AND \`user_id\` = ${user}`;
 
-        return authMode 
-            ? this.ctx.dbe.query<OkPacket>(q_user).toPromise() 
+        return authMode
+            ? this.ctx.dbe.query<OkPacket>(q_user).toPromise()
             : this.ctx.dbe.query<OkPacket>(q_session).toPromise();
     }
 
@@ -282,11 +314,11 @@ export class OrderEngine {
     }
 
     getRouter(): Router {
-        this.orderRouter.get('/', 
+        this.orderRouter.get('/',
             this.ctx.authorizationEngine.checkAccess.bind(this.ctx.authorizationEngine, null),
             this.getOrdersHandler.bind(this));
 
-        this.orderRouter.post('/', 
+        this.orderRouter.post('/',
             jsonparser,
             this.ctx.authorizationEngine.checkAccess.bind(this.ctx.authorizationEngine, null),
             this.actionHandler.bind(this));

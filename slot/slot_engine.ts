@@ -1,6 +1,6 @@
 import * as express from "express";
 import bodyParser from "body-parser";
-import {Context, SectionKeys} from "../search.engine/config";
+import {Context, SectionKeys} from "../search/config";
 import {Router} from "express";
 import {Slot, slots} from "../slot/slot_repo";
 
@@ -39,7 +39,7 @@ export class SlotEngine {
         keys.forEach(k => this.context.cacheEngine.softClearBykey(k));
         sections.forEach(k => this.context.searchEngine.resetSearchStoreBySection(k));
         sections.forEach(k => this.context.searchEngine.resetSummaryStoreBySection(k));
-    } 
+    }
 
     getRouter(): Router {
 

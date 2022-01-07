@@ -1,5 +1,5 @@
 import {Cached} from "../cache.engine/cache.model";
-import { SectionKeys } from "../search.engine/config";
+import { SectionKeys } from "../search/config";
 
 export interface Container extends Cached{
     name: string;

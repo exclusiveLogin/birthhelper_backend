@@ -1,7 +1,7 @@
 import {Router} from 'express';
 import * as express from "express";
 
-import {Context} from "../search.engine/config";
+import {Context} from "../search/config";
 
 let api = express.Router();
 api.get('/', apiRootHandler);

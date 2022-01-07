@@ -1,7 +1,7 @@
 import * as express from "express";
 import bodyparser from 'body-parser';
 import {Router} from "express";
-import {Context, SectionKeys} from "../search.engine/config";
+import {Context, SectionKeys} from "../search/config";
 import {Container, containers} from "./container_repo";
 import {mapTo, tap} from "rxjs/operators";
 import { Entity } from "../entity/entity_engine";
@@ -10,13 +10,13 @@ const jsonparser = bodyparser.json();
 
 export interface ContainerRecordSrc {
     [key: string]: any;
-    id: number, 
+    id: number,
     items: ContainerRecordItem[],
 }
 
 export interface ContainerRecordItem {
     [key: string]: any;
-    id: number, 
+    id: number,
     entity: Entity,
 }
 
@@ -71,7 +71,7 @@ export class ContainerEngine {
 
         repo.items = containerRecordList;
         // console.log('getContainer entity: ', repo);
-    
+
         return repo;
 
     }
@@ -222,7 +222,7 @@ export class ContainerEngine {
         keys.forEach(k => this.context.cacheEngine.softClearBykey(k));
         sections.forEach(k => this.context.searchEngine.resetSearchStoreBySection(k));
         sections.forEach(k => this.context.searchEngine.resetSummaryStoreBySection(k));
-    } 
+    }
 
     getRouter(): Router {
         this.container.get('/',

@@ -1,5 +1,5 @@
 import { EntityKeys } from "../entity/entity_repo.model";
-import { SectionKeys } from "../search.engine/config";
+import { SectionKeys } from "../search/config";
 import { Restrictor } from "../slot/slot_repo";
 
 export type PriorityFloor = 'high' | 'mid' | 'low';
@@ -194,8 +194,8 @@ export const config: { [key in SectionKeys]: Config } = {
                     },
                 ],
             },
-        
+
         ],
-        
+
     }
 };

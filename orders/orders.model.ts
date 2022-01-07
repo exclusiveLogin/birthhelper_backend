@@ -1,6 +1,7 @@
 import { Entity } from "../entity/entity_engine";
 
 export enum ODRER_ACTIONS {
+    GET = 'GET',
     ADD = 'ADD',
     REMOVE = 'REMOVE',
     CLEAR = 'CLEAR',
@@ -10,7 +11,7 @@ export enum ODRER_ACTIONS {
     CANCEL = 'CANCEL',
     COMPLETE = 'COMPLETE',
     SENDBYORG = 'SENDBYORG',
-    
+
 }
 
 export enum STATUSES {
@@ -19,7 +20,7 @@ export enum STATUSES {
     waiting = 'waiting',
     resolved = 'resolved',
     rejected = 'rejected',
-    completed = 'completed', 
+    completed = 'completed',
     canceled = 'canceled',
     inprogress = 'inprogress',
 }
@@ -35,7 +36,7 @@ export interface OrderSrc  {
     status: string;
     group_token: string;
     datetime_update: string;
-    datetime_create: string;	
+    datetime_create: string;
 }
 
 export class Order {

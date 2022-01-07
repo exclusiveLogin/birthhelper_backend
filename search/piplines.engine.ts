@@ -1,8 +1,8 @@
 import { forkJoin, Observable, of } from "rxjs";
 import { Context, sectionConfig, SectionKeys } from "./config";
-import { StoredIds, Summary } from "../search.engine/engine";
-import { catchError, map, switchMap, tap } from "rxjs/operators";
-import { cacheKeyGenerator } from "../search.engine/sections.handler";
+import { StoredIds, Summary } from "../search/engine";
+import { catchError, map, tap } from "rxjs/operators";
+import { cacheKeyGenerator } from "../search/sections.handler";
 import { Clinic } from "../models/clinic.interface";
 
 type ChapterKeys = typeof sectionConfig[SectionKeys]
@@ -23,7 +23,7 @@ export class PipelineEngine {
 
         return this.getEntitiesByDBOrCache<Summary>(q, cacheKey).pipe(map(result => result.map((sum) => (
             {
-                ...sum, 
+                ...sum,
                 avg_price: Math.floor(sum.avg_price),
                 min_price: Math.floor(sum.min_price),
                 max_price: Math.floor(sum.max_price)

@@ -1,5 +1,5 @@
 import {Cached} from "../cache.engine/cache.model";
-import {SectionKeys} from "../search.engine/config";
+import {SectionKeys} from "../search/config";
 import { SlotKeys } from "../slot/slot_repo";
 export interface Permissions {
     create: number,

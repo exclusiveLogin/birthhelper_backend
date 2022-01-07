@@ -1,7 +1,7 @@
 import {Cached} from "../cache.engine/cache.model";
 import { ContainerKeys } from "../container/container_repo";
 import { EntityKeys } from "../entity/entity_repo.model";
-import { SectionKeys } from "../search.engine/config";
+import { SectionKeys } from "../search/config";
 
 export interface Restrictor {
     key: string;
@@ -11,7 +11,7 @@ export interface Restrictor {
 export interface Slot extends Cached{
     name: string;
     title: string;
-    db: string; // таблица слотов 
+    db: string; // таблица слотов
 
     contragent_id_key: string; // название поля для хранения ссылки на КА
     contragent_entity_key: EntityKeys; // ключ сущности КА (section)
@@ -19,13 +19,13 @@ export interface Slot extends Cached{
 
     entity_key: EntityKeys; // ключ сущности
     entity_id_key: string; // название поля для хранения ссылки на сущность
-    
+
     entity_fields: string[]; // поля для сущности которые показываем в информации о слоте(таблица, карточка)
     container_fields?: string[]; //поля контейнера (container_repo)
     overrided_fields?: string[]; // поля доступные для перекрытия
     required_fields?: string[]; //поля обязательные для слота
     required_fields_type?: { [key: string]: FieldType }; //поля обязательные для слота
-    
+
     createAffectionSectionKeys?: SectionKeys[]; // ключи секций для сброса по удалению сущности
     deleteAffectionSectionKeys?: SectionKeys[]; // ключи секций для сброса по созданию либо сохранению сущности
     resrtictorsSlot?: Restrictor[]; // Ограничители по самой сущности слота в общих таблицах
@@ -100,7 +100,7 @@ export const slots: SlotRepo = {
     },
     slot_birth_type: {
         name: 'slot_birth_type',
-        title: 'Слоты для видов родов', 
+        title: 'Слоты для видов родов',
         db: 'service_slot', // БД связей
         container_name: null,
         entity_fields: ['title', 'description'], // поля для сущности которые показываем в информации о слоте(таблица, карточка)
