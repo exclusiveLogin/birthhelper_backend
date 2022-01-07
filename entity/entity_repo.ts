@@ -281,6 +281,38 @@ export const entityRepo: EntityRepo = {
         ]
     },
 
+    ent_orders: {
+        db_name: 'orders',
+        filters: [
+            {
+                name: 'user_id',
+                title: 'По ID пользователя',
+                type: 'number',
+            },
+            {
+                name: 'status',
+                title: 'По статусу',
+                type: 'id',
+                db_name: 'dict_order_status_type',
+            },
+        ],
+        fields: [
+            { key: 'id', title: 'ID', type: 'id', readonly: true },
+            { key: 'user_id', type: 'id', title: 'ID пользователя', required: true },
+            { key: 'session_id', type: 'id', title: 'ID сессии', required: true },
+            { key: 'slot_entity_key', type: 'string', title: 'Имя слота', required: true },
+            { key: 'slot_entity_id', type: 'id', title: 'ID слота', required: true },
+            { key: 'contragent_entity_key', type: 'string', title: 'Имя типа контрагента', required: true },
+            { key: 'contragent_entity_id', type: 'id', title: 'ID контрагента', required: true },
+            { key: 'section_key', type: 'string', title: 'Ключ раздела', required: true },
+            { key: 'tab_key', type: 'string', title: 'Ключ вкладки', required: true },
+            { key: 'floor_key', type: 'string', title: 'Ключ этажа', required: true },
+            { key: 'refferer', type: 'id', title: 'Изменятель', required: true },
+            { key: 'group_token', type: 'string', title: 'Ключ группы заказа', required: true },
+            { key: 'status', type: 'string', title: 'Статус', required: true },
+        ]
+    },
+
     ent_districts: {
         db_name: 'districts',
         filters: [],

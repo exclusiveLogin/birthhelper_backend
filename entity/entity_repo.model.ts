@@ -23,10 +23,12 @@ export interface Entity extends Cached {
     permissions?: Permissions,
 }
 
+export type EntityFilterType = 'number' | 'string' | 'flag' | 'id';
+
 export interface EntityFilter {
     name: string,
     title: string,
-    type: string,
+    type: EntityFilterType,
     readonly?: boolean,
     value?: any,
     db_name?: string,
@@ -63,6 +65,7 @@ export const EntityRepoKeys = [
     'ent_slot_category_type',
     'ent_order_status_type',
     'ent_user_status_type',
+    'ent_orders',
 ] as const;
 
 export type EntityKeys = typeof EntityRepoKeys[number]
