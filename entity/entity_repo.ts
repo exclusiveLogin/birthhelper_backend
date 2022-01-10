@@ -722,6 +722,27 @@ export const entityRepo: EntityRepo = {
             { key: 'folder', title: 'Имя файлсервера', type: 'string', readonly: true, showOnTable: true },
         ]
     },
+    ent_lk_permissions: {
+        db_name: 'lk_permissions',
+        filters: [],
+        container: null,
+        fields: [
+            { key: 'id', title: 'ID файла', type: 'id', readonly: true, showOnTable: true },
+            { key: 'user_id', type: 'id', title: 'ID пользователя', readonly: true, showOnTable: true },
+            { key: 'contragent_entity_key', type: 'string', title: 'Ключ сущности контрагента', readonly: true, showOnTable: true },
+            { key: 'contragent_entity_id', type: 'id', title: 'ID контрагента', readonly: true, showOnTable: true },
+            {
+                key: 'permission_id',
+                type: 'id',
+                useDict: true,
+                dctKey: 'dict_lk_permission_type',
+                title: 'ID разрешения',
+                readonly: true,
+                showOnTable: true,
+                loadEntity: true,
+            },
+        ]
+    },
     // Dicts
     ent_birthtype: {
         db_name: 'birthtype',
@@ -823,6 +844,17 @@ export const entityRepo: EntityRepo = {
 
     ent_user_status_type: {
         db_name: 'user_status_type',
+        filters: [],
+        container: null,
+        fields: [
+            { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },
+            { key: 'slug', title: 'Ключ', type: 'string', readonly: false, showOnTable: true },
+            { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
+            { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
+        ]
+    },
+    ent_lk_permission_type: {
+        db_name: 'lk_permission_type',
         filters: [],
         container: null,
         fields: [
