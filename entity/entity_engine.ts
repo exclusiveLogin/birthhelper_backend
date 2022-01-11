@@ -309,11 +309,12 @@ export class EntityEngine {
             ${whereStr ? 'WHERE ' + whereStr : ''}`;
 
         if (isContragent) {
+            const whereStr = ids.length ? `${ids.map(id => `\`${ db }\`.\`id\` = ${id}`).join(' OR ')}` : null;
             q = `
             SELECT *, \`${ db }\`.\`id\` as clinic_id 
             FROM \`${ db }\` JOIN \`contragents\` 
             ON \`${ db }\`.\`contragent\` = \`contragents\`.\`id\` 
-            ${whereStr ? 'WHERE ' + whereStr : ''}`;
+            ${whereStr ? 'AND ' + whereStr : ''}`;
         }
 
         // console.log('getEntityByIds q: ', q);
