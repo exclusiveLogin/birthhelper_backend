@@ -293,15 +293,28 @@ export class EntityEngine {
         }
     }
 
-    getEntitiesByIds(ids: number[], key: string, skip = 0): Observable<Entity[]> {
-        const db = entities[key].db_name;
+    getEntitiesByIds(ids: number[], key: EntityKeys, skip = 0): Observable<Entity[]> {
+        const config = entities[key];
+        const isContragent = config.isContragent;
+        const db = config.db_name;
         const cacheKey = cacheKeyGenerator(key, 'hash', ids);
 
         ids = ids.splice(skip, 20);
         const whereStr = ids.length ? `${ids.map(id => 'id = ' + id).join(' OR ')}` : null;
 
         // default query
-        let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : 'WHERE 0'}`;
+        let q = `
+            SELECT * 
+            FROM \`${ db }\` 
+            ${whereStr ? 'WHERE ' + whereStr : ''}`;
+
+        if (isContragent) {
+            q = `
+            SELECT *, \`${ db }\`.\`id\` as clinic_id 
+            FROM \`${ db }\` JOIN \`contragents\` 
+            ON \`${ db }\`.\`contragent\` = \`contragents\`.\`id\` 
+            ${whereStr ? 'WHERE ' + whereStr : ''}`;
+        }
 
         // console.log('getEntityByIds q: ', q);
         return of(cacheKey)
@@ -312,8 +325,10 @@ export class EntityEngine {
     }
 
     getEntityPortion(key: EntityKeys, filters?: FilterParams, skip: number = 0, limit: number = 20): Observable<Entity[]> {
-        const db = entities[key].db_name;
-        const slotKey = entities[key].slot;
+        const config = entities[key];
+        const isContragent = config.isContragent;
+        const db = config.db_name;
+        const slotKey = config.slot;
         const slotConfig = slots[slotKey];
 
         if(slotConfig?.restrictsOfSlot){
@@ -327,12 +342,22 @@ export class EntityEngine {
         let limstr = `${!!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip : ' LIMIT ' + limit}`;
 
         // default query
-        const q = `SELECT 
-                * 
+        let q = `
+                SELECT * 
                 FROM \`${ db }\` 
                 ${whereStr ? 'WHERE ' + whereStr : ''} 
                 ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} 
                 ${limstr}`;
+
+        if (isContragent) {
+            q = `
+                SELECT *, \`${ db }\`.\`id\` as clinic_id 
+                FROM \`${ db }\` JOIN \`contragents\` 
+                ON \`${ db }\`.\`contragent\` = \`contragents\`.\`id\` 
+                ${whereStr ? 'WHERE ' + whereStr : ''} 
+                ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} 
+                ${limstr}`;
+        }
 
         // console.log('getEntityPortion: ', q);
 
@@ -371,6 +396,9 @@ export class EntityEngine {
 
         provider = provider ?? this.getEntityPortion(key, filters, skip, limit);
 
+        if (config.isContragent) {
+            fields.push(...entities['ent_contragents'].fields);
+        }
         // ОБОГОЩАЕМ сущности
         provider = this.metanizer(provider, fields, calc);
 
@@ -432,6 +460,7 @@ export class EntityEngine {
         const entityKey = config.entity_key;
         const contragentEntity = config.contragent_entity_key;
         const containerName = config.container_name;
+        const section = config.section;
 
 
         return pipeline.pipe(
@@ -477,6 +506,7 @@ export class EntityEngine {
                                 _contragent_entity_key: contragentEntity,
                                 _contragent_id_key: contragentIDKey,
                                 _entity_id_key: entityIDKey,
+                                _section: section,
                                 _entity: mode === "entity"
                                     ? entities.filter(_ => !!_).find($ => $.id.toString() === ent[entityIDKey]?.toString())
                                     : containers.filter(_ => !!_).find($ => $.id?.toString() === ent[entityIDKey]?.toString()),

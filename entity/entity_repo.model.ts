@@ -10,6 +10,7 @@ export interface Permissions {
 export interface Entity extends Cached {
     db_name: string,
     filters: EntityFilter[],
+    isContragent?: boolean,
     container?: string,
     slot?: SlotKeys,
     fields: EntityField[],
@@ -45,6 +46,7 @@ export const EntityRepoKeys = [
     'ent_services_placement',
     'ent_doctor',
     'ent_service_containers',
+    'ent_contragents',
     'ent_clinics',
     'ent_districts',
     'ent_phone_containers',
