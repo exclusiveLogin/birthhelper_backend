@@ -12,6 +12,7 @@ export interface Slot extends Cached{
     name: string;
     title: string;
     db: string; // таблица слотов
+    section: SectionKeys; // Ключ режима контрагента
 
     contragent_id_key: string; // название поля для хранения ссылки на КА
     contragent_entity_key: EntityKeys; // ключ сущности КА (section)
@@ -22,15 +23,13 @@ export interface Slot extends Cached{
 
     entity_fields: string[]; // поля для сущности которые показываем в информации о слоте(таблица, карточка)
     container_fields?: string[]; //поля контейнера (container_repo)
-    overrided_fields?: string[]; // поля доступные для перекрытия
+    override_fields?: string[]; // поля доступные для перекрытия
     required_fields?: string[]; //поля обязательные для слота
     required_fields_type?: { [key: string]: FieldType }; //поля обязательные для слота
 
     createAffectionSectionKeys?: SectionKeys[]; // ключи секций для сброса по удалению сущности
     deleteAffectionSectionKeys?: SectionKeys[]; // ключи секций для сброса по созданию либо сохранению сущности
-    resrtictorsSlot?: Restrictor[]; // Ограничители по самой сущности слота в общих таблицах
-    resrtictorsContragent?: Restrictor[];
-    restrictorsEntity?: Restrictor[];
+    restrictsOfSlot?: Restrictor[]; // Ограничители по самой сущности слота в общих таблицах
 }
 
 export const SlotRepoKeys = [
@@ -53,7 +52,7 @@ export const slots: SlotRepo = {
         container_name: "container_services",
         entity_fields: ['title', 'description'], // поля для сущности которые показываем в информации о слоте(таблица, карточка)
         container_fields: ['title', 'description', 'comment'], //поля контейнера (container_repo)
-        overrided_fields: ['price'], // поля доступные для перекрытия
+        override_fields: ['price'], // поля доступные для перекрытия
         required_fields: ['price', 'service_id', 'contragent_id', 'entity_type', 'slot_category_type'], //поля обязательные для слота
         required_fields_type: {
             'price': 'number',
@@ -62,13 +61,14 @@ export const slots: SlotRepo = {
             'entity_type': 'string',
             'slot_category_type': 'string',
         }, //поля обязательные для слота
+        section: 'clinic',
         entity_key: 'ent_services', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
         contragent_entity_key: 'ent_clinics',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
-        resrtictorsSlot: [
+        restrictsOfSlot: [
             { key: 'slot_category_type', value: 2},
         ]
     },
@@ -79,7 +79,7 @@ export const slots: SlotRepo = {
         container_name: null,
         entity_fields: ['title', 'description'], // поля для сущности которые показываем в информации о слоте(таблица, карточка)
         container_fields: ['title', 'description', 'comment'], //поля контейнера (container_repo)
-        overrided_fields: ['price'], // поля доступные для перекрытия
+        override_fields: ['price'], // поля доступные для перекрытия
         required_fields: ['price', 'service_id', 'contragent_id', 'entity_type', 'slot_category_type'], //поля обязательные для слота
         required_fields_type: {
             'price': 'number',
@@ -88,13 +88,14 @@ export const slots: SlotRepo = {
             'entity_type': 'string',
             'slot_category_type': 'string',
         }, //поля обязательные для слота
+        section: 'clinic',
         entity_key: 'ent_doctor', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
         contragent_entity_key: 'ent_clinics',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
-        resrtictorsSlot: [
+        restrictsOfSlot: [
             { key: 'slot_category_type', value: 1},
         ]
     },
@@ -105,7 +106,7 @@ export const slots: SlotRepo = {
         container_name: null,
         entity_fields: ['title', 'description'], // поля для сущности которые показываем в информации о слоте(таблица, карточка)
         container_fields: ['title', 'description', 'comment'], //поля контейнера (container_repo)
-        overrided_fields: ['price'], // поля доступные для перекрытия
+        override_fields: ['price'], // поля доступные для перекрытия
         required_fields: ['price', 'service_id', 'contragent_id', 'entity_type', 'slot_category_type'], //поля обязательные для слота
         required_fields_type: {
             'price': 'number',
@@ -114,13 +115,14 @@ export const slots: SlotRepo = {
             'entity_type': 'string',
             'slot_category_type': 'string',
         }, //поля обязательные для слота
+        section: 'clinic',
         entity_key: 'ent_birthtype', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
         contragent_entity_key: 'ent_clinics',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
-        resrtictorsSlot: [
+        restrictsOfSlot: [
             { key: 'slot_category_type', value: 3},
         ]
     },
@@ -131,7 +133,7 @@ export const slots: SlotRepo = {
         container_name: null,
         entity_fields: ['title', 'description'], // поля для сущности которые показываем в информации о слоте(таблица, карточка)
         container_fields: ['title', 'description', 'comment'], //поля контейнера (container_repo)
-        overrided_fields: ['price'], // поля доступные для перекрытия
+        override_fields: ['price'], // поля доступные для перекрытия
         required_fields: ['price', 'service_id', 'contragent_id', 'entity_type', 'slot_category_type'], //поля обязательные для слота
         required_fields_type: {
             'price': 'number',
@@ -140,13 +142,14 @@ export const slots: SlotRepo = {
             'entity_type': 'string',
             'slot_category_type': 'string',
         }, //типы
+        section: 'clinic',
         entity_key: 'ent_services', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
         contragent_entity_key: 'ent_clinics',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
-        resrtictorsSlot: [
+        restrictsOfSlot: [
             { key: 'slot_category_type', value: 4},
         ]
     },

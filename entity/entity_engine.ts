@@ -316,9 +316,9 @@ export class EntityEngine {
         const slotKey = entities[key].slot;
         const slotConfig = slots[slotKey];
 
-        if(slotConfig?.resrtictorsSlot){
+        if(slotConfig?.restrictsOfSlot){
             const _ = {};
-            slotConfig?.resrtictorsSlot.forEach(slot => _[slot.key] = slot.value);
+            slotConfig?.restrictsOfSlot.forEach(slot => _[slot.key] = slot.value);
             filters = filters ? {...filters, ..._} : {..._};
         }
 
