@@ -9,7 +9,7 @@ import {SearchEngine, Summary} from "../search/engine";
 import {Context, SectionKeys} from "../search/config";
 import {combineLatest, forkJoin, from, Observable, of, throwError} from "rxjs";
 import {filter, map, mapTo, switchMap, take, tap} from "rxjs/operators";
-import {concatFn, generateQStr, getFiltersByRequest, getKeyByRequest} from "../db/sql.helper";
+import {concatFn, generateQStr, getFiltersByRequest, getIdByRequest} from "../db/sql.helper";
 import {EntityCalc, EntityField} from "../entity/entity_repo.model";
 import {cacheKeyGenerator} from "../search/sections.handler";
 import { containers } from "../container/container_repo";
@@ -146,7 +146,7 @@ export class EntityEngine {
     }
 
     entitySetHandler(req, res): void {
-        const key = getKeyByRequest(req);
+        const key = getIdByRequest(req);
         const filters = getFiltersByRequest(req);
         if (!!key) {
             const hash = req.query.hash;
@@ -412,7 +412,7 @@ export class EntityEngine {
 
     queryEntityHandler(req, res) {
         // console.log('ent req search: ', req.query, ' url params: ', req.params, this);
-        const entKey = getKeyByRequest(req) as EntityKeys;
+        const entKey = getIdByRequest(req) as EntityKeys;
         const filters = getFiltersByRequest(req);
 
         // console.log('queryEntityHandler filters:', filters);

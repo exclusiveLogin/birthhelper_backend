@@ -71,7 +71,7 @@ export function getFiltersByRequest(req: Request): FilterParams {
     return req.query as unknown as FilterParams || {}
 }
 
-export function getKeyByRequest(req: Request): string {
+export function getIdByRequest(req: Request): string {
     return req?.params?.id;
 }
 

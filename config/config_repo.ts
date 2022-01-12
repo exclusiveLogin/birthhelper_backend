@@ -9,6 +9,7 @@ export interface Provider {
     busKey: string;
     entityKey: EntityKeys;
     restrictors: Restrictor[];
+    title?: string; // используется в ЛК
 }
 
 export interface RestrictorDictConfig {
@@ -72,24 +73,28 @@ export const config: { [key in SectionKeys]: Config } = {
                 busKey: 'bus_doctors_any',
                 entityKey: 'ent_doctor_slots',
                 restrictors: [],
+                title: 'Специалисты',
             },
             {
                 key: 'placement',
                 busKey: 'bus_placement_any',
                 entityKey: 'ent_placement_slots',
                 restrictors: [],
+                title: 'Размещение',
             },
             {
                 key: 'birthtype',
                 busKey: 'bus_birthtype_any',
                 entityKey: 'ent_birth_type_slots',
                 restrictors: [],
+                title: 'Виды родов',
             },
             {
                 key: 'other',
                 busKey: 'bus_other_any',
                 entityKey: 'ent_birth_additional_slots',
                 restrictors: [],
+                title: 'Дополнительные услуги',
             },
         ],
         consumers: [
