@@ -1,4 +1,5 @@
-import { Entity } from "../entity/entity_engine";
+import {Entity, FilterParams} from "../entity/entity_engine";
+import {EntityKeys} from "../entity/entity_repo.model";
 
 export enum ODRER_ACTIONS {
     GET = 'GET',
@@ -37,6 +38,33 @@ export interface OrderSrc  {
     group_token: string;
     datetime_update: string;
     datetime_create: string;
+}
+export interface OrderContacts {
+    phone: string;
+    email: string;
+    skype: string;
+    ch_email: boolean;
+    ch_phone: boolean;
+    ch_skype: boolean;
+    ch_viber: boolean;
+    ch_telegram: boolean;
+    ch_whatsapp: boolean;
+}
+
+export interface OrderPayload {
+    action: ODRER_ACTIONS;
+    ent_key?: EntityKeys;
+    ent_id?: number;
+    contragent_entity_key?: string,
+    contragent_entity_id?: number,
+    tab_key?: string;
+    floor_key?: string;
+    section_key?: string;
+    id?: number;
+    count?: number;
+    group_token?: string;
+    filters?: FilterParams;
+    contacts?: OrderContacts;
 }
 
 export class Order {
