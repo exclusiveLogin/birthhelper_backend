@@ -55,8 +55,8 @@ export interface OrderPayload {
     action: ODRER_ACTIONS;
     ent_key?: EntityKeys;
     ent_id?: number;
-    contragent_entity_key?: string,
-    contragent_entity_id?: number,
+    contragent_entity_key?: string;
+    contragent_entity_id?: number;
     tab_key?: string;
     floor_key?: string;
     section_key?: string;
@@ -81,7 +81,7 @@ export class Order {
 
     slot: Entity;
 
-    constructor(src: OrderSrc, slot: Entity) {
+    constructor(src: OrderSrc) {
         this.id = src.id;
         this.user_id = src.user_id;
         this.session_id = src.session_id;
@@ -94,8 +94,8 @@ export class Order {
         this.datetime_create = src.datetime_create;
 
     }
-    static createOrderFromSrc(src: OrderSrc, slot: Entity): Order {
-        return new this(src, slot);
+    static createOrderFromSrc(src: OrderSrc): Order {
+        return new this(src);
     }
 
     getContragent(): Entity {

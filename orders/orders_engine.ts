@@ -10,7 +10,7 @@ import { Context } from "../search/config";
 import {
     ODRER_ACTIONS,
     Order,
-    OrderPayload,
+    OrderPayload, OrderSrc,
     STATUSES,
     StatusType
 } from "./orders.model";
@@ -19,7 +19,7 @@ import { OkPacket } from "mysql";
 import { FilterParams } from "../entity/entity_engine";
 import { generateQStr } from "../db/sql.helper";
 import {forkJoin} from "rxjs";
-import {switchMap} from "rxjs/operators";
+import {map, switchMap} from "rxjs/operators";
 const bodyParser = require('body-parser');
 const jsonparser = bodyParser.json();
 
@@ -44,7 +44,10 @@ export class OrderEngine {
                 WHERE user_id = ${uid} 
                 AND \`status\` != "deleted"`;
 
-            return this.dbe.queryList<Order>(q).toPromise();
+            return this.dbe.queryList<OrderSrc>(q)
+                .pipe(
+                    map(list => list.map(src => Order.createOrderFromSrc(src))))
+                .toPromise();
         };
 
         return fetchFromDB();
@@ -58,7 +61,10 @@ export class OrderEngine {
                 WHERE session_id = ${sid}
                 AND \`status\` != "deleted"`;
 
-            return this.dbe.queryList<Order>(q).toPromise();
+            return this.dbe.queryList<OrderSrc>(q)
+                .pipe(
+                    map(list => list.map(src => Order.createOrderFromSrc(src))))
+                .toPromise();
         };
 
         return fetchFromDB();
@@ -78,7 +84,10 @@ export class OrderEngine {
                 ${(whereStr) ? 'WHERE ' + whereStr : ''} 
                 ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} `;
 
-        return this.dbe.queryList<Order>(q).toPromise();
+        return this.dbe.queryList<OrderSrc>(q)
+            .pipe(
+                map(list => list.map(src => Order.createOrderFromSrc(src))))
+            .toPromise();
     }
 
     async getOrders(token: string, payload?: OrderPayload): Promise<Order[]> {
