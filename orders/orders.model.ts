@@ -12,7 +12,6 @@ export enum ODRER_ACTIONS {
     CANCEL = 'CANCEL',
     COMPLETE = 'COMPLETE',
     SENDBYORG = 'SENDBYORG',
-
 }
 
 export enum STATUSES {
@@ -24,7 +23,12 @@ export enum STATUSES {
     completed = 'completed',
     canceled = 'canceled',
     inprogress = 'inprogress',
+    inwork = 'inwork',
+    incomplete = 'incomplete',
+    inplan = 'inplan',
 }
+
+export type StatusMode = 'complex' | 'simple';
 
 export type StatusType = keyof typeof STATUSES;
 export interface OrderSrc  {
@@ -65,6 +69,8 @@ export interface OrderPayload {
     group_token?: string;
     filters?: FilterParams;
     contacts?: OrderContacts;
+    status_mode?: StatusMode;
+    status?: StatusType;
 }
 
 export class Order {
