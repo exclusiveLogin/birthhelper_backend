@@ -118,6 +118,7 @@ export class EntityEngine {
         const db = entities[key].db_name;
         const slotKey = entities[key].slot;
         const slotConfig = slots[slotKey];
+        const isContragent = entities[key].isContragent;
 
         if (!!key && !!db) {
 
@@ -127,15 +128,35 @@ export class EntityEngine {
                 filters = filters ? {...filters, ..._} : {..._};
             }
 
-            const likeStr = [...generateQStr(key, filters, 'string'), ...generateQStr(key, filters, 'flag')].join(' AND ');
-            const whereStr = [...generateQStr(key, filters, 'id')].join(' AND ');
+            const likeStr = [
+                ...generateQStr(key, filters, 'string'),
+                ...generateQStr(key, filters, 'flag'),
+                ...(isContragent ?
+                    [
+                    ...generateQStr('ent_contragents', filters, 'string'),
+                    ...generateQStr('ent_contragents', filters, 'flag'),
+                ] : []),
+            ].join(' AND ');
+            const whereStr = [
+                ...generateQStr(key, filters, 'id'),
+                ...(isContragent ? [...generateQStr('ent_contragents', filters, 'id')] : [])
+            ].join(' AND ');
 
-            const q = `SELECT COUNT(*) as cnt 
+            let q = `SELECT COUNT(*) as cnt 
                         FROM \`${ db }\`
                         ${(whereStr) ? 'WHERE ' + whereStr : ''} 
                         ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} `;
 
-            // console.log('getSetFromDB', q);
+            if (isContragent) {
+                q = `
+                SELECT COUNT(*) as cnt 
+                FROM \`${ db }\` JOIN \`contragents\` 
+                ON \`${ db }\`.\`contragent\` = \`contragents\`.\`id\` 
+                ${whereStr ? 'WHERE ' + whereStr : ''} 
+                ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''}`;
+            }
+
+            console.log('getSetFromDB', q);
             return this.context.dbe.queryList<Entity>(q).pipe(
                 // tap(data => console.log('getSetFromDB result:', data)),
                 map(result => result?.[0]?.cnt ?? 0));
@@ -338,9 +359,20 @@ export class EntityEngine {
             filters = filters ? {...filters, ..._} : {..._};
         }
 
-        let likeStr = [...generateQStr(key, filters, 'string'), ...generateQStr(key, filters, 'flag')].join(' AND ');
-        let whereStr = [...generateQStr(key, filters, 'id')].join(' AND ');
-        let limstr = `${!!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip : ' LIMIT ' + limit}`;
+        const likeStr = [
+            ...generateQStr(key, filters, 'string'),
+            ...generateQStr(key, filters, 'flag'),
+            ...(isContragent ?
+                [
+                    ...generateQStr('ent_contragents', filters, 'string'),
+                    ...generateQStr('ent_contragents', filters, 'flag'),
+                ] : []),
+        ].join(' AND ');
+        const whereStr = [
+            ...generateQStr(key, filters, 'id'),
+            ...(isContragent ? [...generateQStr('ent_contragents', filters, 'id')] : [])
+        ].join(' AND ');
+        const limStr = `${!!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip : ' LIMIT ' + limit}`;
 
         // default query
         let q = `
@@ -348,7 +380,7 @@ export class EntityEngine {
                 FROM \`${ db }\` 
                 ${whereStr ? 'WHERE ' + whereStr : ''} 
                 ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} 
-                ${limstr}`;
+                ${limStr}`;
 
         if (isContragent) {
             q = `
@@ -357,7 +389,7 @@ export class EntityEngine {
                 ON \`${ db }\`.\`contragent\` = \`contragents\`.\`id\` 
                 ${whereStr ? 'WHERE ' + whereStr : ''} 
                 ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} 
-                ${limstr}`;
+                ${limStr}`;
         }
 
         // console.log('getEntityPortion: ', q);
