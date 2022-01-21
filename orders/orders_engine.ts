@@ -9,7 +9,7 @@ import { DataBaseService } from "../db/sql";
 import { Context } from "../search/config";
 import {
     ODRER_ACTIONS,
-    Order,
+    Order, OrderContacts, OrderGroup,
     OrderPayload, OrderSrc,
     STATUSES,
     StatusType
@@ -18,8 +18,8 @@ import { EntityKeys } from "../entity/entity_repo.model";
 import { OkPacket } from "mysql";
 import { FilterParams } from "../entity/entity_engine";
 import { generateQStr } from "../db/sql.helper";
-import {forkJoin} from "rxjs";
 import {map, switchMap} from "rxjs/operators";
+import {User, UserSrc} from "../models/user.interface";
 const bodyParser = require('body-parser');
 const jsonparser = bodyParser.json();
 
@@ -77,7 +77,6 @@ export class OrderEngine {
             ...generateQStr('ent_orders', filters, 'flag')].join(' AND ');
         const whereStr = [
             ...generateQStr('ent_orders', filters, 'id')].join(' AND ');
-
         const q =
             `SELECT * 
                 FROM \`orders\` 
@@ -90,12 +89,72 @@ export class OrderEngine {
             .toPromise();
     }
 
-    async getOrders(token: string, payload?: OrderPayload): Promise<Order[]> {
+    async getGroupedOrders(payload: OrderPayload): Promise<OrderGroup[]> {
+        const result: OrderGroup[] = [];
+        let q: string;
+        switch (payload.groupMode) {
+            case "session":
+                q = `SELECT \`session_id\` as \`id\` FROM orders GROUP BY session_id;`;
+                break;
+            case "order":
+                q = `SELECT \`group_token\` as \`id\` FROM orders WHERE group_token != NULL GROUP BY group_token;`;
+                break;
+        }
+        try {
+            const uids = await this.dbe.queryList<{id: number | string }>(q)
+                .pipe(map(list => list.map(src =>  src.id))).toPromise();
+
+            for(const groupId of uids) {
+                const grp: OrderGroup = {
+                    group_id: groupId.toString(),
+                    groupMode: payload.groupMode,
+                    orders: null,
+                    user: null,
+                    contacts: null,
+                };
+                switch (payload.groupMode) {
+                    case "session":
+                        q = `SELECT * FROM \`orders\` WHERE \`session_id\` = ${ groupId };`;
+                        break;
+                    case "order":
+                        q = `SELECT * FROM \`orders\` WHERE \`group_token\` = "${ groupId }";`;
+                        break;
+                }
+
+                grp.orders = await this.dbe.queryList<OrderSrc>(q).pipe(
+                    map(list => list.map(src => Order.createOrderFromSrc(src)))
+                ).toPromise();
+
+                const userId = grp?.orders?.[0]?.user_id;
+
+                grp.user = await this.ctx.entityEngine.getEntitiesByIds([userId], 'ent_users')
+                    .pipe(
+                        map(list => list?.[0]),
+                        map(src => new User(src as UserSrc)),
+                    ).toPromise();
+
+                q = `SELECT * FROM \`order_contacts\` WHERE \`group_token\` = "${ groupId }";`;
+
+                grp.contacts = payload.groupMode === 'order'
+                    ? await this.dbe.query<OrderContacts>(q).pipe(
+                        map(list => list[0])).toPromise()
+                    : null;
+            }
+        } catch (e) {
+            throw new Error(e);
+        }
+
+        return result;
+    }
+
+    async getOrders(token: string, payload?: OrderPayload): Promise<(Order | OrderGroup)[]> {
         const uid = await this.getUserIDBySession(token);
         const authMode = await this.userISAuthorized(uid);
         const session = await this.getSessionByToken(token);
         if (payload) {
-            return this.getOrdersMany(payload.filters ?? {});
+            return payload.groupMode ?
+                this.getGroupedOrders(payload) :
+                this.getOrdersMany(payload.filters ?? {});
         }
 
         return authMode
@@ -138,7 +197,7 @@ export class OrderEngine {
         return role?.rank > 1;
     }
 
-    async actionToOrder(token: string, action: ODRER_ACTIONS, payload: OrderPayload): Promise<OkPacket | Order[]> {
+    async actionToOrder(token: string, action: ODRER_ACTIONS, payload: OrderPayload): Promise<OkPacket | (Order | OrderGroup)[]> {
         const {
             id,
             ent_id,
@@ -178,7 +237,7 @@ export class OrderEngine {
                     : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.deleted)
 
             case ODRER_ACTIONS.SUBMIT:
-                return this.submitGroupOrdersBySessionID(token, STATUSES.waiting, payload);
+                return this.submitGroupOrdersBySessionID(token, payload);
 
             case ODRER_ACTIONS.SENDBYORG:
                 return id
@@ -285,17 +344,26 @@ export class OrderEngine {
             : this.ctx.dbe.query<OkPacket>(q_session).toPromise();
     }
 
-    submitGroupOrdersBySessionID(token: string, newStatus: StatusType, payload: OrderPayload): Promise<OkPacket> {
+    async submitGroupOrdersBySessionID(token: string, payload: OrderPayload): Promise<OkPacket> {
         const groupToken: string = uuid.v4();
-        const userId = this.getUserIDBySession(token);
-        const sessionId = this.getSessionByToken(token);
+        const userId = await this.getUserIDBySession(token);
+        const sessionId = await this.getSessionByToken(token);
         const contacts = payload.contacts;
         if(!sessionId) throw new Error('session not found');
         if(!contacts) throw new Error('contacts not found');
-        const q = `UPDATE \`orders\` 
-                   SET \`status\`= \"${newStatus}\",
-                   \`group_token\`= \"${groupToken}\"
-                   WHERE \`session_id\` = ${sessionId}`;
+        const authMode = await this.userISAuthorized(userId);
+
+        const q = !authMode
+            ? `UPDATE \`orders\` 
+            SET \`status\`= \"waiting\",
+            \`group_token\`= \"${groupToken}\"
+            WHERE \`session_id\` = ${sessionId}
+            AND \`status\`= \"pending\"`
+            : `UPDATE \`orders\` 
+            SET \`status\`= \"waiting",
+            \`group_token\`= \"${groupToken}\"
+            WHERE \`user_id\` = ${userId}
+            AND \`status\`= \"pending\"`;
 
         const qc = `INSERT INTO \`order_contacts\` 
                     SET \`group_token\`= \"${groupToken}\",
@@ -309,7 +377,7 @@ export class OrderEngine {
                     \`ch_skype\`= ${contacts.ch_skype ? 1 : 0},
                     \`ch_viber\`= ${contacts.ch_viber ? 1 : 0},
                     \`ch_whatsapp\`= ${contacts.ch_whatsapp ? 1 : 0},
-                    \`ch_telegram\`= ${contacts.ch_telegram ? 1 : 0},
+                    \`ch_telegram\`= ${contacts.ch_telegram ? 1 : 0}
                     `;
         return this.ctx.dbe.query<OkPacket>(q).pipe(
             switchMap(_ => this.ctx.dbe.query<OkPacket>(qc))).toPromise();

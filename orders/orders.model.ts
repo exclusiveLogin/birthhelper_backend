@@ -1,5 +1,6 @@
 import {Entity, FilterParams} from "../entity/entity_engine";
 import {EntityKeys} from "../entity/entity_repo.model";
+import {User} from "../models/user.interface";
 
 export enum ODRER_ACTIONS {
     GET = 'GET',
@@ -31,6 +32,7 @@ export enum STATUSES {
 export type StatusMode = 'complex' | 'simple';
 
 export type StatusType = keyof typeof STATUSES;
+
 export interface OrderSrc  {
     id: number;
     user_id: number;
@@ -40,6 +42,11 @@ export interface OrderSrc  {
     refferer: number;
     status: string;
     group_token: string;
+    contragent_entity_key?: string;
+    contragent_entity_id?: number;
+    section_key?: string;
+    tab_key?: string;
+    floor_key?: string;
     datetime_update: string;
     datetime_create: string;
 }
@@ -54,6 +61,7 @@ export interface OrderContacts {
     ch_telegram: boolean;
     ch_whatsapp: boolean;
 }
+export type OrderGroupMode = 'order' | 'session';
 
 export interface OrderPayload {
     action: ODRER_ACTIONS;
@@ -71,6 +79,33 @@ export interface OrderPayload {
     contacts?: OrderContacts;
     status_mode?: StatusMode;
     status?: StatusType;
+    groupMode?: OrderGroupMode;
+}
+
+export interface OrderContacts {
+    id: number;
+    group_token: string;
+    user_id: number;
+    session_id: number;
+    phone: string;
+    email: string;
+    skype: string;
+    ch_email: boolean;
+    ch_phone: boolean;
+    ch_viber: boolean;
+    ch_whatsapp: boolean;
+    ch_skype: boolean;
+    ch_telegram: boolean;
+    datetime_create: string;
+    datetime_update: string;
+}
+
+export interface OrderGroup {
+    group_id: string;
+    groupMode: OrderGroupMode;
+    user: User;
+    contacts: OrderContacts;
+    orders: Order[];
 }
 
 export class Order {
@@ -82,10 +117,13 @@ export class Order {
     refferer: number;
     status: string;
     group_token: string;
+    contragent_entity_key?: string;
+    contragent_entity_id?: number;
+    section_key?: string;
+    tab_key?: string;
+    floor_key?: string;
     datetime_update: string;
     datetime_create: string;
-
-    slot: Entity;
 
     constructor(src: OrderSrc) {
         this.id = src.id;
@@ -96,20 +134,17 @@ export class Order {
         this.refferer = src.refferer;
         this.status = src.status;
         this.group_token = src.group_token;
+        this.contragent_entity_key = src.contragent_entity_key;
+        this.contragent_entity_id = src.contragent_entity_id;
+        this.section_key = src.section_key;
+        this.tab_key = src.tab_key;
+        this.floor_key = src.floor_key;
         this.datetime_update = src.datetime_update;
         this.datetime_create = src.datetime_create;
 
     }
     static createOrderFromSrc(src: OrderSrc): Order {
         return new this(src);
-    }
-
-    getContragent(): Entity {
-        return this.slot?._contragent;
-    }
-
-    getContragentID(): number {
-        return this.getContragent()?.id;
     }
 
 }
