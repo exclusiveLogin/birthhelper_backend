@@ -1,4 +1,4 @@
-import {Entity, FilterParams} from "../entity/entity_engine";
+import {FilterParams} from "../entity/entity_engine";
 import {EntityKeys} from "../entity/entity_repo.model";
 import {User} from "../models/user.interface";
 
@@ -28,8 +28,6 @@ export enum STATUSES {
     incomplete = 'incomplete',
     inplan = 'inplan',
 }
-
-export type StatusMode = 'complex' | 'simple';
 
 export type StatusType = keyof typeof STATUSES;
 
@@ -77,7 +75,6 @@ export interface OrderPayload {
     group_token?: string;
     filters?: FilterParams;
     contacts?: OrderContacts;
-    status_mode?: StatusMode;
     status?: StatusType;
     groupMode?: OrderGroupMode;
 }

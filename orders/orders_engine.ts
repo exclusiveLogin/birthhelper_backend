@@ -354,11 +354,13 @@ export class OrderEngine {
         const authMode = await this.userISAuthorized(userId);
 
         const q = !authMode
+
             ? `UPDATE \`orders\` 
             SET \`status\`= \"waiting\",
             \`group_token\`= \"${groupToken}\"
             WHERE \`session_id\` = ${sessionId}
             AND \`status\`= \"pending\"`
+
             : `UPDATE \`orders\` 
             SET \`status\`= \"waiting",
             \`group_token\`= \"${groupToken}\"

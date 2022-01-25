@@ -143,17 +143,16 @@ export class EntityEngine {
             ].join(' AND ');
 
             let q = `SELECT COUNT(*) as cnt 
-                        FROM \`${ db }\`
-                        ${(whereStr) ? 'WHERE ' + whereStr : ''} 
-                        ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} `;
+                     FROM \`${ db }\`
+                     ${(whereStr) ? 'WHERE ' + whereStr : ''} 
+                     ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} `;
 
             if (isContragent) {
-                q = `
-                SELECT COUNT(*) as cnt 
-                FROM \`${ db }\` JOIN \`contragents\` 
-                ON \`${ db }\`.\`contragent\` = \`contragents\`.\`id\` 
-                ${whereStr ? 'WHERE ' + whereStr : ''} 
-                ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''}`;
+                q = `SELECT COUNT(*) as cnt 
+                     FROM \`${ db }\` JOIN \`contragents\` 
+                     ON \`${ db }\`.\`contragent\` = \`contragents\`.\`id\` 
+                     ${whereStr ? 'WHERE ' + whereStr : ''} 
+                     ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''}`;
             }
 
             console.log('getSetFromDB', q);
@@ -172,7 +171,7 @@ export class EntityEngine {
         if (!!key) {
             const hash = req.query.hash;
             const searchKey: SectionKeys = entities[req.params.id].searchKey;
-            const con = entities[req.params.id].container || null;
+            const container = entities[req.params.id].container || null;
             const slot = entities[req.params.id].slot || null;
 
             const ids$ = this.searchEngine.getEntitiesIDByHash(searchKey, hash)
@@ -184,7 +183,7 @@ export class EntityEngine {
                     res.send({
                         total: result,
                         fields: entities[req.params.id].fields || [],
-                        container: con ? containers[con] : null,
+                        container: container ? containers[container] : null,
                         slot: slot ? slots[slot] : null,
                         links: entities[req.params.id].links || [],
                     }),
