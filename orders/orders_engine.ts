@@ -94,10 +94,10 @@ export class OrderEngine {
         let q: string;
         switch (payload.groupMode) {
             case "session":
-                q = `SELECT \`session_id\` as \`id\` FROM orders GROUP BY session_id;`;
+                q = `SELECT \`session_id\` as \`id\` FROM \`orders\` GROUP BY \`session_id\`;`;
                 break;
             case "order":
-                q = `SELECT \`group_token\` as \`id\` FROM orders WHERE group_token != NULL GROUP BY group_token;`;
+                q = `SELECT \`group_token\` as \`id\` FROM \`orders\` WHERE \`group_token\` IS NOT NULL GROUP BY \`group_token\`;`;
                 break;
         }
         try {
@@ -112,6 +112,9 @@ export class OrderEngine {
                     user: null,
                     contacts: null,
                 };
+
+                result.push(grp);
+
                 switch (payload.groupMode) {
                     case "session":
                         q = `SELECT * FROM \`orders\` WHERE \`session_id\` = ${ groupId };`;
