@@ -94,10 +94,19 @@ export class OrderEngine {
         let q: string;
         switch (payload.groupMode) {
             case "session":
-                q = `SELECT \`session_id\` as \`id\` FROM \`orders\` GROUP BY \`session_id\`;`;
+                q = `SELECT \`session_id\` as \`id\` 
+                     FROM \`orders\` 
+                     WHERE \`contragent_entity_key\`="${payload.contragent_entity_key}" 
+                     AND \`contragent_entity_id\`="${payload.contragent_entity_id}"
+                     GROUP BY \`session_id\`;`;
                 break;
             case "order":
-                q = `SELECT \`group_token\` as \`id\` FROM \`orders\` WHERE \`group_token\` IS NOT NULL GROUP BY \`group_token\`;`;
+                q = `SELECT \`group_token\` as \`id\` 
+                     FROM \`orders\` 
+                     WHERE \`group_token\` IS NOT NULL 
+                     AND \`contragent_entity_key\`="${payload.contragent_entity_key}"
+                     AND \`contragent_entity_id\`="${payload.contragent_entity_id}"
+                     GROUP BY \`group_token\`;`;
                 break;
         }
         try {
