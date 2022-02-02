@@ -490,7 +490,6 @@ export class EntityEngine {
 
                     if (dbs.length) {
                         const q = `SELECT * FROM ${dbs.join(' , ')} WHERE ${dbs.map(db => `${db}.contragent = ${ctg.id}` ).join(' AND ')}`;
-                        console.log('contragentConcentrator q:',q);
                         return this.context.dbe.query(q).pipe(
                             map(_ => _?.[0] ?? {}),
                             tap(data => Object.keys(data).forEach(k => ctg[k] = ctg[k] ?? data[k])),
@@ -500,7 +499,6 @@ export class EntityEngine {
                         return of(ctg);
                     }
                 })).pipe(
-                    tap(_ => console.log('contragentConcentrator after fj:', _)),
                     map(_ => contragents),
                 ) :
                 of(contragents)),
