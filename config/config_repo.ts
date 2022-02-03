@@ -142,7 +142,7 @@ export const config: { [key in SectionKeys]: Config } = {
                 key: 'other',
                 title: null,
                 busKey: 'bus_other_any',
-                entityKey: 'ent_birth_type_slots',
+                entityKey: 'ent_birth_additional_slots',
                 priority: 'mid',
                 restrictors: [],
             },
