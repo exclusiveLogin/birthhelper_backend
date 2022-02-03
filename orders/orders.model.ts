@@ -23,7 +23,7 @@ export enum STATUSES {
     rejected = 'rejected',
     completed = 'completed',
     canceled = 'canceled',
-    inprogress = 'inprogress',
+    progressing = 'progressing',
     inwork = 'inwork',
     incomplete = 'incomplete',
     inplan = 'inplan',
@@ -77,6 +77,8 @@ export interface OrderPayload {
     contacts?: OrderContacts;
     status?: StatusType;
     groupMode?: OrderGroupMode;
+    limit?: number;
+    skip?: number;
 }
 
 export interface OrderContacts {

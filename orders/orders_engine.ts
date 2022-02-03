@@ -91,6 +91,15 @@ export class OrderEngine {
 
     async getGroupedOrders(payload: OrderPayload): Promise<OrderGroup[]> {
         const result: OrderGroup[] = [];
+        const skip = Number(payload?.skip ?? '0');
+        const limit = Number(payload?.limit ?? '20');
+        const limStr = `${!!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip : ' LIMIT ' + limit}`;
+        // status str generation
+        let statusStr = payload.status ? ` (status = ${payload.status}) ` : ` (1) `;
+        if (payload.status === 'inwork') statusStr = ` (status = "waiting" OR status = "reject" OR status = "resolve") `;
+        if (payload.status === 'incomplete') statusStr = ` (status = "completed" OR status = "progressing" OR status = "canceled") `;
+        if (payload.status === 'inplan') statusStr = ` (status = "pending") `;
+
         let q: string;
         switch (payload.groupMode) {
             case "session":
@@ -98,7 +107,9 @@ export class OrderEngine {
                      FROM \`orders\` 
                      WHERE \`contragent_entity_key\`="${payload.contragent_entity_key}" 
                      AND \`contragent_entity_id\`="${payload.contragent_entity_id}"
-                     GROUP BY \`session_id\`;`;
+                     AND ${statusStr}
+                     GROUP BY \`session_id\`
+                     ${limStr}`;
                 break;
             case "order":
                 q = `SELECT \`group_token\` as \`id\` 
@@ -106,7 +117,9 @@ export class OrderEngine {
                      WHERE \`group_token\` IS NOT NULL 
                      AND \`contragent_entity_key\`="${payload.contragent_entity_key}"
                      AND \`contragent_entity_id\`="${payload.contragent_entity_id}"
-                     GROUP BY \`group_token\`;`;
+                     AND ${statusStr}
+                     GROUP BY \`group_token\`
+                     ${limStr}`;
                 break;
         }
         try {
@@ -253,8 +266,8 @@ export class OrderEngine {
 
             case ODRER_ACTIONS.SENDBYORG:
                 return id
-                    ? this.changeStatusOrderById(id, STATUSES.inprogress)
-                    : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.inprogress);
+                    ? this.changeStatusOrderById(id, STATUSES.progressing)
+                    : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.progressing);
             default:
                 return Promise.reject('Action is unknown');
         }
