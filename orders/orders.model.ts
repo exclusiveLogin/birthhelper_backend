@@ -45,6 +45,7 @@ export interface OrderSrc  {
     section_key?: string;
     tab_key?: string;
     floor_key?: string;
+    utility?: string;
     datetime_update: string;
     datetime_create: string;
 }
@@ -121,6 +122,7 @@ export class Order {
     section_key?: string;
     tab_key?: string;
     floor_key?: string;
+    utility?: string;
     datetime_update: string;
     datetime_create: string;
 
@@ -138,6 +140,7 @@ export class Order {
         this.section_key = src.section_key;
         this.tab_key = src.tab_key;
         this.floor_key = src.floor_key;
+        this.utility = src.utility;
         this.datetime_update = src.datetime_update;
         this.datetime_create = src.datetime_create;
 
