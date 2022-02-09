@@ -40,7 +40,6 @@ export class SlotEngine {
         const configEngine = this.context.configEngine;
         // получение sections у КА
 
-        const tree: {[section in SectionKeys]?: EntityKeys[]} = {};
         const dataStorage: {[key in EntityKeys]?: Entity[]} = {};
         const result: SectionedContragentSlots = {};
 
@@ -54,11 +53,6 @@ export class SlotEngine {
                     }
                 }),
             ).toPromise();
-            // подготовка дерева проходки
-            for (const key of sections) {
-                const config = await configEngine.getConfig(key);
-                tree[key] = config.providers.map(p => p.entityKey);
-            }
 
             // получение слотов из конфигуратора уникальных ent_name
             const slotsKeys = sections
