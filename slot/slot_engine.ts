@@ -5,7 +5,7 @@ import {Request, Response, Router} from "express";
 import {Slot, slots} from "../slot/slot_repo";
 import {Entity, FilterParams} from "../entity/entity_engine";
 import {forkJoin} from "rxjs";
-import {Sectioned, TitledList, uniq} from "../models/common";
+import {ContragentSlots, SectionedContragentSlots, uniq} from "../models/common";
 import {map, tap} from "rxjs/operators";
 import {config} from "../config/config_repo";
 import {EntityKeys} from "../entity/entity_repo.model";
@@ -33,25 +33,32 @@ export class SlotEngine {
         res.send(Object.keys(slots).map(k => slots[k]));
     }
 
-    async getSlotsByContragent(contragentID: number | string): Promise<Sectioned<TitledList<Entity>[]>> {
+    async getSlotsByContragent(contragentID: number | string): Promise<SectionedContragentSlots> {
         if (!contragentID) { throw new Error('Не передан ID контрагента'); }
         const filters: FilterParams = {contragent_id: contragentID.toString()};
         const sections: SectionKeys[] = [];
+        const configEngine = this.context.configEngine;
         // получение sections у КА
 
         const tree: {[section in SectionKeys]?: EntityKeys[]} = {};
         const dataStorage: {[key in EntityKeys]?: Entity[]} = {};
+        const result: SectionedContragentSlots = {};
+
         try {
+            // get ContragentEntity
             await this.context.entityEngine.getEntitiesByIds([+contragentID], "ent_contragents").pipe(
                 map(list => list?.[0]),
                 tap(contragent => {
-                    if(!!contragent?.['section_clinic']) {
+                    if (!!contragent?.['section_clinic']) {
                         sections.push('clinic');
                     }
                 }),
             ).toPromise();
             // подготовка дерева проходки
-            sections.forEach(key => tree[key] = config[key].providers.map(p => p.entityKey));
+            for (const key of sections) {
+                const config = await configEngine.getConfig(key);
+                tree[key] = config.providers.map(p => p.entityKey);
+            }
 
             // получение слотов из конфигуратора уникальных ent_name
             const slotsKeys = sections
@@ -65,19 +72,36 @@ export class SlotEngine {
                     tap(list => dataStorage[slotKey] = list)));
 
             await forkJoin(providers).toPromise();
-        } catch (e) {
+
+            // prepare result
+            for (const section of sections) {
+                const config = await configEngine.getConfig(section);
+                result[section] = {
+                    config,
+                    tabs: config.tabs.map(t => ({
+                        key: t.key,
+                        title: t.title,
+                        floors: t.floors.map(f => ({
+                            key: f.key,
+                            title: f.key,
+                            list: f.consumerKeys
+                                .map(ck => config.consumers.find(c => c.key === ck) ?? null)
+                                .filter(_ => !!_)
+                                .map(consumer => ({entKey: consumer.entityKey, restrictors: consumer.restrictors}))
+                                .map(state => {
+                                    const data = dataStorage[state.entKey] ?? [];
+                                    const restrictors = state.restrictors;
+                                    return data.filter(ent => restrictors.length ? restrictors.every(r => ent._entity[r.key] === r.value) : true)
+                                }),
+                            utility: f.entityType,
+                        }))
+                    })),
+                } as ContragentSlots
+            }
+        }
+         catch (e) {
             throw new Error(e);
         }
-
-        const result: Sectioned<TitledList<Entity>[]> = {}
-        Object.keys(tree).forEach((section: SectionKeys) => {
-            const sectionSlotsKeys = tree[section];
-            result[section] = sectionSlotsKeys.map(k => ({
-                key: k,
-                title: config[section].providers.find(prov => prov.entityKey === k).title,
-                list: dataStorage?.[k] ?? [],
-            }));
-        });
 
         return result;
     }
@@ -102,9 +126,9 @@ export class SlotEngine {
         try {
             const result = await this.getSlotsByContragent(contragentId);
             res.send(result);
-        } catch (e) {
+        } catch (error) {
             res.status(500);
-            res.send(JSON.stringify({e}));
+            res.send(JSON.stringify({error}));
         }
 
     }

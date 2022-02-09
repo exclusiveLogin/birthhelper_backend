@@ -46,13 +46,15 @@ export interface TabConfig {
     defaultMessage?: string;
 }
 
+export type EntityType = 'person' | 'placement' | 'other';
+
 export interface TabFloorSetting {
     key: string;
     title: string;
     consumerKeys: string[];
     required?: boolean;
     selectMode?: SelectMode;
-    entityType?: 'person' | 'placement' | 'other';
+    entityType?: EntityType;
     poorErrorMessage?: string;
     richErrorMessage?: string;
     lockMessage?: string;
