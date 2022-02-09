@@ -35,7 +35,7 @@ export class SlotEngine {
 
     async getSlotsByContragent(contragentID: number | string): Promise<SectionedContragentSlots> {
         if (!contragentID) { throw new Error('Не передан ID контрагента'); }
-        const filters: FilterParams = {contragent_id: contragentID.toString()};
+        const filters: FilterParams = {contragent_id: contragentID.toString(), active: '1'};
         const sections: SectionKeys[] = [];
         const configEngine = this.context.configEngine;
         // получение sections у КА
@@ -77,7 +77,7 @@ export class SlotEngine {
                         title: t.title,
                         floors: t.floors.map(f => ({
                             key: f.key,
-                            title: f.key,
+                            title: f.title,
                             list: f.consumerKeys
                                 .map(ck => config.consumers.find(c => c.key === ck) ?? null)
                                 .filter(_ => !!_)
