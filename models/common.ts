@@ -22,9 +22,7 @@ export interface ContragentSlots {
     config: Config;
 }
 
-export type SectionedContragentSlots = {
-    [section in SectionKeys]?: ContragentSlots;
-}
+export type SectionedContragentSlots = Sectioned<ContragentSlots>;
 
 export function uniq(items: (number | string)[]): string[] {
     const str = items.map(i => i.toString());
