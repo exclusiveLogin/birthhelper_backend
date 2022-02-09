@@ -86,7 +86,7 @@ export class SlotEngine {
                                     const data = dataStorage[state.entKey] ?? [];
                                     const restrictors = state.restrictors;
                                     return data.filter(ent => restrictors.length ? restrictors.every(r => ent._entity[r.key] === r.value) : true)
-                                }),
+                                }).flat(),
                             utility: f.entityType,
                         }))
                     })),
