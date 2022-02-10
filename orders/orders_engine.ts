@@ -139,10 +139,14 @@ export class OrderEngine {
 
                 switch (payload.groupMode) {
                     case "session":
-                        q = `SELECT * FROM \`orders\` WHERE \`session_id\` = ${ groupId };`;
+                        q = `SELECT * FROM \`orders\`
+                             WHERE \`session_id\` = ${ groupId } 
+                             AND ${statusStr};`;
                         break;
                     case "order":
-                        q = `SELECT * FROM \`orders\` WHERE \`group_token\` = "${ groupId }";`;
+                        q = `SELECT * FROM \`orders\` 
+                             WHERE \`group_token\` = "${ groupId }"
+                             AND ${statusStr};`;
                         break;
                 }
 
