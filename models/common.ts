@@ -1,6 +1,7 @@
 import {SectionKeys} from "../search/config";
 import {Entity} from "../entity/entity_engine";
 import {Config, EntityType} from "../config/config_repo";
+import {EntityKeys} from "../entity/entity_repo.model";
 
 export interface TitledList<T> {
     title: string;
@@ -19,7 +20,6 @@ export interface TabedSlots {
 }
 export interface ContragentSlots {
     tabs: TabedSlots[];
-    config: Config;
 }
 
 export type SectionedContragentSlots = Sectioned<ContragentSlots>;

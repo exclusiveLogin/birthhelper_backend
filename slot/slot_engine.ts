@@ -70,7 +70,6 @@ export class SlotEngine {
             for (const section of sections) {
                 const config = await configEngine.getConfig(section);
                 result[section] = {
-                    config,
                     tabs: config.tabs.map(t => ({
                         key: t.key,
                         title: t.title,
@@ -83,6 +82,7 @@ export class SlotEngine {
                                 .map(consumer => ({entKey: consumer.entityKey, restrictors: consumer.restrictors}))
                                 .map(state => {
                                     const data = dataStorage[state.entKey] ?? [];
+                                    data.forEach(item => item['__entity_key'] = state.entKey);
                                     const restrictors = state.restrictors;
                                     return data.filter(ent => restrictors.length ? restrictors.every(r => ent._entity[r.key] === r.value) : true)
                                 }).flat(),

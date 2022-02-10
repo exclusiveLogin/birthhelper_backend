@@ -308,6 +308,8 @@ export class OrderEngine {
             section_key,
             contragent_entity_key,
             contragent_entity_id,
+            status,
+            group_token
         } = payload;
         const user_id = await this.getUserIDBySession(token);
         const session_id = await this.getSessionByToken(token);
@@ -323,7 +325,8 @@ export class OrderEngine {
                         \`floor_key\`,
                         \`section_key\`,
                         \`contragent_entity_key\`,
-                        \`contragent_entity_id\`
+                        \`contragent_entity_id\`,
+                        \`group_token\`
                     )
                     VALUES (
                         ${user_id}, 
@@ -331,12 +334,13 @@ export class OrderEngine {
                         ${ent_id}, 
                         "${ent_key}", 
                         ${user_id}, 
-                        "pending",
+                        "${status ?? 'pending'}",
                         "${tab_key}",
                         "${floor_key}",
                         "${section_key}",
                         "${contragent_entity_key}",
-                        "${contragent_entity_id}"
+                        "${contragent_entity_id}",
+                        ${group_token ? `"${group_token}"` : null}
                     )`;
         return this.ctx.dbe.query<OkPacket>(q).toPromise();
     }
