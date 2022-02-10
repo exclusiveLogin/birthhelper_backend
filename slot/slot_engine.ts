@@ -1,5 +1,4 @@
 import * as express from "express";
-import bodyParser from "body-parser";
 import {Context, SectionKeys} from "../search/config";
 import {Request, Response, Router} from "express";
 import {Slot, slots} from "../slot/slot_repo";

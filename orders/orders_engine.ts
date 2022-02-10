@@ -96,7 +96,7 @@ export class OrderEngine {
         const limStr = `${!!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip : ' LIMIT ' + limit}`;
         // status str generation
         let statusStr = payload.status ? ` (status = ${payload.status}) ` : ` (1) `;
-        if (payload.status === 'inwork') statusStr = ` (status = "waiting" OR status = "reject" OR status = "resolve") `;
+        if (payload.status === 'inwork') statusStr = ` (status = "waiting" OR status = "rejected" OR status = "resolved") `;
         if (payload.status === 'incomplete') statusStr = ` (status = "completed" OR status = "progressing" OR status = "canceled") `;
         if (payload.status === 'inplan') statusStr = ` (status = "pending") `;
 
