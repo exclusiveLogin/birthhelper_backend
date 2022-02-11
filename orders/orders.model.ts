@@ -1,6 +1,7 @@
 import {FilterParams} from "../entity/entity_engine";
 import {EntityKeys} from "../entity/entity_repo.model";
 import {User} from "../models/user.interface";
+import {EntityType} from "../config/config_repo";
 
 export enum ODRER_ACTIONS {
     GET = 'GET',
@@ -78,6 +79,7 @@ export interface OrderPayload {
     contacts?: OrderContacts;
     status?: StatusType;
     groupMode?: OrderGroupMode;
+    utility?: EntityType;
     limit?: number;
     skip?: number;
 }
