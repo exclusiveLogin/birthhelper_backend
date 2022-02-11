@@ -283,6 +283,7 @@ export const entityRepo: EntityRepo = {
                 useDict: true,
                 canBeNull: false,
                 required: true,
+                showOnTable: true,
             },
             {
                 key: 'facilities_type',

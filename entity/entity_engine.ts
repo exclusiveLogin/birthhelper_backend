@@ -402,7 +402,7 @@ export class EntityEngine {
         const generateSummary = searchKey && config?.generateSummariesEnabled;
         const skip = Number(filters?.skip ?? '0');
         const limit = Number(filters?.limit ?? '20');
-        const fields = config?.fields;
+        const fields = JSON.parse(JSON.stringify(config?.fields));
         const calc = config?.calculated;
         const slotKey = config?.slot;
         const slotConfig = slots[slotKey];
