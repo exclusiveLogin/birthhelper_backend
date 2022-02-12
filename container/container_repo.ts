@@ -1,12 +1,12 @@
 import {Cached} from "../cache.engine/cache.model";
-import { SectionKeys } from "../search.engine/config";
+import { SectionKeys } from "../search/config";
 
 export interface Container extends Cached{
     name: string;
     title: string;
     db_entity: string; // БД сущностей
     entity_fields?: string[]; // поля для
-    overrided_fields?: string[]; // поля доступные для перекрытия
+    override_fields?: string[]; // поля доступные для перекрытия
     container_id_key: string; // ключ связи контейнера и таблицы сущностей
     db_list: string; // БД списка существующих контейнеров данного типа
     db_links: string; // БД связей контейнеров
@@ -32,7 +32,7 @@ export const containers: SlotRepo = {
         title: 'Контейнеры телефонов в системе',
         db_entity: 'phones', // БД сущностей
         entity_fields: ['phone', 'title', 'description', 'comment'], // поля для
-        overrided_fields: ['title', 'description'], // поля доступные для перекрытия
+        override_fields: ['title', 'description'], // поля доступные для перекрытия
         container_id_key: 'phone_id', // ключ связи контейнера и таблицы сущностей
         db_list: 'phones_containers_repo', // БД списка существующих контейнеров данного типа
         db_links: 'phone_containers', // БД связей контейнеров
@@ -45,7 +45,7 @@ export const containers: SlotRepo = {
         title: 'Контейнеры услуг в системе',
         db_entity: 'services', // БД сущностей
         entity_fields: ['title', 'description', 'trimester'], // поля для
-        overrided_fields: ['title', 'description'], // поля доступные для перекрытия
+        override_fields: ['title', 'description'], // поля доступные для перекрытия
         container_id_key: 'service_id', // ключ связи контейнера и таблицы сущностей
         db_list: 'services_containers_repo', // БД списка существующих контейнеров данного типа
         db_links: 'service_containers', // БД связей контейнеров

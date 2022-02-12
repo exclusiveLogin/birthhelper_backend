@@ -1,6 +1,5 @@
 import {Observable, of} from "rxjs";
 import {DictionaryEngine, DictionaryItem} from "../dictionary/dictionary_engine";
-import {SearchEngine} from "../search.engine/engine";
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {filter, map, switchMap} from "rxjs/operators";
 import {AuthorizationEngine} from "../auth/auth.engine";
@@ -10,6 +9,7 @@ import {ContainerEngine} from "../container/container_engine";
 import {SlotEngine} from "../slot/slot_engine";
 import { ConfigEngine } from "../config/config_engine";
 import { OrderEngine } from "../orders/orders_engine";
+import {SearchEngine} from "../search/engine";
 
 export type SearchConfig = {
     [section in SectionKeys]: { [key in typeof sectionConfig[section][number]]?: SearchSectionConfig};

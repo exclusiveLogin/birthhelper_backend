@@ -206,13 +206,8 @@ export const entityRepo: EntityRepo = {
             { key: 'items', type: 'count', id_key: 'container_id', db_name: 'service_containers' },
         ]
     },
-
-    ent_clinics: {
-        db_name: 'clinics',
-        searchKey: 'clinic',
-        generateSummariesEnabled: true,
-        deleteAffectionSectionKeys: ['clinic'],
-        createAffectionSectionKeys: ['clinic'],
+    ent_contragents: {
+        db_name: 'contragents',
         filters: [
             {
                 name: 'id',
@@ -233,11 +228,44 @@ export const entityRepo: EntityRepo = {
             },
         ],
         fields: [
-            { key: 'id', title: 'ID клиники', type: 'id', readonly: true, showOnTable: true },
-            { key: 'title', type: 'string', title: 'Название клиники', required: true, showOnTable: true },
-            { key: 'description', title: 'Описание клиники', type: 'text', showOnTable: false },
+            { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },
+            { key: 'title', type: 'string', title: 'Название', required: true, showOnTable: true },
+            { key: 'description', title: 'Описание', type: 'text', showOnTable: false },
             { key: 'image_id', title: 'Главное фото', type: 'img', showOnTable: false, loadEntity: true },
-            { key: 'active', title: 'Активная', type: 'flag', showOnTable: false  },
+            { key: 'active', title: 'Активный', type: 'flag', showOnTable: false  },
+            { key: 'licence', type: 'string', title: 'Лицензия', required: false },
+            {
+                key: 'address_id',
+                title: 'Адрес',
+                dctKey: 'dict_address_id',
+                type: 'id',
+                useDict: true,
+                canBeNull: false,
+                required: true,
+                showOnTable: true,
+                loadEntity: true,
+            },
+        ]
+    },
+
+    ent_clinics: {
+        db_name: 'clinics',
+        searchKey: 'clinic',
+        isContragent: true,
+        generateSummariesEnabled: true,
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
+        filters: [
+            {
+                name: 'id',
+                title: 'По ID',
+                type: 'id',
+                db_name: 'dict_clinics'
+
+            },
+        ],
+        fields: [
+            { key: 'id', title: 'ID клиники', type: 'id', readonly: true, showOnTable: true },
             { key: 'status_iho', title: 'Статус ВОЗ', type: 'flag', showOnTable: false  },
             { key: 'has_consultation', title: 'Имеет женскую консульстацию', type: 'flag', showOnTable: false  },
             { key: 'has_reanimation', title: 'Имеет реанимацию', type: 'flag', showOnTable: false  },
@@ -248,15 +276,14 @@ export const entityRepo: EntityRepo = {
             { key: 'mom_with_baby', type: 'flag', title: 'Совместное пребывание матери и ребенка', required: false, showOnTable: false },
             { key: 'free_meets', type: 'flag', title: 'Свободное посещение', required: false, showOnTable: false },
             {
-                key: 'address_id',
-                title: 'Адрес клиники',
-                dctKey: 'dict_address_id',
+                key: 'contragent',
+                title: 'Линк на ведущий родительский контрагент',
+                dctKey: 'dict_contragents',
                 type: 'id',
                 useDict: true,
                 canBeNull: false,
                 required: true,
                 showOnTable: true,
-                loadEntity: true,
             },
             {
                 key: 'facilities_type',
@@ -278,6 +305,38 @@ export const entityRepo: EntityRepo = {
                 showOnTable: true,
                 dctKey: 'dict_clinic_specialities_containers_repo',
             }
+        ]
+    },
+
+    ent_orders: {
+        db_name: 'orders',
+        filters: [
+            {
+                name: 'user_id',
+                title: 'По ID пользователя',
+                type: 'number',
+            },
+            {
+                name: 'status',
+                title: 'По статусу',
+                type: 'id',
+                db_name: 'dict_order_status_type',
+            },
+        ],
+        fields: [
+            { key: 'id', title: 'ID', type: 'id', readonly: true },
+            { key: 'user_id', type: 'id', title: 'ID пользователя', required: true },
+            { key: 'session_id', type: 'id', title: 'ID сессии', required: true },
+            { key: 'slot_entity_key', type: 'string', title: 'Имя слота', required: true },
+            { key: 'slot_entity_id', type: 'id', title: 'ID слота', required: true },
+            { key: 'contragent_entity_key', type: 'string', title: 'Имя типа контрагента', required: true },
+            { key: 'contragent_entity_id', type: 'id', title: 'ID контрагента', required: true },
+            { key: 'section_key', type: 'string', title: 'Ключ раздела', required: true },
+            { key: 'tab_key', type: 'string', title: 'Ключ вкладки', required: true },
+            { key: 'floor_key', type: 'string', title: 'Ключ этажа', required: true },
+            { key: 'refferer', type: 'id', title: 'Изменятель', required: true },
+            { key: 'group_token', type: 'string', title: 'Ключ группы заказа', required: true },
+            { key: 'status', type: 'string', title: 'Статус', required: true },
         ]
     },
 
@@ -690,6 +749,27 @@ export const entityRepo: EntityRepo = {
             { key: 'folder', title: 'Имя файлсервера', type: 'string', readonly: true, showOnTable: true },
         ]
     },
+    ent_lk_permissions: {
+        db_name: 'lk_permissions',
+        filters: [],
+        container: null,
+        fields: [
+            { key: 'id', title: 'ID файла', type: 'id', readonly: true, showOnTable: true },
+            { key: 'user_id', type: 'id', title: 'ID пользователя', readonly: true, showOnTable: true },
+            { key: 'contragent_entity_key', type: 'string', title: 'Ключ сущности контрагента', readonly: true, showOnTable: true },
+            { key: 'contragent_entity_id', type: 'id', title: 'ID контрагента', readonly: true, showOnTable: true },
+            {
+                key: 'permission_id',
+                type: 'id',
+                useDict: true,
+                dctKey: 'dict_lk_permission_type',
+                title: 'ID разрешения',
+                readonly: true,
+                showOnTable: true,
+                loadEntity: true,
+            },
+        ]
+    },
     // Dicts
     ent_birthtype: {
         db_name: 'birthtype',
@@ -791,6 +871,17 @@ export const entityRepo: EntityRepo = {
 
     ent_user_status_type: {
         db_name: 'user_status_type',
+        filters: [],
+        container: null,
+        fields: [
+            { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },
+            { key: 'slug', title: 'Ключ', type: 'string', readonly: false, showOnTable: true },
+            { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
+            { key: 'description', title: 'Описание', type: 'text', readonly: false, showOnTable: true },
+        ]
+    },
+    ent_lk_permission_type: {
+        db_name: 'lk_permission_type',
         filters: [],
         container: null,
         fields: [

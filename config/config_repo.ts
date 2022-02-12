@@ -1,5 +1,5 @@
 import { EntityKeys } from "../entity/entity_repo.model";
-import { SectionKeys } from "../search.engine/config";
+import { SectionKeys } from "../search/config";
 import { Restrictor } from "../slot/slot_repo";
 
 export type PriorityFloor = 'high' | 'mid' | 'low';
@@ -9,6 +9,7 @@ export interface Provider {
     busKey: string;
     entityKey: EntityKeys;
     restrictors: Restrictor[];
+    title?: string; // используется в ЛК
 }
 
 export interface RestrictorDictConfig {
@@ -45,13 +46,15 @@ export interface TabConfig {
     defaultMessage?: string;
 }
 
+export type EntityType = 'person' | 'placement' | 'other';
+
 export interface TabFloorSetting {
     key: string;
     title: string;
     consumerKeys: string[];
     required?: boolean;
     selectMode?: SelectMode;
-    entityType?: 'person' | 'placement' | 'other';
+    entityType?: EntityType;
     poorErrorMessage?: string;
     richErrorMessage?: string;
     lockMessage?: string;
@@ -72,24 +75,28 @@ export const config: { [key in SectionKeys]: Config } = {
                 busKey: 'bus_doctors_any',
                 entityKey: 'ent_doctor_slots',
                 restrictors: [],
+                title: 'Специалисты',
             },
             {
                 key: 'placement',
                 busKey: 'bus_placement_any',
                 entityKey: 'ent_placement_slots',
                 restrictors: [],
+                title: 'Размещение',
             },
             {
                 key: 'birthtype',
                 busKey: 'bus_birthtype_any',
                 entityKey: 'ent_birth_type_slots',
                 restrictors: [],
+                title: 'Виды родов',
             },
             {
                 key: 'other',
                 busKey: 'bus_other_any',
                 entityKey: 'ent_birth_additional_slots',
                 restrictors: [],
+                title: 'Дополнительные услуги',
             },
         ],
         consumers: [
@@ -137,7 +144,7 @@ export const config: { [key in SectionKeys]: Config } = {
                 key: 'other',
                 title: null,
                 busKey: 'bus_other_any',
-                entityKey: 'ent_birth_type_slots',
+                entityKey: 'ent_birth_additional_slots',
                 priority: 'mid',
                 restrictors: [],
             },
@@ -194,8 +201,8 @@ export const config: { [key in SectionKeys]: Config } = {
                     },
                 ],
             },
-        
+
         ],
-        
+
     }
 };

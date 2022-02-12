@@ -12,7 +12,7 @@ import {
 import {forkJoin, Observable, of, zip} from "rxjs";
 import {map, mapTo, tap} from "rxjs/operators";
 import {md5Encript} from "./sections.handler";
-import {PipelineEngine} from "../search.engine/piplines.engine";
+import {PipelineEngine} from "../search/piplines.engine";
 import { OkPacket } from "mysql";
 const bodyParser = require('body-parser');
 const jsonparser = bodyParser.json();
@@ -126,7 +126,7 @@ export class SearchEngine {
         const q = `DELETE FROM \`search\` 
         WHERE
         hash = '${hash}'`;
-        
+
         console.log('deleteFiltersFromDb', q);
 
         return this.context.dbe.queryList(q).pipe(
@@ -519,7 +519,7 @@ export class SearchEngine {
 
     getSummary(section: SectionKeys, hash?: string): Observable<Summary[]> {
         return hash ? this.getEntitiesSummaryByHash(section, hash) : this.pipeliner.getDefaultSummaryPipelineContext(section);
-    } 
+    }
 
     getRouter(): Router {
         this.router.get('/', this.rootHandler.bind(this));

@@ -4,6 +4,7 @@ import {IDictionaryFilters} from "../dictionary/dictionary_repo";
 import { FilterParams } from "../entity/entity_engine";
 import { Entity } from "../entity/entity_repo.model";
 import { Request } from "express";
+import {Restrictor} from "../slot/slot_repo";
 const entities = entityRepo;
 
 export type reqType = 'string' | 'id' | 'flag';
@@ -71,7 +72,7 @@ export function getFiltersByRequest(req: Request): FilterParams {
     return req.query as unknown as FilterParams || {}
 }
 
-export function getKeyByRequest(req: Request): string {
+export function getIdByRequest(req: Request): string {
     return req?.params?.id;
 }
 
@@ -122,4 +123,10 @@ export function generateQStr(key: string, filters: FilterParams, type: reqType):
             return concatFn(keys, values, true);
         }
     }
+}
+
+export function restrictGenerator(restrictors: Restrictor[], filters?: FilterParams) {
+    const _ = {};
+    restrictors.forEach(slot => _[slot.key] = slot.value);
+    return filters ? {...filters, ..._} : {..._};
 }

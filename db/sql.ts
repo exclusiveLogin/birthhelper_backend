@@ -1,6 +1,6 @@
 import {sqlConfig} from "./sql.config";
 import {Observable} from "rxjs";
-import {Context} from "../search.engine/config";
+import {Context} from "../search/config";
 import { createPool } from "mysql";
 
 export class DataBaseService {

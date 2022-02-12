@@ -1,26 +1,28 @@
-
 import * as express from "express";
 import uuid = require('uuid');
 import { CacheEngine } from "../cache.engine/cache_engine";
-import { Response, Request, Router } from "express";
+import {
+    Response,
+    Request,
+    Router } from "express";
 import { DataBaseService } from "../db/sql";
-import { Context } from "../search.engine/config";
-import { ODRER_ACTIONS, Order, STATUSES, StatusType } from "./orders.model";
+import { Context } from "../search/config";
+import {
+    ODRER_ACTIONS,
+    Order, OrderContacts, OrderGroup,
+    OrderPayload, OrderSrc,
+    STATUSES,
+    StatusType
+} from "./orders.model";
 import { EntityKeys } from "../entity/entity_repo.model";
 import { OkPacket } from "mysql";
+import { FilterParams } from "../entity/entity_engine";
+import { generateQStr } from "../db/sql.helper";
+import {map, switchMap} from "rxjs/operators";
+import {User, UserSrc} from "../models/user.interface";
 const bodyParser = require('body-parser');
 const jsonparser = bodyParser.json();
 
-export interface OrderPayload {
-    action: ODRER_ACTIONS;
-    ent_key: EntityKeys;
-    ent_id: number;
-    tab_key: string;
-    floor_key: string;
-    section_key: string;
-    id?: number;
-    count?: number;
-}
 export class OrderEngine {
     private orderRouter = express.Router();
     ce: CacheEngine;
@@ -36,40 +38,156 @@ export class OrderEngine {
 
     async getOrdersByUser(uid: number): Promise<Order[]> {
         const fetchFromDB = (): Promise<Order[]> => {
-            let q =
+            const q =
                 `SELECT * 
                 FROM \`orders\` 
                 WHERE user_id = ${uid} 
                 AND \`status\` != "deleted"`;
 
-            return this.dbe.queryList<Order>(q).toPromise();
+            return this.dbe.queryList<OrderSrc>(q)
+                .pipe(
+                    map(list => list.map(src => Order.createOrderFromSrc(src))))
+                .toPromise();
         };
-       
+
         return fetchFromDB();
     }
 
     async getOrdersBySession(sid: number): Promise<Order[]> {
         const fetchFromDB = (): Promise<Order[]> => {
-            let q =
+            const q =
                 `SELECT * 
                 FROM \`orders\` 
                 WHERE session_id = ${sid}
                 AND \`status\` != "deleted"`;
 
-            return this.dbe.queryList<Order>(q).toPromise();
+            return this.dbe.queryList<OrderSrc>(q)
+                .pipe(
+                    map(list => list.map(src => Order.createOrderFromSrc(src))))
+                .toPromise();
         };
 
         return fetchFromDB();
-        
+
     }
 
-    async getOrders(token: string): Promise<Order[]> {
+    async getOrdersMany(filters: FilterParams) {
+        const likeStr = [
+            ...generateQStr('ent_orders', filters, 'string'),
+            ...generateQStr('ent_orders', filters, 'flag')].join(' AND ');
+        const whereStr = [
+            ...generateQStr('ent_orders', filters, 'id')].join(' AND ');
+        const q =
+            `SELECT * 
+                FROM \`orders\` 
+                ${(whereStr) ? 'WHERE ' + whereStr : ''} 
+                ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} `;
+
+        return this.dbe.queryList<OrderSrc>(q)
+            .pipe(
+                map(list => list.map(src => Order.createOrderFromSrc(src))))
+            .toPromise();
+    }
+
+    async getGroupedOrders(payload: OrderPayload): Promise<OrderGroup[]> {
+        const result: OrderGroup[] = [];
+        const skip = Number(payload?.skip ?? '0');
+        const limit = Number(payload?.limit ?? '20');
+        const limStr = `${!!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip : ' LIMIT ' + limit}`;
+        // status str generation
+        let statusStr = payload.status ? ` (status = ${payload.status}) ` : ` (1) `;
+        if (payload.status === 'inwork') statusStr = ` (status = "waiting" OR status = "rejected" OR status = "resolved") `;
+        if (payload.status === 'incomplete') statusStr = ` (status = "completed" OR status = "progressing" OR status = "canceled") `;
+        if (payload.status === 'inplan') statusStr = ` (status = "pending") `;
+
+        let q: string;
+        switch (payload.groupMode) {
+            case "session":
+                q = `SELECT \`session_id\` as \`id\` 
+                     FROM \`orders\` 
+                     WHERE \`contragent_entity_key\`="${payload.contragent_entity_key}" 
+                     AND \`contragent_entity_id\`="${payload.contragent_entity_id}"
+                     AND ${statusStr}
+                     GROUP BY \`session_id\`
+                     ${limStr}`;
+                break;
+            case "order":
+                q = `SELECT \`group_token\` as \`id\` 
+                     FROM \`orders\` 
+                     WHERE \`group_token\` IS NOT NULL 
+                     AND \`contragent_entity_key\`="${payload.contragent_entity_key}"
+                     AND \`contragent_entity_id\`="${payload.contragent_entity_id}"
+                     AND ${statusStr}
+                     GROUP BY \`group_token\`
+                     ${limStr}`;
+                break;
+        }
+        try {
+            const uids = await this.dbe.queryList<{id: number | string }>(q)
+                .pipe(map(list => list.map(src =>  src.id))).toPromise();
+
+            for(const groupId of uids) {
+                const grp: OrderGroup = {
+                    group_id: groupId.toString(),
+                    groupMode: payload.groupMode,
+                    orders: null,
+                    user: null,
+                    contacts: null,
+                };
+
+                result.push(grp);
+
+                switch (payload.groupMode) {
+                    case "session":
+                        q = `SELECT * FROM \`orders\`
+                             WHERE \`session_id\` = ${ groupId } 
+                             AND ${statusStr};`;
+                        break;
+                    case "order":
+                        q = `SELECT * FROM \`orders\` 
+                             WHERE \`group_token\` = "${ groupId }"
+                             AND ${statusStr};`;
+                        break;
+                }
+
+                grp.orders = await this.dbe.queryList<OrderSrc>(q).pipe(
+                    map(list => list.map(src => Order.createOrderFromSrc(src)))
+                ).toPromise();
+
+                const userId = grp?.orders?.[0]?.user_id;
+
+                grp.user = await this.ctx.entityEngine.getEntitiesByIds([userId], 'ent_users')
+                    .pipe(
+                        map(list => list?.[0]),
+                        map(src => new User(src as UserSrc)),
+                    ).toPromise();
+
+                q = `SELECT * FROM \`order_contacts\` WHERE \`group_token\` = "${ groupId }";`;
+
+                grp.contacts = payload.groupMode === 'order'
+                    ? await this.dbe.query<OrderContacts>(q).pipe(
+                        map(list => list[0])).toPromise()
+                    : null;
+            }
+        } catch (e) {
+            throw new Error(e);
+        }
+
+        return result;
+    }
+
+    async getOrders(token: string, payload?: OrderPayload): Promise<(Order | OrderGroup)[]> {
         const uid = await this.getUserIDBySession(token);
         const authMode = await this.userISAuthorized(uid);
         const session = await this.getSessionByToken(token);
+        if (payload) {
+            return payload.groupMode ?
+                this.getGroupedOrders(payload) :
+                this.getOrdersMany(payload.filters ?? {});
+        }
 
-        return authMode 
-            ? this.getOrdersByUser(uid) 
+        return authMode
+            ? this.getOrdersByUser(uid)
             : this.getOrdersBySession(session);
     }
 
@@ -86,8 +204,8 @@ export class OrderEngine {
                     SET \`status\`=\"deleted\"
                     WHERE \`user_id\` = ${user}`;
 
-        return authMode 
-            ? this.ctx.dbe.query<OkPacket>(q_user).toPromise() 
+        return authMode
+            ? this.ctx.dbe.query<OkPacket>(q_user).toPromise()
             : this.ctx.dbe.query<OkPacket>(q_session).toPromise();
     }
 
@@ -108,55 +226,55 @@ export class OrderEngine {
         return role?.rank > 1;
     }
 
-    async actionToOrder(token: string, action: ODRER_ACTIONS, payload: OrderPayload): Promise<OkPacket> {
+    async actionToOrder(token: string, action: ODRER_ACTIONS, payload: OrderPayload): Promise<OkPacket | (Order | OrderGroup)[]> {
         const {
             id,
             ent_id,
-            ent_key, 
+            ent_key,
         } = payload;
-        
+
         switch (action) {
+            case ODRER_ACTIONS.GET:
+                return this.getOrders(token, payload);
             case ODRER_ACTIONS.ADD:
                 return this.addOrderToUserCart(token, payload);
             case ODRER_ACTIONS.CLEAR:
                 return this.clearOrders(token);
             case ODRER_ACTIONS.CANCEL:
-                return id 
+                return id
                     ? this.changeStatusOrderById(id, STATUSES.canceled)
                     : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.canceled)
 
             case ODRER_ACTIONS.COMPLETE:
-                return id 
+                return id
                     ? this.changeStatusOrderById(id, STATUSES.completed)
                     : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.completed)
 
             case ODRER_ACTIONS.REJECT:
-                return id 
+                return id
                     ? this.changeStatusOrderById(id, STATUSES.rejected)
                     : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.rejected)
 
             case ODRER_ACTIONS.RESOLVE:
-                return id 
+                return id
                     ? this.changeStatusOrderById(id, STATUSES.resolved)
                     : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.resolved)
 
             case ODRER_ACTIONS.REMOVE:
-                return id 
+                return id
                     ? this.changeStatusOrderById(id, STATUSES.deleted)
                     : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.deleted)
 
             case ODRER_ACTIONS.SUBMIT:
-                const session_id = await this.getSessionByToken(token);
-                if(!session_id) throw new Error('session not found');
-                return this.submitGroupOrdersBySessionID(session_id, STATUSES.waiting);
+                return this.submitGroupOrdersBySessionID(token, payload);
 
             case ODRER_ACTIONS.SENDBYORG:
-                return id 
-                    ? this.changeStatusOrderById(id, STATUSES.inprogress)
-                    : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.inprogress);
+                return id
+                    ? this.changeStatusOrderById(id, STATUSES.progressing)
+                    : this.changeStatusOrderByPair(token, ent_key, ent_id, STATUSES.progressing);
             default:
                 return Promise.reject('Action is unknown');
-        }    
+        }
     }
 
     async actionHandler(req: Request, res: Response): Promise<void> {
@@ -182,12 +300,17 @@ export class OrderEngine {
     }
 
     async addOrderToUserCart(token: string, payload: OrderPayload): Promise<OkPacket> {
-        const { 
-            ent_id, 
+        const {
+            ent_id,
             ent_key,
             tab_key,
             floor_key,
             section_key,
+            contragent_entity_key,
+            contragent_entity_id,
+            status,
+            group_token,
+            utility,
         } = payload;
         const user_id = await this.getUserIDBySession(token);
         const session_id = await this.getSessionByToken(token);
@@ -201,7 +324,11 @@ export class OrderEngine {
                         \`status\`,
                         \`tab_key\`,
                         \`floor_key\`,
-                        \`section_key\`
+                        \`section_key\`,
+                        \`contragent_entity_key\`,
+                        \`contragent_entity_id\`,
+                        \`group_token\`,
+                        \`utility\`
                     )
                     VALUES (
                         ${user_id}, 
@@ -209,10 +336,14 @@ export class OrderEngine {
                         ${ent_id}, 
                         "${ent_key}", 
                         ${user_id}, 
-                        "pending",
+                        "${status ?? 'pending'}",
                         "${tab_key}",
                         "${floor_key}",
-                        "${section_key}"
+                        "${section_key}",
+                        "${contragent_entity_key}",
+                        "${contragent_entity_id}",
+                        ${group_token ? `"${group_token}"` : null},
+                        ${utility ? `"${utility}"` : `"other"`}
                     )`;
         return this.ctx.dbe.query<OkPacket>(q).toPromise();
     }
@@ -244,18 +375,50 @@ export class OrderEngine {
                     AND \`slot_entity_id\`= ${ent_id}
                     AND \`user_id\` = ${user}`;
 
-        return authMode 
-            ? this.ctx.dbe.query<OkPacket>(q_user).toPromise() 
+        return authMode
+            ? this.ctx.dbe.query<OkPacket>(q_user).toPromise()
             : this.ctx.dbe.query<OkPacket>(q_session).toPromise();
     }
 
-    submitGroupOrdersBySessionID(session_id: number, newStatus: StatusType): Promise<OkPacket> {
+    async submitGroupOrdersBySessionID(token: string, payload: OrderPayload): Promise<OkPacket> {
         const groupToken: string = uuid.v4();
-        const q = ` UPDATE \`orders\` 
-                    SET \`status\`= \"${newStatus}\",
-                    \`group_token\`= \"${groupToken}\"
-                    WHERE \`session_id\` = ${session_id}`;
-        return this.ctx.dbe.query<OkPacket>(q).toPromise();
+        const userId = await this.getUserIDBySession(token);
+        const sessionId = await this.getSessionByToken(token);
+        const contacts = payload.contacts;
+        if(!sessionId) throw new Error('session not found');
+        if(!contacts) throw new Error('contacts not found');
+        const authMode = await this.userISAuthorized(userId);
+
+        const q = !authMode
+
+            ? `UPDATE \`orders\` 
+            SET \`status\`= \"waiting\",
+            \`group_token\`= \"${groupToken}\"
+            WHERE \`session_id\` = ${sessionId}
+            AND \`status\`= \"pending\"`
+
+            : `UPDATE \`orders\` 
+            SET \`status\`= \"waiting",
+            \`group_token\`= \"${groupToken}\"
+            WHERE \`user_id\` = ${userId}
+            AND \`status\`= \"pending\"`;
+
+        const qc = `INSERT INTO \`order_contacts\` 
+                    SET \`group_token\`= \"${groupToken}\",
+                    \`user_id\`= ${userId},
+                    \`session_id\`= \"${sessionId}\",
+                    \`phone\`= ${contacts.phone ? '"'+contacts.phone+'"' : null},
+                    \`email\`= ${contacts.email ? '"'+contacts.email+'"' : null},
+                    \`skype\`= ${contacts.skype ? '"'+contacts.skype+'"' : null},
+                    \`ch_phone\`= ${contacts.ch_phone ? 1 : 0},
+                    \`ch_email\`= ${contacts.ch_email ? 1 : 0},
+                    \`ch_skype\`= ${contacts.ch_skype ? 1 : 0},
+                    \`ch_viber\`= ${contacts.ch_viber ? 1 : 0},
+                    \`ch_whatsapp\`= ${contacts.ch_whatsapp ? 1 : 0},
+                    \`ch_telegram\`= ${contacts.ch_telegram ? 1 : 0}
+                    `;
+        return this.ctx.dbe.query<OkPacket>(q).pipe(
+            switchMap(_ => this.ctx.dbe.query<OkPacket>(qc))).toPromise();
     }
 
     async getOrdersHandler(req: Request, res: Response): Promise<void> {
@@ -282,11 +445,11 @@ export class OrderEngine {
     }
 
     getRouter(): Router {
-        this.orderRouter.get('/', 
+        this.orderRouter.get('/',
             this.ctx.authorizationEngine.checkAccess.bind(this.ctx.authorizationEngine, null),
             this.getOrdersHandler.bind(this));
 
-        this.orderRouter.post('/', 
+        this.orderRouter.post('/',
             jsonparser,
             this.ctx.authorizationEngine.checkAccess.bind(this.ctx.authorizationEngine, null),
             this.actionHandler.bind(this));

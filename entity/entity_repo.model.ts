@@ -1,5 +1,5 @@
 import {Cached} from "../cache.engine/cache.model";
-import {SectionKeys} from "../search.engine/config";
+import {SectionKeys} from "../search/config";
 import { SlotKeys } from "../slot/slot_repo";
 export interface Permissions {
     create: number,
@@ -10,6 +10,7 @@ export interface Permissions {
 export interface Entity extends Cached {
     db_name: string,
     filters: EntityFilter[],
+    isContragent?: boolean,
     container?: string,
     slot?: SlotKeys,
     fields: EntityField[],
@@ -23,10 +24,12 @@ export interface Entity extends Cached {
     permissions?: Permissions,
 }
 
+export type EntityFilterType = 'number' | 'string' | 'flag' | 'id';
+
 export interface EntityFilter {
     name: string,
     title: string,
-    type: string,
+    type: EntityFilterType,
     readonly?: boolean,
     value?: any,
     db_name?: string,
@@ -43,6 +46,7 @@ export const EntityRepoKeys = [
     'ent_services_placement',
     'ent_doctor',
     'ent_service_containers',
+    'ent_contragents',
     'ent_clinics',
     'ent_districts',
     'ent_phone_containers',
@@ -63,6 +67,9 @@ export const EntityRepoKeys = [
     'ent_slot_category_type',
     'ent_order_status_type',
     'ent_user_status_type',
+    'ent_orders',
+    'ent_lk_permission_type',
+    'ent_lk_permissions',
 ] as const;
 
 export type EntityKeys = typeof EntityRepoKeys[number]

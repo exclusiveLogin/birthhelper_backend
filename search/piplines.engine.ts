@@ -1,9 +1,9 @@
 import { forkJoin, Observable, of } from "rxjs";
 import { Context, sectionConfig, SectionKeys } from "./config";
-import { StoredIds, Summary } from "../search.engine/engine";
-import { catchError, map, switchMap, tap } from "rxjs/operators";
-import { cacheKeyGenerator } from "../search.engine/sections.handler";
-import { Clinic } from "../models/clinic.interface";
+import { StoredIds, Summary } from "../search/engine";
+import { catchError, map, tap } from "rxjs/operators";
+import { cacheKeyGenerator } from "../search/sections.handler";
+import {FilterParams} from "../entity/entity_engine";
 
 type ChapterKeys = typeof sectionConfig[SectionKeys]
 type keys = ChapterKeys[number];
@@ -23,7 +23,7 @@ export class PipelineEngine {
 
         return this.getEntitiesByDBOrCache<Summary>(q, cacheKey).pipe(map(result => result.map((sum) => (
             {
-                ...sum, 
+                ...sum,
                 avg_price: Math.floor(sum.avg_price),
                 min_price: Math.floor(sum.min_price),
                 max_price: Math.floor(sum.max_price)
@@ -31,15 +31,11 @@ export class PipelineEngine {
     }
 
     clinic_active_pipeline(): Observable<StoredIds> {
-        const cacheKey = `clinic.active.default`;
+        const filters: FilterParams = { active: '1' };
 
-        const q = `SELECT * FROM \`clinics\` WHERE \`active\` = 1;`;
-
-        return this.getEntitiesByDBOrCache<Clinic>(q, cacheKey)
-            .pipe(
-                map(clinics => clinics.map(clinic => clinic.id)),
-                // tap(ids => console.log('clinic_active_pipeline: ', ids.toString())),
-            );
+        return this.context.entityEngine.getEntities('ent_clinics', null, filters).pipe(
+            map(clinics => clinics.map(clinic => clinic.id)),
+        );
     }
 
     clinic_facilities_birth_section(facilityId: number): Observable<Summary[]> {

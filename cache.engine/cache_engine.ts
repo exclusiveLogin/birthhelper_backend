@@ -1,5 +1,5 @@
 import {Observable, of, throwError} from "rxjs";
-import {Context} from "../search.engine/config";
+import {Context} from "../search/config";
 
 interface CacheStore {
     [key: string]: any;

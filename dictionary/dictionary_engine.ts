@@ -4,7 +4,7 @@ import {Response, Router} from "express";
 import {Observable, throwError} from "rxjs";
 import {generateFilterQStr} from "../db/sql.helper";
 import {DataBaseService} from "../db/sql";
-import {Context} from "../search.engine/config";
+import {Context} from "../search/config";
 import {tap} from "rxjs/operators";
 import { dictionaries } from "./dictionary_repo";
 export interface DictionaryItem {

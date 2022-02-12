@@ -14,6 +14,7 @@ export interface IDictionaryFilters {
 export const dictionaries: { [key: string]: IDictionary } = {
     dict_trimester_service: {db: 'trimester'},
     dict_clinics: {db: 'clinics'},
+    dict_contragents: {db: 'contragents'},
     dict_placement: {
         db: 'services',
         filters: [
@@ -48,5 +49,5 @@ export const dictionaries: { [key: string]: IDictionary } = {
     dict_order_status_type: {db: 'order_status_type'},
     dict_user_status_type: {db: 'user_status_type'},
     dict_user_role_type: {db: 'role'},
-
+    dict_lk_permission_type: {db: 'lk_permission_type'},
 };

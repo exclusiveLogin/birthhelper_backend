@@ -5,13 +5,13 @@ import multer from 'multer';
 import {CacheEngine} from "../cache.engine/cache_engine";
 import {entityRepo} from './entity_repo';
 import {Entity as EntityConfig, EntityKeys} from './entity_repo.model';
-import {SearchEngine, Summary} from "../search.engine/engine";
-import {Context, SectionKeys} from "../search.engine/config";
+import {SearchEngine, Summary} from "../search/engine";
+import {Context, SectionKeys} from "../search/config";
 import {combineLatest, forkJoin, from, Observable, of, throwError} from "rxjs";
 import {filter, map, mapTo, switchMap, take, tap} from "rxjs/operators";
-import {concatFn, generateQStr, getFiltersByRequest, getKeyByRequest} from "../db/sql.helper";
+import {concatFn, generateQStr, getFiltersByRequest, getIdByRequest, restrictGenerator} from "../db/sql.helper";
 import {EntityCalc, EntityField} from "../entity/entity_repo.model";
-import {cacheKeyGenerator} from "../search.engine/sections.handler";
+import {cacheKeyGenerator} from "../search/sections.handler";
 import { containers } from "../container/container_repo";
 import { Slot, slots } from "../slot/slot_repo";
 import { dictionaries } from "../dictionary/dictionary_repo";
@@ -114,28 +114,44 @@ export class EntityEngine {
         return !!entities[name];
     }
 
-    getSetFromDB(key: string, filters: FilterParams): Observable<number> {
+    getSetFromDB(key: EntityKeys, filters: FilterParams): Observable<number> {
         const db = entities[key].db_name;
         const slotKey = entities[key].slot;
         const slotConfig = slots[slotKey];
+        const isContragent = entities[key].isContragent;
 
         if (!!key && !!db) {
+            if(slotConfig?.restrictsOfSlot){
+                filters = restrictGenerator(slotConfig.restrictsOfSlot, filters);
+            }
+            const likeStr = [
+                ...generateQStr(key, filters, 'string'),
+                ...generateQStr(key, filters, 'flag'),
+                ...(isContragent ?
+                    [
+                    ...generateQStr('ent_contragents', filters, 'string'),
+                    ...generateQStr('ent_contragents', filters, 'flag'),
+                ] : []),
+            ].join(' AND ');
+            const whereStr = [
+                ...generateQStr(key, filters, 'id'),
+                ...(isContragent ? [...generateQStr('ent_contragents', filters, 'id')] : [])
+            ].join(' AND ');
 
-            if(slotConfig?.resrtictorsSlot){
-                const _ = {};
-                slotConfig?.resrtictorsSlot.forEach(slot => _[slot.key] = slot.value);
-                filters = filters ? {...filters, ..._} : {..._};
+            let q = `SELECT COUNT(*) as cnt 
+                     FROM \`${ db }\`
+                     ${(whereStr) ? 'WHERE ' + whereStr : ''} 
+                     ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} `;
+
+            if (isContragent) {
+                q = `SELECT COUNT(*) as cnt 
+                     FROM \`${ db }\` JOIN \`contragents\` 
+                     ON \`${ db }\`.\`contragent\` = \`contragents\`.\`id\` 
+                     ${whereStr ? 'WHERE ' + whereStr : ''} 
+                     ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''}`;
             }
 
-            const likeStr = [...generateQStr(key, filters, 'string'), ...generateQStr(key, filters, 'flag')].join(' AND ');
-            const whereStr = [...generateQStr(key, filters, 'id')].join(' AND ');
-
-            const q = `SELECT COUNT(*) as cnt 
-                        FROM \`${ db }\`
-                        ${(whereStr) ? 'WHERE ' + whereStr : ''} 
-                        ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} `;
-
-            // console.log('getSetFromDB', q);
+            console.log('getSetFromDB', q);
             return this.context.dbe.queryList<Entity>(q).pipe(
                 // tap(data => console.log('getSetFromDB result:', data)),
                 map(result => result?.[0]?.cnt ?? 0));
@@ -146,12 +162,12 @@ export class EntityEngine {
     }
 
     entitySetHandler(req, res): void {
-        const key = getKeyByRequest(req);
+        const key = getIdByRequest(req) as EntityKeys;
         const filters = getFiltersByRequest(req);
         if (!!key) {
             const hash = req.query.hash;
             const searchKey: SectionKeys = entities[req.params.id].searchKey;
-            const con = entities[req.params.id].container || null;
+            const container = entities[req.params.id].container || null;
             const slot = entities[req.params.id].slot || null;
 
             const ids$ = this.searchEngine.getEntitiesIDByHash(searchKey, hash)
@@ -163,7 +179,7 @@ export class EntityEngine {
                     res.send({
                         total: result,
                         fields: entities[req.params.id].fields || [],
-                        container: con ? containers[con] : null,
+                        container: container ? containers[container] : null,
                         slot: slot ? slots[slot] : null,
                         links: entities[req.params.id].links || [],
                     }),
@@ -293,15 +309,29 @@ export class EntityEngine {
         }
     }
 
-    getEntitiesByIds(ids: number[], key: string, skip = 0): Observable<Entity[]> {
-        const db = entities[key].db_name;
+    getEntitiesByIds(ids: number[], key: EntityKeys, skip = 0): Observable<Entity[]> {
+        const config = entities[key];
+        const isContragent = config.isContragent;
+        const db = config.db_name;
         const cacheKey = cacheKeyGenerator(key, 'hash', ids);
 
         ids = ids.splice(skip, 20);
         const whereStr = ids.length ? `${ids.map(id => 'id = ' + id).join(' OR ')}` : null;
 
         // default query
-        let q = `SELECT * FROM \`${ db }\` ${whereStr ? 'WHERE ' + whereStr : 'WHERE 0'}`;
+        let q = `
+            SELECT * 
+            FROM \`${ db }\` 
+            ${whereStr ? 'WHERE ' + whereStr : ''}`;
+
+        if (isContragent) {
+            const whereStr = ids.length ? `${ids.map(id => `\`${ db }\`.\`id\` = ${id}`).join(' OR ')}` : null;
+            q = `
+            SELECT *, \`${ db }\`.\`id\` as clinic_id 
+            FROM \`${ db }\` JOIN \`contragents\` 
+            ON \`${ db }\`.\`contragent\` = \`contragents\`.\`id\` 
+            ${whereStr ? 'AND ' + whereStr : ''}`;
+        }
 
         // console.log('getEntityByIds q: ', q);
         return of(cacheKey)
@@ -312,27 +342,48 @@ export class EntityEngine {
     }
 
     getEntityPortion(key: EntityKeys, filters?: FilterParams, skip: number = 0, limit: number = 20): Observable<Entity[]> {
-        const db = entities[key].db_name;
-        const slotKey = entities[key].slot;
+        const config = entities[key];
+        const isContragent = config.isContragent;
+        const db = config.db_name;
+        const slotKey = config.slot;
         const slotConfig = slots[slotKey];
 
-        if(slotConfig?.resrtictorsSlot){
-            const _ = {};
-            slotConfig?.resrtictorsSlot.forEach(slot => _[slot.key] = slot.value);
-            filters = filters ? {...filters, ..._} : {..._};
+        if(slotConfig?.restrictsOfSlot){
+            filters = restrictGenerator(slotConfig.restrictsOfSlot, filters);
         }
 
-        let likeStr = [...generateQStr(key, filters, 'string'), ...generateQStr(key, filters, 'flag')].join(' AND ');
-        let whereStr = [...generateQStr(key, filters, 'id')].join(' AND ');
-        let limstr = `${!!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip : ' LIMIT ' + limit}`;
+        const likeStr = [
+            ...generateQStr(key, filters, 'string'),
+            ...generateQStr(key, filters, 'flag'),
+            ...(isContragent ?
+                [
+                    ...generateQStr('ent_contragents', filters, 'string'),
+                    ...generateQStr('ent_contragents', filters, 'flag'),
+                ] : []),
+        ].join(' AND ');
+        const whereStr = [
+            ...generateQStr(key, filters, 'id'),
+            ...(isContragent ? [...generateQStr('ent_contragents', filters, 'id')] : [])
+        ].join(' AND ');
+        const limStr = `${!!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip : ' LIMIT ' + limit}`;
 
         // default query
-        const q = `SELECT 
-                * 
+        let q = `
+                SELECT * 
                 FROM \`${ db }\` 
                 ${whereStr ? 'WHERE ' + whereStr : ''} 
                 ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} 
-                ${limstr}`;
+                ${limStr}`;
+
+        if (isContragent) {
+            q = `
+                SELECT *, \`${ db }\`.\`id\` as clinic_id 
+                FROM \`${ db }\` JOIN \`contragents\` 
+                ON \`${ db }\`.\`contragent\` = \`contragents\`.\`id\` 
+                ${whereStr ? 'WHERE ' + whereStr : ''} 
+                ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} 
+                ${limStr}`;
+        }
 
         // console.log('getEntityPortion: ', q);
 
@@ -351,10 +402,11 @@ export class EntityEngine {
         const generateSummary = searchKey && config?.generateSummariesEnabled;
         const skip = Number(filters?.skip ?? '0');
         const limit = Number(filters?.limit ?? '20');
-        const fields = config?.fields;
+        const fields = JSON.parse(JSON.stringify(config?.fields));
         const calc = config?.calculated;
         const slotKey = config?.slot;
         const slotConfig = slots[slotKey];
+        const masterContragent = key === 'ent_contragents';
 
         // если есть EID это превалирует над всеми остальными источниками. Hash будет проигнорирован
         let provider: Observable<Entity[]> = eid && this.getEntitiesByIds([eid], key, skip);
@@ -371,19 +423,26 @@ export class EntityEngine {
 
         provider = provider ?? this.getEntityPortion(key, filters, skip, limit);
 
+        if (config.isContragent) {
+            fields.push(...entities['ent_contragents'].fields);
+        }
         // ОБОГОЩАЕМ сущности
         provider = this.metanizer(provider, fields, calc);
 
-        if(generateSummary) provider = this.summariezer(provider, searchKey, hash);
+        if(masterContragent) provider = this.contragentConcentrator(provider);
+
+        if(generateSummary) provider = this.summarizer(provider, searchKey, hash);
 
         if(slotConfig) provider = this.slotEnreacher(provider, slotConfig);
 
-        return provider.pipe(tap(list => list.forEach && list.forEach(ent => Object.keys(ent).forEach(fieldKey => ent[fieldKey] = ent[fieldKey] === 'null' ? null : ent[fieldKey]))));
+        return provider.pipe(tap(list => list.forEach &&
+            list.forEach(ent => Object.keys(ent)
+                .forEach(fieldKey => ent[fieldKey] = ent[fieldKey] === 'null' ? null : ent[fieldKey]))));
     }
 
     queryEntityHandler(req, res) {
         // console.log('ent req search: ', req.query, ' url params: ', req.params, this);
-        const entKey = getKeyByRequest(req) as EntityKeys;
+        const entKey = getIdByRequest(req) as EntityKeys;
         const filters = getFiltersByRequest(req);
 
         // console.log('queryEntityHandler filters:', filters);
@@ -418,7 +477,35 @@ export class EntityEngine {
         }
     }
 
-    summariezer(pipeline: Observable<Entity[]>, sectionKey: SectionKeys, hash: string): Observable<Entity[]> {
+    contragentConcentrator(pipeline: Observable<Entity[]>): Observable<Entity[]> {
+        return pipeline.pipe(
+            switchMap(contragents => contragents.length ?
+                forkJoin(contragents.map(ctg => {
+                    const dbs: string[] = [];
+                    // sections
+                    const hasClinic = !!ctg?.section_clinic;
+
+                    // gen sql
+                    if (hasClinic) dbs.push(entities.ent_clinics.db_name);
+
+                    if (dbs.length) {
+                        const q = `SELECT * FROM ${dbs.join(' , ')} WHERE ${dbs.map(db => `${db}.contragent = ${ctg.id}` ).join(' AND ')}`;
+                        return this.context.dbe.query(q).pipe(
+                            map(_ => _?.[0] ?? {}),
+                            tap(data => Object.keys(data).forEach(k => ctg[k] = ctg[k] ?? data[k])),
+                            map(_ => ctg),
+                        )
+                    } else {
+                        return of(ctg);
+                    }
+                })).pipe(
+                    map(_ => contragents),
+                ) :
+                of(contragents)),
+        );
+    }
+
+    summarizer(pipeline: Observable<Entity[]>, sectionKey: SectionKeys, hash: string): Observable<Entity[]> {
         return pipeline.pipe(
             switchMap((entities) => combineLatest([of(entities), this.context.searchEngine.getSummary(sectionKey, hash)])),
             map(([entities, summaries]) => entities.map(ent => ({...ent, summary: summaries.find(_ => _.id === ent.id) ?? null}))),
@@ -432,6 +519,7 @@ export class EntityEngine {
         const entityKey = config.entity_key;
         const contragentEntity = config.contragent_entity_key;
         const containerName = config.container_name;
+        const section = config.section;
 
 
         return pipeline.pipe(
@@ -477,6 +565,7 @@ export class EntityEngine {
                                 _contragent_entity_key: contragentEntity,
                                 _contragent_id_key: contragentIDKey,
                                 _entity_id_key: entityIDKey,
+                                _section: section,
                                 _entity: mode === "entity"
                                     ? entities.filter(_ => !!_).find($ => $.id.toString() === ent[entityIDKey]?.toString())
                                     : containers.filter(_ => !!_).find($ => $.id?.toString() === ent[entityIDKey]?.toString()),

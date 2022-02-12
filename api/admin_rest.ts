@@ -1,6 +1,6 @@
 import {Router} from 'express';
 import * as express from "express";
-import {Context} from "../search.engine/config";
+import {Context} from "../search/config";
 
 let admin = express.Router();
 admin.get('/', adminRootHandler);

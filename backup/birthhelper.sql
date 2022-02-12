@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 185.178.46.248
--- Время создания: Дек 31 2021 г., 09:40
+-- Время создания: Янв 11 2022 г., 15:33
 -- Версия сервера: 5.7.36-0ubuntu0.18.04.1
--- Версия PHP: 7.4.26
+-- Версия PHP: 7.4.27
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -626,19 +626,25 @@ INSERT INTO `images` (`id`, `file_id`, `title`, `description`, `datetime_update`
 -- --------------------------------------------------------
 
 --
--- Структура таблицы `lk`
+-- Структура таблицы `lk_permissions`
 --
 
-CREATE TABLE `lk` (
+CREATE TABLE `lk_permissions` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `user_id` bigint(20) UNSIGNED NOT NULL,
-  `hash` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
   `contragent_entity_key` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `contragent_entity_id` bigint(20) NOT NULL,
   `permission_id` bigint(20) UNSIGNED NOT NULL,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Дамп данных таблицы `lk_permissions`
+--
+
+INSERT INTO `lk_permissions` (`id`, `user_id`, `contragent_entity_key`, `contragent_entity_id`, `permission_id`, `datetime_create`, `datetime_update`) VALUES
+(1, 1, 'ent_clinics', 1, 1, '2022-01-09 12:50:05', '2022-01-09 12:50:05');
 
 -- --------------------------------------------------------
 
@@ -648,11 +654,19 @@ CREATE TABLE `lk` (
 
 CREATE TABLE `lk_permission_type` (
   `id` bigint(20) UNSIGNED NOT NULL,
+  `slug` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `title` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `description` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
   `icon` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `bg_color` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Дамп данных таблицы `lk_permission_type`
+--
+
+INSERT INTO `lk_permission_type` (`id`, `slug`, `title`, `description`, `icon`, `bg_color`) VALUES
+(1, 'orders', 'Стол заказов', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -666,6 +680,8 @@ CREATE TABLE `orders` (
   `session_id` bigint(20) UNSIGNED NOT NULL,
   `slot_entity_key` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `slot_entity_id` bigint(20) UNSIGNED NOT NULL,
+  `contragent_entity_key` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `contragent_entity_id` bigint(20) UNSIGNED DEFAULT NULL,
   `section_key` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `tab_key` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `floor_key` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -680,45 +696,11 @@ CREATE TABLE `orders` (
 -- Дамп данных таблицы `orders`
 --
 
-INSERT INTO `orders` (`id`, `user_id`, `session_id`, `slot_entity_key`, `slot_entity_id`, `section_key`, `tab_key`, `floor_key`, `refferer`, `status`, `group_token`, `datetime_update`, `datetime_create`) VALUES
-(1, 3, 273, 'ent_doctor_slots', 140, 'clinic', 'doctors', 'doctors', 3, 'deleted', NULL, '2021-12-19 15:24:43', '2021-12-19 11:56:08'),
-(2, 3, 273, 'ent_placement_slots', 8, 'clinic', 'placement', 'placement', 3, 'deleted', NULL, '2021-12-19 15:24:43', '2021-12-19 11:56:10'),
-(3, 3, 273, 'ent_birth_type_slots', 61, 'clinic', 'birthtype', 'other', 3, 'deleted', NULL, '2021-12-19 15:24:43', '2021-12-19 11:56:12'),
-(4, 3, 273, 'ent_doctor_slots', 144, 'clinic', 'doctors', 'doctors', 3, 'deleted', NULL, '2021-12-19 15:24:43', '2021-12-19 11:56:48'),
-(5, 3, 273, 'ent_birth_type_slots', 67, 'clinic', 'birthtype', 'other', 3, 'deleted', NULL, '2021-12-19 15:24:43', '2021-12-19 11:56:50'),
-(6, 3, 273, 'ent_doctor_slots', 140, 'clinic', 'doctors', 'doctors1_1', 3, 'deleted', NULL, '2021-12-19 16:00:59', '2021-12-19 16:00:49'),
-(7, 3, 273, 'ent_doctor_slots', 141, 'clinic', 'doctors', 'doctors1_1', 3, 'pending', NULL, '2021-12-19 16:22:20', '2021-12-19 16:22:20'),
-(8, 3, 273, 'ent_placement_slots', 8, 'clinic', 'placement', 'placement', 3, 'pending', NULL, '2021-12-19 16:22:22', '2021-12-19 16:22:22'),
-(9, 3, 273, 'ent_birth_type_slots', 61, 'clinic', 'birthtype', 'birthtype', 3, 'pending', NULL, '2021-12-19 16:22:24', '2021-12-19 16:22:24'),
-(10, 3, 273, 'ent_birth_type_slots', 433, 'clinic', 'other', 'other', 3, 'pending', NULL, '2021-12-19 16:22:26', '2021-12-19 16:22:26'),
-(11, 3, 273, 'ent_birth_type_slots', 434, 'clinic', 'other', 'other', 3, 'pending', NULL, '2021-12-19 16:22:26', '2021-12-19 16:22:26'),
-(12, 3, 273, 'ent_birth_type_slots', 435, 'clinic', 'other', 'other', 3, 'pending', NULL, '2021-12-19 16:22:27', '2021-12-19 16:22:27'),
-(13, 3, 273, 'ent_birth_type_slots', 436, 'clinic', 'other', 'other', 3, 'pending', NULL, '2021-12-19 16:22:28', '2021-12-19 16:22:28'),
-(14, 19, 275, 'ent_doctor_slots', 140, 'clinic', 'doctors', 'doctors1_1', 19, 'pending', NULL, '2021-12-21 15:54:38', '2021-12-21 15:54:38'),
-(15, 19, 275, 'ent_placement_slots', 8, 'clinic', 'placement', 'placement', 19, 'pending', NULL, '2021-12-21 15:54:46', '2021-12-21 15:54:46'),
-(16, 1, 286, 'ent_doctor_slots', 141, 'clinic', 'doctors', 'doctors1_1', 1, 'deleted', NULL, '2021-12-22 13:21:51', '2021-12-21 18:28:58'),
-(17, 1, 286, 'ent_placement_slots', 8, 'clinic', 'placement', 'placement', 1, 'deleted', NULL, '2021-12-22 13:22:09', '2021-12-21 18:29:00'),
-(18, 1, 286, 'ent_birth_type_slots', 61, 'clinic', 'birthtype', 'birthtype', 1, 'deleted', NULL, '2021-12-22 13:22:13', '2021-12-21 18:29:02'),
-(19, 1, 286, 'ent_birth_type_slots', 436, 'clinic', 'other', 'other', 1, 'pending', NULL, '2021-12-21 18:29:04', '2021-12-21 18:29:04'),
-(20, 1, 287, 'ent_doctor_slots', 141, 'clinic', 'doctors', 'doctors1_1', 1, 'deleted', NULL, '2021-12-22 13:21:58', '2021-12-22 13:21:56'),
-(21, 1, 287, 'ent_doctor_slots', 142, 'clinic', 'doctors', 'doctors1_1', 1, 'deleted', NULL, '2021-12-22 13:22:00', '2021-12-22 13:21:59'),
-(22, 1, 287, 'ent_doctor_slots', 143, 'clinic', 'doctors', 'doctors1_1', 1, 'deleted', NULL, '2021-12-22 13:22:01', '2021-12-22 13:22:01'),
-(23, 1, 287, 'ent_doctor_slots', 142, 'clinic', 'doctors', 'doctors1_1', 1, 'deleted', NULL, '2021-12-22 13:22:03', '2021-12-22 13:22:02'),
-(24, 1, 287, 'ent_doctor_slots', 141, 'clinic', 'doctors', 'doctors1_1', 1, 'deleted', NULL, '2021-12-22 13:22:06', '2021-12-22 13:22:04'),
-(25, 1, 287, 'ent_doctor_slots', 140, 'clinic', 'doctors', 'doctors1_1', 1, 'deleted', NULL, '2021-12-22 17:22:53', '2021-12-22 13:22:07'),
-(26, 1, 287, 'ent_placement_slots', 8, 'clinic', 'placement', 'placement', 1, 'deleted', NULL, '2021-12-22 17:23:20', '2021-12-22 13:22:10'),
-(27, 1, 287, 'ent_birth_type_slots', 63, 'clinic', 'birthtype', 'birthtype', 1, 'deleted', NULL, '2021-12-22 13:22:13', '2021-12-22 13:22:11'),
-(28, 1, 287, 'ent_birth_type_slots', 63, 'clinic', 'birthtype', 'birthtype', 1, 'deleted', NULL, '2021-12-22 13:22:16', '2021-12-22 13:22:14'),
-(29, 1, 287, 'ent_birth_type_slots', 63, 'clinic', 'birthtype', 'birthtype', 1, 'deleted', NULL, '2021-12-24 18:33:12', '2021-12-22 13:22:17'),
-(30, 1, 286, 'ent_doctor_slots', 140, 'clinic', 'doctors', 'doctors1_1', 1, 'deleted', NULL, '2021-12-22 17:22:56', '2021-12-22 17:22:55'),
-(31, 1, 286, 'ent_doctor_slots', 140, 'clinic', 'doctors', 'doctors1_1', 1, 'deleted', NULL, '2021-12-22 17:26:41', '2021-12-22 17:23:22'),
-(32, 1, 286, 'ent_placement_slots', 8, 'clinic', 'placement', 'placement', 1, 'deleted', NULL, '2021-12-22 17:23:25', '2021-12-22 17:23:25'),
-(33, 1, 286, 'ent_placement_slots', 8, 'clinic', 'placement', 'placement', 1, 'pending', NULL, '2021-12-22 17:26:38', '2021-12-22 17:26:38'),
-(34, 1, 286, 'ent_doctor_slots', 141, 'clinic', 'doctors', 'doctors1_1', 1, 'deleted', NULL, '2021-12-22 17:26:42', '2021-12-22 17:26:42'),
-(35, 1, 286, 'ent_doctor_slots', 140, 'clinic', 'doctors', 'doctors1_1', 1, 'deleted', NULL, '2021-12-22 17:35:45', '2021-12-22 17:35:42'),
-(36, 1, 286, 'ent_doctor_slots', 348, 'clinic', 'doctors', 'doctors1_1', 1, 'deleted', NULL, '2021-12-22 17:35:50', '2021-12-22 17:35:46'),
-(37, 1, 286, 'ent_doctor_slots', 264, 'clinic', 'doctors', 'doctors1_2', 1, 'deleted', NULL, '2021-12-22 17:35:54', '2021-12-22 17:35:51'),
-(38, 1, 286, 'ent_birth_type_slots', 61, 'clinic', 'birthtype', 'birthtype', 1, 'pending', NULL, '2021-12-24 18:33:13', '2021-12-24 18:33:13');
+INSERT INTO `orders` (`id`, `user_id`, `session_id`, `slot_entity_key`, `slot_entity_id`, `contragent_entity_key`, `contragent_entity_id`, `section_key`, `tab_key`, `floor_key`, `refferer`, `status`, `group_token`, `datetime_update`, `datetime_create`) VALUES
+(1, 1, 337, 'ent_doctor_slots', 143, 'ent_clinics', 1, 'clinic', 'doctors', 'doctors1_1', 1, 'deleted', NULL, '2022-01-07 13:08:02', '2022-01-07 13:05:34'),
+(2, 1, 337, 'ent_doctor_slots', 142, 'ent_clinics', 1, 'clinic', 'doctors', 'doctors1_1', 1, 'pending', NULL, '2022-01-07 13:35:27', '2022-01-07 13:35:27'),
+(3, 1, 337, 'ent_birth_type_slots', 63, 'ent_clinics', 1, 'clinic', 'birthtype', 'birthtype', 1, 'deleted', NULL, '2022-01-07 13:35:34', '2022-01-07 13:35:32'),
+(4, 1, 337, 'ent_birth_type_slots', 63, 'ent_clinics', 1, 'clinic', 'birthtype', 'birthtype', 1, 'pending', NULL, '2022-01-07 13:35:36', '2022-01-07 13:35:36');
 
 -- --------------------------------------------------------
 
@@ -1519,7 +1501,30 @@ INSERT INTO `sessions` (`id`, `token`, `user_id`, `datetime_create`, `datetime_u
 (326, 'af5fed43-88a4-41dd-a2c0-b204dbe1c277', 3, '2021-12-29 19:28:00', '2021-12-29 19:28:00'),
 (327, 'f8bbdfef-9c9b-472e-a4d2-40060f9502ed', 3, '2021-12-30 00:19:14', '2021-12-30 00:19:14'),
 (328, '12d88798-e583-41ce-88c1-35ed99263633', 3, '2021-12-30 21:49:11', '2021-12-30 21:49:11'),
-(329, '880ce33b-a274-40de-87ac-48b2c8736ffb', 3, '2021-12-30 22:27:24', '2021-12-30 22:27:24');
+(329, '880ce33b-a274-40de-87ac-48b2c8736ffb', 3, '2021-12-30 22:27:24', '2021-12-30 22:27:24'),
+(330, '3878c235-6941-4a46-8923-82d4bab18f0e', 3, '2021-12-31 13:51:37', '2021-12-31 13:51:37'),
+(331, 'd64288e7-9c1f-4ec6-b72d-e6fc71724a2f', 3, '2022-01-01 11:15:58', '2022-01-01 11:15:58'),
+(332, '63ebf039-07e7-40d1-84fc-ee3ae9e2af5e', 3, '2022-01-01 20:22:48', '2022-01-01 20:22:48'),
+(333, '77dcee98-eecf-4752-b19b-bd2253aaa956', 3, '2022-01-01 21:21:17', '2022-01-01 21:21:17'),
+(334, '420496df-1132-4d45-8b25-d58e9c3a2788', 3, '2022-01-02 13:26:22', '2022-01-02 13:26:22'),
+(335, '2d7fb43c-3f60-4add-add9-9b3524c29ba6', 3, '2022-01-02 22:37:00', '2022-01-02 22:37:00'),
+(336, 'fbe9b893-95db-491b-87f4-e0ecbbebddf2', 3, '2022-01-03 08:21:07', '2022-01-03 08:21:07'),
+(337, '5fe42671-cabe-47df-8a61-5516b6357f7c', 1, '2022-01-03 10:09:44', '2022-01-03 10:10:12'),
+(338, 'ac03891e-dd88-4aa7-8d98-bfac985fe5fa', 3, '2022-01-03 17:50:00', '2022-01-03 17:50:00'),
+(339, '5ffc2627-23cd-4a0d-8979-695b7fa26c03', 3, '2022-01-04 15:16:48', '2022-01-04 15:16:48'),
+(340, '8c4dbeff-8a8e-483f-87e0-8c1b0e5b0c3d', 3, '2022-01-04 21:35:54', '2022-01-04 21:35:54'),
+(341, '1aa8608e-5292-4b04-bb3b-60adc7673876', 3, '2022-01-06 03:27:37', '2022-01-06 03:27:37'),
+(342, '52a1764f-3362-4fd4-9ffa-75d99d22179f', 3, '2022-01-06 12:26:28', '2022-01-06 12:26:28'),
+(343, '73a4db9c-1b2e-44ff-8f2a-aeab2700a81b', 3, '2022-01-07 00:17:23', '2022-01-07 00:17:23'),
+(344, '95b430ec-1af9-40af-acdd-476cb5d7454c', 3, '2022-01-07 14:30:42', '2022-01-07 14:30:42'),
+(345, 'dc5e52ef-80b4-4aa0-afc2-f64ac9154e76', 3, '2022-01-07 17:41:19', '2022-01-07 17:41:19'),
+(346, 'c6d6bf23-c074-4793-aae2-45eb0adcd429', 3, '2022-01-07 17:46:53', '2022-01-07 17:46:53'),
+(347, '537d221b-edd8-4a23-a415-496e3f2d2ebe', 3, '2022-01-08 17:04:41', '2022-01-08 17:04:41'),
+(348, 'fc9178b4-f931-4c2f-98ad-690e44d6ca25', 3, '2022-01-08 18:10:23', '2022-01-08 18:10:23'),
+(349, '5d26dceb-1710-495f-a289-dc37234116fc', 3, '2022-01-09 03:04:08', '2022-01-09 03:04:08'),
+(350, 'bb130d99-dc9f-4185-8fcb-b639550cc65b', 3, '2022-01-09 04:52:09', '2022-01-09 04:52:09'),
+(351, '61db2ca7-cd55-4202-bf4b-ecd427e31dd1', 3, '2022-01-09 20:32:49', '2022-01-09 20:32:49'),
+(352, '3f4441a0-7e63-450a-816e-8dee5c629152', 3, '2022-01-10 16:35:29', '2022-01-10 16:35:29');
 
 -- --------------------------------------------------------
 
@@ -1758,9 +1763,9 @@ ALTER TABLE `images`
   ADD KEY `file_id` (`file_id`);
 
 --
--- Индексы таблицы `lk`
+-- Индексы таблицы `lk_permissions`
 --
-ALTER TABLE `lk`
+ALTER TABLE `lk_permissions`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id` (`id`),
   ADD KEY `user_id` (`user_id`),
@@ -1992,22 +1997,22 @@ ALTER TABLE `images`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
--- AUTO_INCREMENT для таблицы `lk`
+-- AUTO_INCREMENT для таблицы `lk_permissions`
 --
-ALTER TABLE `lk`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+ALTER TABLE `lk_permissions`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT для таблицы `lk_permission_type`
 --
 ALTER TABLE `lk_permission_type`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT для таблицы `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT для таблицы `phones`
@@ -2061,7 +2066,7 @@ ALTER TABLE `service_slot`
 -- AUTO_INCREMENT для таблицы `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=330;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=353;
 
 --
 -- AUTO_INCREMENT для таблицы `slot_category_type`
@@ -2125,11 +2130,11 @@ ALTER TABLE `images`
   ADD CONSTRAINT `images_ibfk_1` FOREIGN KEY (`file_id`) REFERENCES `files` (`id`);
 
 --
--- Ограничения внешнего ключа таблицы `lk`
+-- Ограничения внешнего ключа таблицы `lk_permissions`
 --
-ALTER TABLE `lk`
-  ADD CONSTRAINT `lk_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `lk_ibfk_2` FOREIGN KEY (`permission_id`) REFERENCES `lk_permission_type` (`id`);
+ALTER TABLE `lk_permissions`
+  ADD CONSTRAINT `lk_permissions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `lk_permissions_ibfk_2` FOREIGN KEY (`permission_id`) REFERENCES `lk_permission_type` (`id`);
 
 --
 -- Ограничения внешнего ключа таблицы `orders`
