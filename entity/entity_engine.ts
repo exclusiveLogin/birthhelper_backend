@@ -544,7 +544,7 @@ export class EntityEngine {
                     const entityID = ent?.[entityIDKey];
 
                     return mode === "container" && containerName && entityID ?
-                        from(this.context.containerEngine.getContainer(containers[containerName], entityID)) : null;
+                        from(this.context.containerEngine.getContainers(containers[containerName], entityID)).pipe(map(list => list[0])) : null;
                 })
 
                 // console.log('containersProviders', containersProviders);

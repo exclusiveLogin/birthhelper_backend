@@ -24,9 +24,9 @@ export const ContainerRepoKeys = [
 ] as const;
 
 export type ContainerKeys =  typeof ContainerRepoKeys[number];
-export type SlotRepo = {[key in ContainerKeys]: Container};
+export type ContainerRepo = {[key in ContainerKeys]: Container};
 
-export const containers: SlotRepo = {
+export const containers: ContainerRepo = {
     container_phones: {
         name: 'container_phones',
         title: 'Контейнеры телефонов в системе',

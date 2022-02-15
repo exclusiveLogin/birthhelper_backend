@@ -40,40 +40,23 @@ export class ContainerEngine {
     }
 
     // функция возвращающая объекты контейнера по имени
-    async getContainer(containerParams: Container, cid: number): Promise<ContainerRecordSrc> {
-        const _ = await this.getContainerRepo(containerParams, cid);
-        const repo = _?.[0];
+    async getContainers(containerParams: Container, cid: number): Promise<ContainerRecordSrc[]> {
+        const repo = await this.getContainerRepo(containerParams, cid);
 
-        if (!repo.id) return;
+        for (const container of repo) {
+            const qi = `SELECT \`${containerParams.db_links}\`.*, 
+                        \`${containerParams.db_entity}\`.\`id\` as \`eid\`, 
+                        ${containerParams.entity_fields.map(f => `\`${containerParams.db_entity}\`.\`${f}\``).join(', ')} 
+                        FROM \`${containerParams.db_links}\`
+                        LEFT JOIN \`${containerParams.db_entity}\` 
+                        ON \`${containerParams.db_links}\`.\`${containerParams.container_id_key}\` = \`${containerParams.db_entity}\`.\`id\`
+                        WHERE \`${containerParams.db_links}\`.\`container_id\`=${container.id}`;
 
-        const id = repo.id;
-        const qi = `SELECT \`${containerParams.db_links}\`.*, 
-                            \`${containerParams.db_entity}\`.\`id\` as \`eid\`, 
-                            ${containerParams.entity_fields.map(f => `\`${containerParams.db_entity}\`.\`${f}\``).join(', ')} 
-                            FROM \`${containerParams.db_links}\`
-                            LEFT JOIN \`${containerParams.db_entity}\` 
-                            ON \`${containerParams.db_links}\`.\`${containerParams.container_id_key}\` = \`${containerParams.db_entity}\`.\`id\`
-                            WHERE \`${containerParams.db_links}\`.\`container_id\`=${id}`;
-
-        // console.log('qi: ', qi);
-
-        const containerRecordList = await this.context.dbe.queryList<ContainerRecordItem>(qi).toPromise() ?? [];
-
-        containerRecordList.forEach(record => {
-            record.entity = {} as Entity;
-
-            containerParams.entity_fields.forEach(field => {
-                record.entity[field] = record[field];
-                record.entity['id'] = record['eid'];
-                delete record[field];
-            });
-        });
-
-        repo.items = containerRecordList;
-        // console.log('getContainer entity: ', repo);
+            const containerRecordList = await this.context.dbe.queryList<ContainerRecordItem>(qi).toPromise() ?? [];
+            container.items = containerRecordList;
+        }
 
         return repo;
-
     }
 
     async simpleSaveContainer(containerParams, id_container, ids) {
@@ -101,7 +84,7 @@ export class ContainerEngine {
             try {
                 await this.removeContainerItems(containerParams.name, id_container);
                 await Promise.all(promisesList());
-                this.garbageHandler([name, containerParams.db_entity, containerParams.entity_key, ...createSections], createSections);
+                this.garbageHandler([containerParams.name, containerParams.db_entity, containerParams.entity_key, ...createSections], createSections);
                 return Promise.resolve('все записи по контейнеру сохранены в БД');
             } catch (e) {
                 return Promise.reject(e);
@@ -206,7 +189,19 @@ export class ContainerEngine {
             let cid = req.params.cid;
 
             try {
-                res.send(await this.getContainer(containerParams, cid))
+                const containers = await this.getContainers(containerParams, cid);
+                if (cid) {
+                    const con = containers[0];
+                    if (con) {
+                        res.send(containers[0])
+                    } else {
+                        res.status(500);
+                        res.send(JSON.stringify({error: 'Контейнер с таким ID не найден'}));
+                    }
+                } else {
+                    res.send(containers)
+                }
+
             } catch (error) {
                 res.status(500);
                 res.send(JSON.stringify({error}));

@@ -36,7 +36,7 @@ export const dictionaries: { [key: string]: IDictionary } = {
             'position_lon'
         ]
     },
-    dict_phone_container: {db: 'phone_container'},
+    dict_phone_container: {db: 'phones_containers_repo'},
     dict_entity_type: {db: 'entity_type'},
     dict_birthtype: {db: 'birthtype'},
     dict_doctor_position_type: {db: 'doctor_position_type'},

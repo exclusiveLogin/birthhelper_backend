@@ -235,6 +235,14 @@ export const entityRepo: EntityRepo = {
             { key: 'active', title: 'Активный', type: 'flag', showOnTable: false  },
             { key: 'licence', type: 'string', title: 'Лицензия', required: false },
             {
+                key: 'phone_container_id',
+                type: 'id',
+                dctKey: 'dict_phone_container',
+                title: 'Телефоны контрагента',
+                required: true,
+                readonly: true,
+            },
+            {
                 key: 'address_id',
                 title: 'Адрес',
                 dctKey: 'dict_address_id',
@@ -245,7 +253,20 @@ export const entityRepo: EntityRepo = {
                 showOnTable: true,
                 loadEntity: true,
             },
-        ]
+        ],
+        links: [
+            {
+                type: 'repo',
+                title: 'Таблица телефонов',
+                entKey: 'ent_phone_containers',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'phone_container_id',
+                // conditionField: 'entity_type',
+                // conditionKey: 'name',
+                // conditionValue: 'entity'
+            },
+        ],
     },
 
     ent_clinics: {
@@ -353,7 +374,7 @@ export const entityRepo: EntityRepo = {
         filters: [],
         container: 'container_phones',
         fields: [
-            { key: 'id', title: 'ID контейнера', type: 'id', readonly: true, showOnTable: false },
+            { key: 'id', title: 'ID контейнера', type: 'id', readonly: true, showOnTable: true },
             { key: 'title', type: 'string', title: 'Название', required: true, showOnTable: true },
             { key: 'description', title: 'Описание', type: 'text', required: true, showOnTable: true },
             { key: 'comment', title: 'Комментарий', type: 'text', showOnTable: true },
