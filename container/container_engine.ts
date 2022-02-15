@@ -53,6 +53,9 @@ export class ContainerEngine {
                         WHERE \`${containerParams.db_links}\`.\`container_id\`=${container.id}`;
 
             const containerRecordList = await this.context.dbe.queryList<ContainerRecordItem>(qi).toPromise() ?? [];
+            containerRecordList.forEach(record => {
+                record['id'] = record['eid'];
+            });
             container.items = containerRecordList;
         }
 
