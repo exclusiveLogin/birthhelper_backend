@@ -50,4 +50,5 @@ export const dictionaries: { [key: string]: IDictionary } = {
     dict_user_status_type: {db: 'user_status_type'},
     dict_user_role_type: {db: 'role'},
     dict_lk_permission_type: {db: 'lk_permission_type'},
+    dict_section_type: {db: 'section_type'},
 };

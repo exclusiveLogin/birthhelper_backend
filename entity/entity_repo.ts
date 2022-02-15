@@ -728,6 +728,7 @@ export const entityRepo: EntityRepo = {
             { key: 'title', type: 'string', title: 'Название телефона', required: false, showOnTable: true },
             { key: 'description', title: 'Описание телефона', type: 'text', showOnTable: true },
             { key: 'comment', title: 'Комментарий', type: 'text', showOnTable: true },
+            { key: 'section', title: 'Роль', type: 'string', showOnTable: true, dctKey: 'dict_section_type', useDict: true, valueKey: 'slug', required: true, canBeNull: false},
         ]
     },
 

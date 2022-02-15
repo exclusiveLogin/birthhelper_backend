@@ -92,6 +92,7 @@ export interface EntityField {
     hide?: boolean,
     titleDictKey?: string,
     loadEntity?: boolean,
+    valueKey?: string;
 }
 
 export interface EntityLink{
