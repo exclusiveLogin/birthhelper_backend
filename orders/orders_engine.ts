@@ -105,8 +105,7 @@ export class OrderEngine {
             case "session":
                 q = `SELECT \`session_id\` as \`id\` 
                      FROM \`orders\` 
-                     WHERE \`contragent_entity_key\`="${payload.contragent_entity_key}" 
-                     AND \`contragent_entity_id\`="${payload.contragent_entity_id}"
+                     WHERE \`contragent_entity_id\`="${payload.contragent_entity_id}"
                      AND ${statusStr}
                      GROUP BY \`session_id\`
                      ${limStr}`;
@@ -114,8 +113,7 @@ export class OrderEngine {
             case "order":
                 q = `SELECT \`group_token\` as \`id\` 
                      FROM \`orders\` 
-                     WHERE \`group_token\` IS NOT NULL 
-                     AND \`contragent_entity_key\`="${payload.contragent_entity_key}"
+                     WHERE \`group_token\` IS NOT NULL
                      AND \`contragent_entity_id\`="${payload.contragent_entity_id}"
                      AND ${statusStr}
                      GROUP BY \`group_token\`
@@ -325,7 +323,6 @@ export class OrderEngine {
                         \`tab_key\`,
                         \`floor_key\`,
                         \`section_key\`,
-                        \`contragent_entity_key\`,
                         \`contragent_entity_id\`,
                         \`group_token\`,
                         \`utility\`
@@ -340,7 +337,6 @@ export class OrderEngine {
                         "${tab_key}",
                         "${floor_key}",
                         "${section_key}",
-                        "${contragent_entity_key}",
                         "${contragent_entity_id}",
                         ${group_token ? `"${group_token}"` : null},
                         ${utility ? `"${utility}"` : `"other"`}
