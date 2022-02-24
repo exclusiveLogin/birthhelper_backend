@@ -47,7 +47,10 @@ export const sectionConfig = {
         'clinic_personal_birth_section',
         'clinic_placement_birth_section',
         'clinic_facilities_birth_section',
-    ]
+    ],
+    consultation: [
+
+    ],
 } as const;
 export interface Context {
     dictionaryEngine: DictionaryEngine;
@@ -101,6 +104,9 @@ export const getSearchConfig = (context: Context): SearchConfig => {
                         map((dictItems: DictionaryItem[]) => (dictItems.map(item => ({id: item.id, title: item.title}))))
                     ),
             }
+        },
+        consultation: {
+
         }
 
     };

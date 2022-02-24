@@ -35,6 +35,7 @@ export interface Slot extends Cached{
 export const SlotRepoKeys = [
     'slot_placement',
     'slot_doctors',
+    'slot_consultation_doctors',
     'slot_birth_type',
     'slot_birth_additional',
 ] as const;
@@ -95,6 +96,33 @@ export const slots: SlotRepo = {
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
+        restrictsOfSlot: [
+            { key: 'slot_category_type', value: 1},
+        ]
+    },
+    slot_consultation_doctors: {
+        name: 'slot_consultation_doctors',
+        title: 'Слоты для персонала консультаций',
+        db: 'service_slot', // БД связей
+        container_name: null,
+        entity_fields: ['title', 'description'], // поля для сущности которые показываем в информации о слоте(таблица, карточка)
+        container_fields: ['title', 'description', 'comment'], //поля контейнера (container_repo)
+        override_fields: ['price'], // поля доступные для перекрытия
+        required_fields: ['price', 'service_id', 'contragent_id', 'entity_type', 'slot_category_type'], //поля обязательные для слота
+        required_fields_type: {
+            'price': 'number',
+            'service_id': 'number',
+            'contragent_id': 'number',
+            'entity_type': 'string',
+            'slot_category_type': 'string',
+        }, //поля обязательные для слота
+        section: 'consultation',
+        entity_key: 'ent_doctor', // ключ сущности
+        contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
+        contragent_entity_key: 'ent_consultations',
+        entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
+        deleteAffectionSectionKeys: ['consultation'],
+        createAffectionSectionKeys: ['consultation'],
         restrictsOfSlot: [
             { key: 'slot_category_type', value: 1},
         ]

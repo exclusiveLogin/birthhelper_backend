@@ -18,7 +18,29 @@ export class PipelineEngine {
                     MAX(price) as max_price, 
                     MIN(price) as min_price, 
                     AVG(price) as avg_price 
+                    FROM service_slot
+                    WHERE section = "clinic"
+                    GROUP BY contragent_id`;
+
+        return this.getEntitiesByDBOrCache<Summary>(q, cacheKey).pipe(map(result => result.map((sum) => (
+            {
+                ...sum,
+                avg_price: Math.floor(sum.avg_price),
+                min_price: Math.floor(sum.min_price),
+                max_price: Math.floor(sum.max_price)
+            }))));
+    }
+
+    consultation_summary_pipeline_default(): Observable<Summary[]> {
+        const cacheKey = `clinic.summary.default`;
+
+        const q = `SELECT contragent_id as id, 
+                    COUNT(id) as count_slots, 
+                    MAX(price) as max_price, 
+                    MIN(price) as min_price, 
+                    AVG(price) as avg_price 
                     FROM service_slot 
+                    WHERE section = "consultation"
                     GROUP BY contragent_id`;
 
         return this.getEntitiesByDBOrCache<Summary>(q, cacheKey).pipe(map(result => result.map((sum) => (
@@ -34,6 +56,14 @@ export class PipelineEngine {
         const filters: FilterParams = { active: '1' };
 
         return this.context.entityEngine.getEntities('ent_clinics', null, filters).pipe(
+            map(clinics => clinics.map(clinic => clinic.id)),
+        );
+    }
+
+    consultation_active_pipeline(): Observable<StoredIds> {
+        const filters: FilterParams = { active: '1' };
+
+        return this.context.entityEngine.getEntities('ent_consultations', null, filters).pipe(
             map(clinics => clinics.map(clinic => clinic.id)),
         );
     }
@@ -153,10 +183,12 @@ export class PipelineEngine {
 
     summaryPipelines: { [key in SectionKeys]: () => Observable<Summary[]> } = {
         clinic: this.clinic_summary_pipeline_default.bind(this),
+        consultation: this.consultation_summary_pipeline_default.bind(this),
     }
 
     mergePipelines: { [key in SectionKeys]: () => Observable<StoredIds> } = {
         clinic: this.clinic_active_pipeline.bind(this),
+        consultation: this.consultation_active_pipeline.bind(this),
     }
 
     constructor(private context: Context) {

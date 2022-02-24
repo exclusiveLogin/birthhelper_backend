@@ -14,6 +14,7 @@ export interface IDictionaryFilters {
 export const dictionaries: { [key: string]: IDictionary } = {
     dict_trimester_service: {db: 'trimester'},
     dict_clinics: {db: 'clinics'},
+    dict_consultations: {db: 'consultation'},
     dict_contragents: {db: 'contragents'},
     dict_placement: {
         db: 'services',

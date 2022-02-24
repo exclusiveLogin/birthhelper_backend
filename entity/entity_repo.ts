@@ -181,7 +181,7 @@ export const entityRepo: EntityRepo = {
             { key: 'description_services', title: 'Описание услуг', type: 'text', showOnTable: false },
             { key: 'category', title: 'Категория врача', type: 'id', useDict: true, dctKey: 'dict_doctor_category_type', showOnTable: true, loadEntity: true },
             { key: 'position', title: 'Специализация врача', type: 'id', useDict: true, dctKey: 'dict_doctor_position_type', showOnTable: true, loadEntity: true },
-            { key: 'clinic_id', type: 'id', title: 'Клиника', showOnTable: true, useDict: true, dctKey: 'dict_clinics' },
+            { key: 'clinic_id', type: 'id', title: 'Контрагент', showOnTable: true, useDict: true, dctKey: 'dict_contragents' },
             { key: 'def', title: 'Врач по умолчанию', type: 'flag', showOnTable: true  },
         ],
     },
@@ -326,6 +326,38 @@ export const entityRepo: EntityRepo = {
                 showOnTable: true,
                 dctKey: 'dict_clinic_specialities_containers_repo',
             }
+        ]
+    },
+
+    ent_consultations: {
+        db_name: 'consultation',
+        searchKey: 'consultation',
+        isContragent: true,
+        generateSummariesEnabled: true,
+        deleteAffectionSectionKeys: ['consultation'],
+        createAffectionSectionKeys: ['consultation'],
+        filters: [],
+        fields: [
+            { key: 'id', title: 'ID консультации', type: 'id', readonly: true, showOnTable: true },
+            { key: 'avo', title: 'АВО статус', type: 'flag', showOnTable: false  },
+            { key: 'multi_birth', title: 'Многоплодная беременность', type: 'flag', showOnTable: false  },
+            { key: 'anemy', title: 'Различные анемии', type: 'flag', showOnTable: false  },
+            { key: 'anomaly_evolution', title: 'Аномалии развития', type: 'flag', required: false, showOnTable: false  },
+            { key: 'gestos', title: 'Гестоз', type: 'flag', required: false, showOnTable: false  },
+            { key: 'hypoxy', type: 'flag', title: 'Гипоксия плода', required: false, showOnTable: false },
+            { key: 'mioms', type: 'flag', title: 'Миома матки', required: false, showOnTable: false },
+            { key: 'onko', type: 'flag', title: 'Онкопатология', required: false, showOnTable: false },
+            { key: 'eco', type: 'flag', title: 'Беременности с ЭКО', required: false, showOnTable: false },
+            {
+                key: 'contragent',
+                title: 'Линк на ведущий родительский контрагент',
+                dctKey: 'dict_contragents',
+                type: 'id',
+                useDict: true,
+                canBeNull: false,
+                required: true,
+                showOnTable: true,
+            },
         ]
     },
 
@@ -650,7 +682,16 @@ export const entityRepo: EntityRepo = {
         db_name: 'service_slot',
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
-        filters: [],
+        filters: [
+            {
+                title: 'Тип контрагента',
+                name: 'section',
+                type: 'id',
+                db_name: 'dict_section_type',
+                value: 'clinic',
+                valueKey: 'slug',
+            },
+        ],
         container: null,
         slot: 'slot_doctors',
         fields: [
@@ -660,6 +701,18 @@ export const entityRepo: EntityRepo = {
             { key: 'service_id', type: 'string', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
             { key: 'contragent_id', type: 'id', title: 'id клиники', required: true, showOnTable: true, readonly: true },
             { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
+            {
+                key: 'section',
+                type: 'string',
+                title: 'Тип контрагента',
+                required: true,
+                showOnTable: true,
+                dctKey: 'dict_section_type',
+                useDict: true,
+                valueKey: 'slug',
+                readonly: true,
+                initData: 'clinic'
+            },
             {
                 key: 'entity_type',
                 title: 'Тип услуги',
@@ -713,7 +766,102 @@ export const entityRepo: EntityRepo = {
                 entKey: 'ent_clinics',
                 multiselect: false,
                 entType: 'entity',
-                proxyTo: 'contragent_id'
+                proxyTo: 'contragent_id',
+                proxyKey: 'contragent',
+            },
+        ],
+    },
+
+    ent_consultation_doctor_slots: {
+        db_name: 'service_slot',
+        deleteAffectionSectionKeys: ['clinic'],
+        createAffectionSectionKeys: ['clinic'],
+        filters: [
+            {
+                title: 'Тип контрагента',
+                name: 'section',
+                type: 'id',
+                db_name: 'dict_section_type',
+                value: '2',
+                valueKey: 'slug',
+            },
+        ],
+        container: null,
+        slot: 'slot_consultation_doctors',
+        fields: [
+            { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
+            { key: 'active', title: 'Активный слот', type: 'flag', showOnTable: false  },
+            { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
+            { key: 'service_id', type: 'string', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
+            { key: 'contragent_id', type: 'id', title: 'id клиники', required: true, showOnTable: true, readonly: true },
+            { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
+            {
+                key: 'section',
+                type: 'id',
+                title: 'Тип контрагента',
+                required: true,
+                showOnTable: true,
+                dctKey: 'dict_section_type',
+                useDict: true,
+                valueKey: 'slug',
+                readonly: true,
+                initData: 'consultation'
+            },
+            {
+                key: 'entity_type',
+                title: 'Тип услуги',
+                required: true,
+                type: 'id',
+                useDict: true,
+                canBeNull: false,
+                showOnTable: true,
+                dctKey: 'dict_entity_type',
+                readonly: true,
+                initData: 1,
+            },
+            {
+                key: 'slot_category_type',
+                title: 'Вид услуги в конструкторе',
+                required: true,
+                type: 'id',
+                useDict: true,
+                canBeNull: false,
+                showOnTable: true,
+                dctKey: 'dict_slot_category_type',
+                readonly: true,
+                initData: 1,
+            },
+        ],
+        links: [
+            {
+                type: 'repo',
+                title: 'Таблица персонала',
+                entKey: 'ent_doctor',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'service_id',
+                filters: [
+                    {
+                        name: 'clinic_id',
+                        title: 'ID женской консультации',
+                        db_name: 'dict_consultations',
+                        type: 'id',
+                        readonly: true,
+                        formLink: {
+                            formKey: 'editor',
+                            formFieldKey: 'contragent_id'
+                        }
+                    },
+                ],
+            },
+            {
+                type: 'repo',
+                title: 'Таблица женских консультаций',
+                entKey: 'ent_consultations',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'contragent_id',
+                proxyKey: 'contragent',
             },
         ],
     },

@@ -74,13 +74,16 @@ export class SearchEngine {
     searchConfig: SearchConfig;
 
     searchStore: SearchStore = {
-        clinic: {}
+        clinic: {},
+        consultation: {},
     };
     summaryStore: SummaryStore = {
-        clinic: {}
+        clinic: {},
+        consultation: {},
     };
     filterStore: FilterStore = {
-        clinic: {}
+        clinic: {},
+        consultation: {},
     };
 
     pipeliner = new PipelineEngine(this.context);

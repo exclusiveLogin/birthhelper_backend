@@ -85,7 +85,7 @@ export function generateQStr(key: string, filters: FilterParams, type: reqType):
             .filter(k => !(k === 'skip' || k === 'limit'));
 
         const overrideKeys = config.filters
-            .reduce((a, c) => [...a, ...c?.overrideKeys ?? []], [] );
+            .reduce((a, c) => [...a, ...(c?.overrideKeys && filters[c.name] ? c?.overrideKeys : [])], [] );
 
         overrideKeys.forEach(k => {
             const idx = filtered.indexOf(k);
