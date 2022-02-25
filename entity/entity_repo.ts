@@ -866,6 +866,82 @@ export const entityRepo: EntityRepo = {
         ],
     },
 
+    // 'ent_eco_consultation_slots',
+    // 'ent_birth_support_consultation_slots',
+    // 'ent_online_consultation_slots',
+    // 'ent_multi_pregnant_slots',
+    ent_eco_consultation_slots: {
+        db_name: 'service_slot',
+        deleteAffectionSectionKeys: ['consultation'],
+        createAffectionSectionKeys: ['consultation'],
+        filters: [],
+        container: null,
+        slot: 'slot_birth_additional',
+        fields: [
+            { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
+            { key: 'active', title: 'Активный слот', type: 'flag', showOnTable: false  },
+            { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
+            { key: 'service_id', type: 'string', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
+            { key: 'contragent_id', type: 'id', title: 'id женской консультации', required: true, showOnTable: true, readonly: true },
+            { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
+            {
+                key: 'entity_type',
+                title: 'Тип услуги',
+                required: true,
+                type: 'id',
+                initData: 1,
+                readonly: true,
+                useDict: true,
+                canBeNull: false,
+                showOnTable: true,
+                dctKey: 'dict_entity_type'
+            },
+            {
+                key: 'slot_category_type',
+                title: 'Вид услуги в конструкторе',
+                required: true,
+                type: 'id',
+                useDict: true,
+                canBeNull: false,
+                showOnTable: true,
+                dctKey: 'dict_slot_category_type',
+                readonly: true,
+                initData: 4,
+            },
+        ],
+        links: [
+            {
+                filters: [
+                    {
+                        name: 'slot_category_type',
+                        title: 'Тип услуги',
+                        type: 'id',
+                        db_name: 'dict_slot_category_type',
+                        readonly: true,
+                        value: 4,
+                    }
+                ],
+                type: 'repo',
+                title: 'Таблица дополнительных услуг',
+                entKey: 'ent_services',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'service_id',
+                conditionField: 'entity_type',
+                conditionKey: 'name',
+                conditionValue: 'entity'
+            },
+            {
+                type: 'repo',
+                title: 'Таблица клиник системы',
+                entKey: 'ent_clinics',
+                multiselect: false,
+                entType: 'entity',
+                proxyTo: 'contragent_id'
+            },
+        ],
+    },
+
     ent_phones: {
         db_name: 'phones',
         filters: [],

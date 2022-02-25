@@ -38,6 +38,10 @@ export const SlotRepoKeys = [
     'slot_consultation_doctors',
     'slot_birth_type',
     'slot_birth_additional',
+    'slot_eco_consultation',
+    'slot_birth_support_consultation',
+    'slot_online_consultation',
+    'slot_multi_pregnant',
 ] as const;
 
 export type SlotKeys =  typeof SlotRepoKeys[number];
@@ -179,6 +183,117 @@ export const slots: SlotRepo = {
         createAffectionSectionKeys: ['clinic'],
         restrictsOfSlot: [
             { key: 'slot_category_type', value: 4},
-        ]
+        ],
     },
+
+    slot_eco_consultation: {
+        name: 'slot_eco_consultation',
+        title: 'Слоты для ЭКО услуг женских консультаций',
+        db: 'service_slot', // БД связей
+        container_name: null,
+        entity_fields: ['title', 'description'], // поля для сущности которые показываем в информации о слоте(таблица, карточка)
+        container_fields: ['title', 'description', 'comment'], //поля контейнера (container_repo)
+        override_fields: ['price'], // поля доступные для перекрытия
+        required_fields: ['price', 'service_id', 'contragent_id', 'entity_type', 'slot_category_type'], //поля обязательные для слота
+        required_fields_type: {
+            'price': 'number',
+            'service_id': 'number',
+            'contragent_id': 'number',
+            'entity_type': 'string',
+            'slot_category_type': 'string',
+        }, //типы
+        section: 'consultation',
+        entity_key: 'ent_services', // ключ сущности
+        contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
+        contragent_entity_key: 'ent_consultations',
+        entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
+        deleteAffectionSectionKeys: ['consultation'],
+        createAffectionSectionKeys: ['consultation'],
+        restrictsOfSlot: [
+            { key: 'slot_category_type', value: 5},
+        ],
+    },
+
+    slot_birth_support_consultation: {
+        name: 'slot_birth_support_consultation',
+        title: 'Слоты для ведения беременности женских консультаций',
+        db: 'service_slot', // БД связей
+        container_name: null,
+        entity_fields: ['title', 'description'], // поля для сущности которые показываем в информации о слоте(таблица, карточка)
+        container_fields: ['title', 'description', 'comment'], //поля контейнера (container_repo)
+        override_fields: ['price'], // поля доступные для перекрытия
+        required_fields: ['price', 'service_id', 'contragent_id', 'entity_type', 'slot_category_type'], //поля обязательные для слота
+        required_fields_type: {
+            'price': 'number',
+            'service_id': 'number',
+            'contragent_id': 'number',
+            'entity_type': 'string',
+            'slot_category_type': 'string',
+        }, //типы
+        section: 'consultation',
+        entity_key: 'ent_services', // ключ сущности
+        contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
+        contragent_entity_key: 'ent_consultations',
+        entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
+        deleteAffectionSectionKeys: ['consultation'],
+        createAffectionSectionKeys: ['consultation'],
+        restrictsOfSlot: [
+            { key: 'slot_category_type', value: 8},
+        ],
+    },
+
+    slot_online_consultation: {
+        name: 'slot_online_consultation',
+        title: 'Слоты для дополнительных услуг роддома',
+        db: 'service_slot', // БД связей
+        container_name: null,
+        entity_fields: ['title', 'description'], // поля для сущности которые показываем в информации о слоте(таблица, карточка)
+        container_fields: ['title', 'description', 'comment'], //поля контейнера (container_repo)
+        override_fields: ['price'], // поля доступные для перекрытия
+        required_fields: ['price', 'service_id', 'contragent_id', 'entity_type', 'slot_category_type'], //поля обязательные для слота
+        required_fields_type: {
+            'price': 'number',
+            'service_id': 'number',
+            'contragent_id': 'number',
+            'entity_type': 'string',
+            'slot_category_type': 'string',
+        }, //типы
+        section: 'consultation',
+        entity_key: 'ent_services', // ключ сущности
+        contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
+        contragent_entity_key: 'ent_consultations',
+        entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
+        deleteAffectionSectionKeys: ['consultation'],
+        createAffectionSectionKeys: ['consultation'],
+        restrictsOfSlot: [
+            { key: 'slot_category_type', value: 7},
+        ],
+    },
+    slot_multi_pregnant: {
+        name: 'slot_multi_pregnant',
+        title: 'Слоты для дополнительных услуг роддома',
+        db: 'service_slot', // БД связей
+        container_name: null,
+        entity_fields: ['title', 'description'], // поля для сущности которые показываем в информации о слоте(таблица, карточка)
+        container_fields: ['title', 'description', 'comment'], //поля контейнера (container_repo)
+        override_fields: ['price'], // поля доступные для перекрытия
+        required_fields: ['price', 'service_id', 'contragent_id', 'entity_type', 'slot_category_type'], //поля обязательные для слота
+        required_fields_type: {
+            'price': 'number',
+            'service_id': 'number',
+            'contragent_id': 'number',
+            'entity_type': 'string',
+            'slot_category_type': 'string',
+        }, //типы
+        section: 'consultation',
+        entity_key: 'ent_services', // ключ сущности
+        contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
+        contragent_entity_key: 'ent_consultations',
+        entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
+        deleteAffectionSectionKeys: ['consultation'],
+        createAffectionSectionKeys: ['consultation'],
+        restrictsOfSlot: [
+            { key: 'slot_category_type', value: 6},
+        ],
+    }
 };
