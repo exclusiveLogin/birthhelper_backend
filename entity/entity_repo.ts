@@ -1003,7 +1003,7 @@ export const entityRepo: EntityRepo = {
             },
             {
                 type: 'repo',
-                title: 'Таблица клиник системы',
+                title: 'Таблица женских консультаций системы',
                 entKey: 'ent_consultations',
                 multiselect: false,
                 entType: 'entity',
@@ -1075,7 +1075,7 @@ export const entityRepo: EntityRepo = {
             },
             {
                 type: 'repo',
-                title: 'Таблица клиник системы',
+                title: 'Таблица женских консультаций системы',
                 entKey: 'ent_consultations',
                 multiselect: false,
                 entType: 'entity',
@@ -1147,7 +1147,7 @@ export const entityRepo: EntityRepo = {
             },
             {
                 type: 'repo',
-                title: 'Таблица клиник системы',
+                title: 'Таблица женских консультаций системы',
                 entKey: 'ent_consultations',
                 multiselect: false,
                 entType: 'entity',
