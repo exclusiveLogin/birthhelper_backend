@@ -30,11 +30,12 @@ export const dictionaries: { [key: string]: IDictionary } = {
     dict_address_id: {
         db: 'addresses',
         titleMap: [
-            'address_str'
+            'address_str',
         ],
         titleAddMap: [
             'position_lat',
-            'position_lon'
+            'position_lon',
+            'comment'
         ]
     },
     dict_phone_container: {db: 'phones_containers_repo'},

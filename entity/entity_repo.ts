@@ -1,6 +1,25 @@
 import {EntityRepo} from '../entity/entity_repo.model';
 
 export const entityRepo: EntityRepo = {
+    ent_addresses: {
+        db_name: 'addresses',
+        filters: [
+            {
+                title: 'Административный район Москвы',
+                type: 'id',
+                dictKey: 'dict_district',
+                name: 'district',
+            },
+        ],
+        fields: [
+            { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: false },
+            { key: 'address_str', type: 'string', title: 'Адрес', required: true, showOnTable: true },
+            { key: 'comment', type: 'string', title: 'Комментарий', required: false, showOnTable: true },
+            { key: 'district', type: 'id', title: 'Административный район Москвы', required: true, showOnTable: true, dctKey: 'dict_district', useDict: true, },
+            { key: 'position_lat', type: 'number', title: 'Широта', required: true, showOnTable: true },
+            { key: 'position_lon', type: 'number', title: 'Долгота', required: true, showOnTable: true },
+        ],
+    },
     ent_users: {
         db_name: 'users',
         filters: [
@@ -121,7 +140,7 @@ export const entityRepo: EntityRepo = {
                 name: 'slot_category_type',
                 title: 'Тип услуги',
                 type: 'id',
-                db_name: 'dict_slot_category_type',
+                dictKey: 'dict_slot_category_type',
                 readonly: true,
                 value: '2',
 
@@ -162,7 +181,7 @@ export const entityRepo: EntityRepo = {
                 name: 'position',
                 title: 'Специализация врача',
                 type: 'id',
-                db_name: 'dict_doctor_position_type',
+                dictKey: 'dict_doctor_position_type',
             },
         ],
         container: null,
@@ -215,7 +234,7 @@ export const entityRepo: EntityRepo = {
                 name: 'id',
                 title: 'По ID',
                 type: 'id',
-                db_name: 'dict_clinics'
+                dictKey: 'dict_clinics'
 
             },
             {
@@ -283,7 +302,7 @@ export const entityRepo: EntityRepo = {
                 name: 'id',
                 title: 'По ID',
                 type: 'id',
-                db_name: 'dict_clinics'
+                dictKey: 'dict_clinics'
 
             },
         ],
@@ -375,7 +394,7 @@ export const entityRepo: EntityRepo = {
                 name: 'status',
                 title: 'По статусу',
                 type: 'id',
-                db_name: 'dict_order_status_type',
+                dictKey: 'dict_order_status_type',
             },
         ],
         fields: [
@@ -654,7 +673,7 @@ export const entityRepo: EntityRepo = {
                         name: 'slot_category_type',
                         title: 'Тип услуги',
                         type: 'id',
-                        db_name: 'dict_slot_category_type',
+                        dictKey: 'dict_slot_category_type',
                         readonly: true,
                         value: 4,
                     }
@@ -689,7 +708,7 @@ export const entityRepo: EntityRepo = {
                 title: 'Тип контрагента',
                 name: 'section',
                 type: 'id',
-                db_name: 'dict_section_type',
+                dictKey: 'dict_section_type',
                 value: 'clinic',
                 valueKey: 'slug',
             },
@@ -752,7 +771,7 @@ export const entityRepo: EntityRepo = {
                     {
                         name: 'clinic_id',
                         title: 'ID клиники',
-                        db_name: 'dict_clinics',
+                        dictKey: 'dict_clinics',
                         type: 'id',
                         readonly: true,
                         formLink: {
@@ -783,7 +802,7 @@ export const entityRepo: EntityRepo = {
                 title: 'Тип контрагента',
                 name: 'section',
                 type: 'id',
-                db_name: 'dict_section_type',
+                dictKey: 'dict_section_type',
                 value: '2',
                 valueKey: 'slug',
             },
@@ -846,7 +865,7 @@ export const entityRepo: EntityRepo = {
                     {
                         name: 'clinic_id',
                         title: 'ID женской консультации',
-                        db_name: 'dict_consultations',
+                        dictKey: 'dict_consultations',
                         type: 'id',
                         readonly: true,
                         formLink: {
@@ -914,7 +933,7 @@ export const entityRepo: EntityRepo = {
                         name: 'slot_category_type',
                         title: 'Тип услуги',
                         type: 'id',
-                        db_name: 'dict_slot_category_type',
+                        dictKey: 'dict_slot_category_type',
                         readonly: true,
                         value: 8,
                     }
@@ -986,7 +1005,7 @@ export const entityRepo: EntityRepo = {
                         name: 'slot_category_type',
                         title: 'Тип услуги',
                         type: 'id',
-                        db_name: 'dict_slot_category_type',
+                        dictKey: 'dict_slot_category_type',
                         readonly: true,
                         value: 6,
                     }
@@ -1058,7 +1077,7 @@ export const entityRepo: EntityRepo = {
                         name: 'slot_category_type',
                         title: 'Тип услуги',
                         type: 'id',
-                        db_name: 'dict_slot_category_type',
+                        dictKey: 'dict_slot_category_type',
                         readonly: true,
                         value: 7,
                     }
@@ -1130,7 +1149,7 @@ export const entityRepo: EntityRepo = {
                         name: 'slot_category_type',
                         title: 'Тип услуги',
                         type: 'id',
-                        db_name: 'dict_slot_category_type',
+                        dictKey: 'dict_slot_category_type',
                         readonly: true,
                         value: 5,
                     }

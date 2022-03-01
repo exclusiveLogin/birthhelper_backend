@@ -33,7 +33,7 @@ export interface EntityFilter {
     readonly?: boolean,
     value?: any,
     valueKey?: string,
-    db_name?: string,
+    dictKey?: string,
     overrideKeys?: string[],
     formLink?: {
         formKey?: string,
@@ -43,6 +43,7 @@ export interface EntityFilter {
 
 export const EntityRepoKeys = [
     'ent_users',
+    'ent_addresses',
     'ent_services',
     'ent_services_placement',
     'ent_doctor',
