@@ -41,6 +41,18 @@ export interface EntityFilter {
     }
 }
 
+export interface MapMeta {
+    geocoder?: {
+        provider?: 'dadata',
+        enabled?: boolean,
+        latFieldKey?: string,
+        lonFieldKey?: string,
+        addressFieldKey?: string,
+        addressRewriteOnlyEmpty?: boolean,
+    },
+    height?: number;
+}
+
 export const EntityRepoKeys = [
     'ent_users',
     'ent_addresses',
@@ -84,7 +96,7 @@ export type EntityKeys = typeof EntityRepoKeys[number]
 
 export type EntityRepo = { [key in EntityKeys]: Entity }
 
-export type FieldType = 'string' | 'flag' | 'id' | 'dict' | 'number' | 'text' | 'img' | 'date';
+export type FieldType = 'string' | 'flag' | 'id' | 'dict' | 'number' | 'text' | 'img' | 'date' | 'map';
 
 export interface EntityField {
     key: string,
@@ -101,6 +113,8 @@ export interface EntityField {
     titleDictKey?: string,
     loadEntity?: boolean,
     valueKey?: string;
+    mapMeta?: MapMeta;
+    virtual?: boolean;
 }
 
 export interface EntityLink{

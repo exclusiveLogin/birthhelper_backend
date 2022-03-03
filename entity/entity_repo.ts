@@ -13,6 +13,17 @@ export const entityRepo: EntityRepo = {
         ],
         fields: [
             { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: false },
+            { key: 'map', title: 'Карта', type: 'map', virtual: true, mapMeta: {
+                geocoder: {
+                    addressFieldKey: 'address_str',
+                    addressRewriteOnlyEmpty: true,
+                    enabled: true,
+                    latFieldKey: 'position_lat',
+                    lonFieldKey: 'position_lon',
+                    provider: 'dadata'
+                    },
+                }
+            },
             { key: 'address_str', type: 'string', title: 'Адрес', required: true, showOnTable: true },
             { key: 'comment', type: 'string', title: 'Комментарий', required: false, showOnTable: true },
             { key: 'district', type: 'id', title: 'Административный район Москвы', required: true, showOnTable: true, dctKey: 'dict_district', useDict: true, },
