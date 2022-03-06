@@ -1,7 +1,6 @@
 export interface Clinic {
     id: number;
     active: boolean;
-    address_id: number;
     phone_container_id: number;
     title: string;
     description: string;

@@ -43,19 +43,20 @@ export interface EntityFilter {
 
 export interface MapMeta {
     geocoder?: {
-        provider?: 'dadata',
-        enabled?: boolean,
-        latFieldKey?: string,
-        lonFieldKey?: string,
-        addressFieldKey?: string,
-        addressRewriteOnlyEmpty?: boolean,
+        provider?: 'dadata';
+        enabled?: boolean;
+        latFieldKey?: string;
+        lonFieldKey?: string;
+        addressFieldKey?: string;
+        cityFieldKey?: string;
+        countryFieldKey?: string;
+        addressRewriteOnlyEmpty?: boolean;
     },
     height?: number;
 }
 
 export const EntityRepoKeys = [
     'ent_users',
-    'ent_addresses',
     'ent_services',
     'ent_services_placement',
     'ent_doctor',

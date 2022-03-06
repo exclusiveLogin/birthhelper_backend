@@ -27,17 +27,6 @@ export const dictionaries: { [key: string]: IDictionary } = {
         ]
     },
     dict_district: {db: 'districts'},
-    dict_address_id: {
-        db: 'addresses',
-        titleMap: [
-            'address_str',
-        ],
-        titleAddMap: [
-            'position_lat',
-            'position_lon',
-            'comment'
-        ]
-    },
     dict_phone_container: {db: 'phones_containers_repo'},
     dict_entity_type: {db: 'entity_type'},
     dict_birthtype: {db: 'birthtype'},

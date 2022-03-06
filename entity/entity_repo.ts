@@ -1,36 +1,6 @@
 import {EntityRepo} from '../entity/entity_repo.model';
 
 export const entityRepo: EntityRepo = {
-    ent_addresses: {
-        db_name: 'addresses',
-        filters: [
-            {
-                title: 'Административный район Москвы',
-                type: 'id',
-                dictKey: 'dict_district',
-                name: 'district',
-            },
-        ],
-        fields: [
-            { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: false },
-            { key: 'map', title: 'Карта', type: 'map', virtual: true, mapMeta: {
-                geocoder: {
-                    addressFieldKey: 'address_str',
-                    addressRewriteOnlyEmpty: true,
-                    enabled: true,
-                    latFieldKey: 'position_lat',
-                    lonFieldKey: 'position_lon',
-                    provider: 'dadata'
-                    },
-                }
-            },
-            { key: 'address_str', type: 'string', title: 'Адрес', required: true, showOnTable: true },
-            { key: 'comment', type: 'string', title: 'Комментарий', required: false, showOnTable: true },
-            { key: 'district', type: 'id', title: 'Административный район Москвы', required: true, showOnTable: true, dctKey: 'dict_district', useDict: true, },
-            { key: 'position_lat', type: 'number', title: 'Широта', required: true, showOnTable: true },
-            { key: 'position_lon', type: 'number', title: 'Долгота', required: true, showOnTable: true },
-        ],
-    },
     ent_users: {
         db_name: 'users',
         filters: [
@@ -274,17 +244,24 @@ export const entityRepo: EntityRepo = {
                 required: true,
                 readonly: true,
             },
-            {
-                key: 'address_id',
-                title: 'Адрес',
-                dctKey: 'dict_address_id',
-                type: 'id',
-                useDict: true,
-                canBeNull: false,
-                required: true,
-                showOnTable: true,
-                loadEntity: true,
+            { key: 'map', title: 'Карта', type: 'map', virtual: true, mapMeta: {
+                    geocoder: {
+                        addressFieldKey: 'address_str',
+                        cityFieldKey: 'city',
+                        countryFieldKey: 'country',
+                        addressRewriteOnlyEmpty: true,
+                        enabled: true,
+                        latFieldKey: 'position_lat',
+                        lonFieldKey: 'position_lon',
+                        provider: 'dadata'
+                    },
+                }
             },
+            { key: 'address_str', type: 'string', title: 'Адрес', required: true, showOnTable: true },
+            { key: 'city', type: 'string', title: 'Город', required: true, showOnTable: true },
+            { key: 'country', type: 'string', title: 'Страна', required: true, showOnTable: true },
+            { key: 'position_lat', type: 'number', title: 'Широта', required: true, showOnTable: true },
+            { key: 'position_lon', type: 'number', title: 'Долгота', required: true, showOnTable: true },
         ],
         links: [
             {
