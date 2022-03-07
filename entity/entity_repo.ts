@@ -262,6 +262,8 @@ export const entityRepo: EntityRepo = {
             { key: 'country', type: 'string', title: 'Страна', required: true, showOnTable: true },
             { key: 'position_lat', type: 'number', title: 'Широта', required: true, showOnTable: true },
             { key: 'position_lon', type: 'number', title: 'Долгота', required: true, showOnTable: true },
+            { key: 'section_clinic', title: 'Имеет роддом', type: 'flag', showOnTable: true  },
+            { key: 'section_consultation', title: 'Имеет женскую консультацию', type: 'flag', showOnTable: true  },
         ],
         links: [
             {
@@ -419,7 +421,7 @@ export const entityRepo: EntityRepo = {
             { key: 'title', type: 'string', title: 'Название', required: true, showOnTable: true },
             { key: 'description', title: 'Описание', type: 'text', required: true, showOnTable: true },
             { key: 'comment', title: 'Комментарий', type: 'text', showOnTable: true },
-            { key: 'items', title: 'Элементов', type: 'text', showOnTable: true, readonly: true },
+            { key: 'items', title: 'Элементов', type: 'string', showOnTable: true, readonly: true },
         ],
         links: [
             { type: 'repo', title: 'Таблица телефонов системы', entKey: 'ent_phones', multiselect: true, dummyTitle: 'Таблица выбранных телефонов контейнера'},

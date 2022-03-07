@@ -242,9 +242,9 @@ export class EntityEngine {
                 data[datakey] = data[datakey] !== null && +data[datakey];
             }
             if (!targetReq) return;
-            return (targetReq.type === 'string' || targetReq.type === 'text') && data[datakey]?.toString()
+            return (targetReq.type === 'string' || targetReq.type === 'text')
                 ? `"${sanitizer((data[datakey]).toString())}"`
-                : `"${data[datakey]}"`;
+                : data[datakey];
         });
 
         let existArr = concatFn(Object.keys(data), valArr);
@@ -327,7 +327,7 @@ export class EntityEngine {
         if (isContragent) {
             const whereStr = ids.length ? `${ids.map(id => `\`${ db }\`.\`id\` = ${id}`).join(' OR ')}` : null;
             q = `
-            SELECT *, \`${ db }\`.\`id\` as clinic_id 
+            SELECT *, \`${ db }\`.\`id\` as _id 
             FROM \`${ db }\` JOIN \`contragents\` 
             ON \`${ db }\`.\`contragent\` = \`contragents\`.\`id\` 
             ${whereStr ? 'AND ' + whereStr : ''}`;
@@ -338,7 +338,9 @@ export class EntityEngine {
             .pipe(
                 switchMap(k => this.cacheEngine.checkCache(k) ?
                     this.cacheEngine.getCachedByKey<Entity[]>(k) :
-                    this.context.dbe.queryList<Entity>(q).pipe(tap(data => this.cacheEngine.saveCacheData(k, data)))));
+                    this.context.dbe.queryList<Entity>(q).pipe(
+                        tap(_ => _.forEach($ => $.id = $._id ? $._id : $.id)),
+                        tap(data => this.cacheEngine.saveCacheData(k, data)))));
     }
 
     getEntityPortion(key: EntityKeys, filters?: FilterParams, skip: number = 0, limit: number = 20): Observable<Entity[]> {
@@ -377,7 +379,7 @@ export class EntityEngine {
 
         if (isContragent) {
             q = `
-                SELECT *, \`${ db }\`.\`id\` as clinic_id 
+                SELECT *, \`${ db }\`.\`id\` as _id 
                 FROM \`${ db }\` JOIN \`contragents\` 
                 ON \`${ db }\`.\`contragent\` = \`contragents\`.\`id\` 
                 ${whereStr ? 'WHERE ' + whereStr : ''} 
@@ -387,7 +389,9 @@ export class EntityEngine {
 
         // console.log('getEntityPortion: ', q);
 
-        return this.context.dbe.queryList<Entity>(q);
+        return this.context.dbe.queryList<Entity>(q).pipe(
+            tap(_ => _.forEach($ => $.id = $._id ? $._id : $.id)),
+        );
     }
 
     getEntities(key: EntityKeys, hash: string, filters: FilterParams, eid: number = null): Observable<Entity[]> {
