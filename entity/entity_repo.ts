@@ -212,13 +212,6 @@ export const entityRepo: EntityRepo = {
         db_name: 'contragents',
         filters: [
             {
-                name: 'id',
-                title: 'По ID',
-                type: 'id',
-                dictKey: 'dict_clinics'
-
-            },
-            {
                 name: 'title',
                 title: 'По названию',
                 type: 'string',
@@ -310,7 +303,7 @@ export const entityRepo: EntityRepo = {
             {
                 key: 'contragent',
                 title: 'Линк на ведущий родительский контрагент',
-                dctKey: 'dict_contragents',
+                dctKey: 'dict_contragent_clinics',
                 type: 'id',
                 useDict: true,
                 canBeNull: false,
@@ -362,7 +355,7 @@ export const entityRepo: EntityRepo = {
             {
                 key: 'contragent',
                 title: 'Линк на ведущий родительский контрагент',
-                dctKey: 'dict_contragents',
+                dctKey: 'dict_contragent_consultations',
                 type: 'id',
                 useDict: true,
                 canBeNull: false,

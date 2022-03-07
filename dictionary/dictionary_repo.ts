@@ -16,6 +16,26 @@ export const dictionaries: { [key: string]: IDictionary } = {
     dict_clinics: {db: 'clinics'},
     dict_consultations: {db: 'consultation'},
     dict_contragents: {db: 'contragents'},
+    dict_contragent_clinics: {
+        db: 'contragents',
+        filters: [
+            {
+                key: 'section_clinic',
+                type: 'flag',
+                value: '1',
+            }
+        ],
+    },
+    dict_contragent_consultations: {
+        db: 'contragents',
+        filters: [
+            {
+                key: 'section_consultation',
+                type: 'flag',
+                value: '1',
+            }
+        ],
+    },
     dict_placement: {
         db: 'services',
         filters: [

@@ -36,8 +36,8 @@ export function generateFilterQStr(filters: IDictionaryFilters[], type: reqType)
         );
 
         if(!filtered.length) return [];
-        keys.push(filtered.map( k => k.key ));
-        values.push(filtered.map( k => k.value ));
+        keys.push(...filtered.map( k => k.key ));
+        values.push(...filtered.map( k => k.value ));
 
         return concatFn(keys, values);
     }
@@ -48,8 +48,8 @@ export function generateFilterQStr(filters: IDictionaryFilters[], type: reqType)
         )
 
         if(!filtered.length) return [];
-        keys.push(filtered.map( k => k.key ));
-        values.push(filtered.map( k => `${k.value}`));
+        keys.push(...filtered.map( k => k.key ));
+        values.push(...filtered.map( k => `${k.value}`));
 
         return concatFn(keys, values, true);
     }
@@ -60,8 +60,8 @@ export function generateFilterQStr(filters: IDictionaryFilters[], type: reqType)
         )
 
         if(!filtered.length) return [];
-        keys.push(filtered.map( k => k.key ));
-        values.push(keys.map( k => `${ (k.value as any as boolean) == true ? '1' : '0'}` ));
+        keys.push(...filtered.map( k => k.key ));
+        values.push(...keys.map( k => `${ (filtered.find(_  => _.key === k)?.value as any as boolean) == true ? '1' : '0'}` ));
 
         return concatFn(keys, values, true);
     }
