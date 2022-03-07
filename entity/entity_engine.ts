@@ -244,7 +244,7 @@ export class EntityEngine {
             if (!targetReq) return;
             return (targetReq.type === 'string' || targetReq.type === 'text') && data[datakey]?.toString()
                 ? `"${sanitizer((data[datakey]).toString())}"`
-                : data[datakey];
+                : `"${data[datakey]}"`;
         });
 
         let existArr = concatFn(Object.keys(data), valArr);
