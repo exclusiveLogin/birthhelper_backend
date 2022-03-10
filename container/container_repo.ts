@@ -31,7 +31,7 @@ export const containers: ContainerRepo = {
         name: 'container_phones',
         title: 'Контейнеры телефонов в системе',
         db_entity: 'phones', // БД сущностей
-        entity_fields: ['phone', 'title', 'description', 'comment'], // поля для
+        entity_fields: ['phone', 'title', 'description', 'comment', 'section'], // поля для
         override_fields: ['title', 'description'], // поля доступные для перекрытия
         container_id_key: 'phone_id', // ключ связи контейнера и таблицы сущностей
         db_list: 'phones_containers_repo', // БД списка существующих контейнеров данного типа
