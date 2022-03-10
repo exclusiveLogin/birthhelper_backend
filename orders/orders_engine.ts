@@ -59,7 +59,8 @@ export class OrderEngine {
                 `SELECT * 
                 FROM \`orders\` 
                 WHERE session_id = ${sid}
-                AND \`status\` != "deleted"`;
+                AND \`status\` != "deleted"
+                AND \`user_id\` = 3`;
 
             return this.dbe.queryList<OrderSrc>(q)
                 .pipe(
