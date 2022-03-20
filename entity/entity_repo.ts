@@ -352,6 +352,7 @@ export const entityRepo: EntityRepo = {
             { key: 'mioms', type: 'flag', title: 'Миома матки', required: false, showOnTable: false },
             { key: 'onko', type: 'flag', title: 'Онкопатология', required: false, showOnTable: false },
             { key: 'eco', type: 'flag', title: 'Беременности с ЭКО', required: false, showOnTable: false },
+            { key: 'home_visit', type: 'flag', title: 'Посещение на дому', required: false, showOnTable: false },
             {
                 key: 'contragent',
                 title: 'Линк на ведущий родительский контрагент',
