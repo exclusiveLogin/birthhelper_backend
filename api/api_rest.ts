@@ -15,6 +15,7 @@ export function getAPIMiddleware(context: Context): Router {
     api.use('/slots', context.slotEngine.getRouter());
     api.use('/containers', context.containerEngine.getRouter());
     api.use('/configurator', context.configEngine.getRouter());
+    api.use('/cache', context.cacheEngine.getRouter());
     api.use('/', context.entityEngine.getRouter());
     return api;
 }

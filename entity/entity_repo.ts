@@ -292,7 +292,6 @@ export const entityRepo: EntityRepo = {
         fields: [
             { key: 'id', title: 'ID клиники', type: 'id', readonly: true, showOnTable: true },
             { key: 'status_iho', title: 'Статус ВОЗ', type: 'flag', showOnTable: false  },
-            { key: 'has_consultation', title: 'Имеет женскую консульстацию', type: 'flag', showOnTable: false  },
             { key: 'has_reanimation', title: 'Имеет реанимацию', type: 'flag', showOnTable: false  },
             { key: 'has_oms', title: 'Имеет поддержку ОМС', type: 'flag', required: false, showOnTable: false  },
             { key: 'has_dms', title: 'Имеет поддержку ДМС', type: 'flag', required: false, showOnTable: false  },
@@ -344,14 +343,12 @@ export const entityRepo: EntityRepo = {
         fields: [
             { key: 'id', title: 'ID консультации', type: 'id', readonly: true, showOnTable: true },
             { key: 'avo', title: 'АВО статус', type: 'flag', showOnTable: false  },
-            { key: 'multi_birth', title: 'Многоплодная беременность', type: 'flag', showOnTable: false  },
             { key: 'anemy', title: 'Различные анемии', type: 'flag', showOnTable: false  },
             { key: 'anomaly_evolution', title: 'Аномалии развития', type: 'flag', required: false, showOnTable: false  },
             { key: 'gestos', title: 'Гестоз', type: 'flag', required: false, showOnTable: false  },
             { key: 'hypoxy', type: 'flag', title: 'Гипоксия плода', required: false, showOnTable: false },
             { key: 'mioms', type: 'flag', title: 'Миома матки', required: false, showOnTable: false },
             { key: 'onko', type: 'flag', title: 'Онкопатология', required: false, showOnTable: false },
-            { key: 'eco', type: 'flag', title: 'Беременности с ЭКО', required: false, showOnTable: false },
             { key: 'home_visit', type: 'flag', title: 'Посещение на дому', required: false, showOnTable: false },
             {
                 key: 'contragent',

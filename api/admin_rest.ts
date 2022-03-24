@@ -14,6 +14,7 @@ export function getAdminMiddleware(context: Context): Router {
     admin.use('/entity', context.entityEngineAdmin.getRouter());
     admin.use('/containers', context.containerEngine.getRouter());
     admin.use('/slots', context.slotEngine.getRouter());
+    admin.use('/cache', context.cacheEngine.getRouter());
 
     return admin;
 }
