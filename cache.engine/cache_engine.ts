@@ -70,7 +70,7 @@ export class CacheEngine {
 
         this.slot.get('/clean',
             this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, 7),
-            this.cleanCacheHandler);
+            this.cleanCacheHandler.bind(this));
 
         return this.slot;
     }
