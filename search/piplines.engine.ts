@@ -3,7 +3,7 @@ import { Context, sectionConfig, SectionKeys } from "./config";
 import { StoredIds, Summary } from "../search/engine";
 import { catchError, map, tap } from "rxjs/operators";
 import { cacheKeyGenerator } from "../search/sections.handler";
-import {FilterParams} from "../entity/entity_engine";
+import {Entity, FilterParams} from "../entity/entity_engine";
 
 type ChapterKeys = typeof sectionConfig[SectionKeys]
 type keys = ChapterKeys[number];
@@ -174,11 +174,20 @@ export class PipelineEngine {
 
     }
 
+    consultation_avo_flag(_): Observable<Entity[]> {
+        const filters: FilterParams = { avo: '1' };
+        console.log('consultation_avo_flag: ', _);
+
+        return this.context.entityEngine.getEntities('ent_consultations', null, filters);
+
+    }
+
     pipelines: { [key in keys]: (arg: any) => Observable<Summary[]> } = {
         clinic_facilities_birth_section: this.clinic_facilities_birth_section.bind(this),
         clinic_personal_birth_section: this.clinic_personal_birth_section.bind(this),
         clinic_placement_birth_section: this.clinic_placement_birth_section.bind(this),
         clinic_type_birth_section: this.clinic_type_birth_section.bind(this),
+        consultation_avo_flag: this.consultation_avo_flag.bind(this),
     }
 
     summaryPipelines: { [key in SectionKeys]: () => Observable<Summary[]> } = {

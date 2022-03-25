@@ -49,7 +49,7 @@ export const sectionConfig = {
         'clinic_facilities_birth_section',
     ],
     consultation: [
-
+        'consultation_avo_flag',
     ],
 } as const;
 export interface Context {
@@ -106,7 +106,11 @@ export const getSearchConfig = (context: Context): SearchConfig => {
             }
         },
         consultation: {
-
+            consultation_avo_flag: {
+                type: "flag",
+                title: 'АВО статус',
+                fetcher$: of([{id: 1, title: 'Положительный'}])
+            }
         }
 
     };
