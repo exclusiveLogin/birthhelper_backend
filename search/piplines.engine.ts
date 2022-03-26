@@ -1,7 +1,7 @@
 import { forkJoin, Observable, of } from "rxjs";
-import { Context, sectionConfig, SectionKeys } from "./config";
+import {ConsultationPropertyMap, Context, sectionConfig, SectionKeys} from "./config";
 import { StoredIds, Summary } from "../search/engine";
-import { catchError, map, tap } from "rxjs/operators";
+import {catchError, filter, map, tap} from "rxjs/operators";
 import { cacheKeyGenerator } from "../search/sections.handler";
 import {Entity, FilterParams} from "../entity/entity_engine";
 
@@ -145,7 +145,6 @@ export class PipelineEngine {
 
         // console.log('clinic_placement_birth_section: ', q, cacheKey);
         return this.getEntitiesByDBOrCache<Summary>(q, cacheKey);
-
     }
 
     clinic_type_birth_section(birthTypeId: number): Observable<Summary[]> {
@@ -171,18 +170,16 @@ export class PipelineEngine {
 
         // console.log('clinic_placement_birth_section: ', q, cacheKey);
         return this.getEntitiesByDBOrCache<Summary>(q, cacheKey);
-
     }
 
-    consultation_avo_flag(_): Observable<Entity[]> {
-        const filters: FilterParams = { avo: '1' };
-        console.log('consultation_avo_flag: ', _);
-
+    consultation_avo_flag(propIdx: number): Observable<Entity[]> {
+        const prop = ConsultationPropertyMap[propIdx];
+        if (!prop) return of(null);
+        const filters: FilterParams = { [prop]: '1' };
         return this.context.entityEngine.getEntities('ent_consultations', null, filters);
-
     }
 
-    pipelines: { [key in keys]: (arg: any) => Observable<Summary[]> } = {
+    pipelines: { [key in keys]: (arg: any) => Observable<(Summary | Entity)[]> } = {
         clinic_facilities_birth_section: this.clinic_facilities_birth_section.bind(this),
         clinic_personal_birth_section: this.clinic_personal_birth_section.bind(this),
         clinic_placement_birth_section: this.clinic_placement_birth_section.bind(this),
@@ -223,9 +220,11 @@ export class PipelineEngine {
     getPipelineContextIds(key: keys, args: any[]): Observable<StoredIds[]> {
         const pipe = this.pipelines[key];
 
-        return pipe && args.length ?
-            forkJoin(args.map(arg => pipe(arg).pipe(map(result => result.map(r => r.id))))) :
-            of<StoredIds[]>(null);
+        return pipe && args.length
+            ? forkJoin(args.map(arg => pipe(arg).pipe(
+                filter(_ => !!_),
+                map(result => result.map(r => r.id)))))
+            : of<StoredIds[]>(null);
     }
 
     getPipelineContextSummary(key: keys, args: any[]): Observable<Summary[][]> {
