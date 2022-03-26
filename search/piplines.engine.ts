@@ -32,7 +32,7 @@ export class PipelineEngine {
     }
 
     consultation_summary_pipeline_default(): Observable<Summary[]> {
-        const cacheKey = `clinic.summary.default`;
+        const cacheKey = `consultation.summary.default`;
 
         const q = `SELECT contragent_id as id, 
                     COUNT(id) as count_slots, 

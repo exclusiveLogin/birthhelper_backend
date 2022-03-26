@@ -433,11 +433,17 @@ export class EntityEngine {
         // ОБОГОЩАЕМ сущности
         provider = this.metanizer(provider, fields, calc);
 
-        if(masterContragent) provider = this.contragentConcentrator(provider);
+        if(masterContragent){
+            provider = this.contragentConcentrator(provider);
+        }
 
-        if(generateSummary) provider = this.summarizer(provider, searchKey, hash);
+        if(generateSummary) {
+            provider = this.summarizer(provider, searchKey, hash);
+        }
 
-        if(slotConfig) provider = this.slotEnreacher(provider, slotConfig);
+        if(slotConfig){
+            provider = this.slotEnreacher(provider, slotConfig);
+        }
 
         return provider.pipe(tap(list => list.forEach &&
             list.forEach(ent => Object.keys(ent)
