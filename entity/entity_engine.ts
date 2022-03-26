@@ -527,7 +527,7 @@ export class EntityEngine {
         const contragentIDKey = config.contragent_id_key;
         const entityIDKey = config.entity_id_key;
         const entityKey = config.entity_key;
-        const contragentEntity = config.contragent_entity_key;
+        const contragentEntity = 'ent_contragents' ?? config.contragent_entity_key;
         const containerName = config.container_name;
         const section = config.section;
 
