@@ -258,7 +258,7 @@ export class EntityEngine {
 
         return  this.context.dbe.queryList(qf).pipe(
                 mapTo('Данные обновлены'),
-                tap(() => this.garbageHandler([config.db_name, name], createSections)),
+                tap(() => this.garbageHandler([config.db_name, ...name.split('_').filter(part => part === 'ent' || part === 'dict')], createSections)),
             ).toPromise();
     }
 
