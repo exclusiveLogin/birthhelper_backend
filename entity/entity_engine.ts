@@ -291,7 +291,7 @@ export class EntityEngine {
 
         return this.context.dbe.queryList(qd).pipe(
                 mapTo(`Запись с id = ${id} удалена`),
-                tap(() => this.garbageHandler([config.db_name, name], deleteSections)),
+                tap(() => this.garbageHandler([config.db_name, ...name.split('_').filter(part => part === 'ent' || part === 'dict')], deleteSections)),
             ).toPromise();
     }
 
