@@ -496,7 +496,7 @@ export class EntityEngine {
                     const hasClinic = !!ctg?.section_clinic;
 
                     // gen sql
-                    if (hasClinic) dbs.push(entities.ent_clinics.db_name);
+                    if (hasClinic) dbs.push(entities.ent_clinic_contragents.db_name);
 
                     if (dbs.length) {
                         const q = `SELECT * FROM ${dbs.join(' , ')} WHERE ${dbs.map(db => `${db}.contragent = ${ctg.id}` ).join(' AND ')}`;

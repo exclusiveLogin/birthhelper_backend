@@ -210,6 +210,8 @@ export const entityRepo: EntityRepo = {
 
     ent_contragents: {
         db_name: 'contragents',
+        createAffectionSectionKeys: ['clinic', 'consultation'],
+        deleteAffectionSectionKeys: ['clinic', 'consultation'],
         filters: [
             {
                 name: 'title',
@@ -273,7 +275,7 @@ export const entityRepo: EntityRepo = {
         ],
     },
 
-    ent_clinics: {
+    ent_clinic_contragents: {
         db_name: 'clinics',
         searchKey: 'clinic',
         isContragent: true,
@@ -332,7 +334,7 @@ export const entityRepo: EntityRepo = {
         ]
     },
 
-    ent_consultations: {
+    ent_consultation_contragents: {
         db_name: 'consultation',
         searchKey: 'consultation',
         isContragent: true,
@@ -538,7 +540,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица клиник системы',
-                entKey: 'ent_clinics',
+                entKey: 'ent_clinic_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id'
@@ -600,7 +602,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица клиник системы',
-                entKey: 'ent_clinics',
+                entKey: 'ent_clinic_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id'
@@ -672,7 +674,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица клиник системы',
-                entKey: 'ent_clinics',
+                entKey: 'ent_clinic_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id'
@@ -765,7 +767,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица клиник системы',
-                entKey: 'ent_clinics',
+                entKey: 'ent_clinic_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id',
@@ -859,7 +861,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица женских консультаций',
-                entKey: 'ent_consultations',
+                entKey: 'ent_consultation_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id',
@@ -932,7 +934,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица женских консультаций системы',
-                entKey: 'ent_consultations',
+                entKey: 'ent_consultation_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id'
@@ -1004,7 +1006,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица женских консультаций системы',
-                entKey: 'ent_consultations',
+                entKey: 'ent_consultation_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id'
@@ -1076,7 +1078,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица женских консультаций системы',
-                entKey: 'ent_consultations',
+                entKey: 'ent_consultation_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id'
@@ -1148,7 +1150,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица женских консультаций системы',
-                entKey: 'ent_consultations',
+                entKey: 'ent_consultation_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id'
