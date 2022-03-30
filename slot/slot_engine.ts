@@ -93,7 +93,7 @@ export class SlotEngine {
             }
         }
          catch (e) {
-            throw new Error(e);
+            throw e;
         }
 
         return result;
