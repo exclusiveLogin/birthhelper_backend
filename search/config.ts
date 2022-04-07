@@ -49,7 +49,7 @@ export const sectionConfig = {
         'clinic_facilities_birth_section',
     ],
     consultation: [
-        'consultation_avo_flag',
+        'consultation_patology',
     ],
 } as const;
 
@@ -118,7 +118,7 @@ export const getSearchConfig = (context: Context): SearchConfig => {
             }
         },
         consultation: {
-            consultation_avo_flag: {
+            consultation_patology: {
                 type: "flag",
                 title: 'Паталогии',
                 fetcher$: of([

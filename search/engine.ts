@@ -327,7 +327,7 @@ export class SearchEngine {
         let hash: string;
         let searchKey: SectionKeys;
 
-        if(section === 'clinic') searchKey = section;
+        if(section === 'clinic' || section === 'consultation') searchKey = section;
         if(searchKey) {
             const valid = this.validator<typeof searchKey>(body || {}, searchKey);
             if(valid[0]) {

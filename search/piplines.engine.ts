@@ -184,7 +184,7 @@ export class PipelineEngine {
         clinic_personal_birth_section: this.clinic_personal_birth_section.bind(this),
         clinic_placement_birth_section: this.clinic_placement_birth_section.bind(this),
         clinic_type_birth_section: this.clinic_type_birth_section.bind(this),
-        consultation_avo_flag: this.consultation_avo_flag.bind(this),
+        consultation_patology: this.consultation_avo_flag.bind(this),
     }
 
     summaryPipelines: { [key in SectionKeys]: () => Observable<Summary[]> } = {

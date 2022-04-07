@@ -330,7 +330,7 @@ export class EntityEngine {
             SELECT *, \`${ db }\`.\`id\` as _id 
             FROM \`${ db }\` JOIN \`contragents\` 
             ON \`${ db }\`.\`contragent\` = \`contragents\`.\`id\` 
-            ${whereStr ? 'AND ' + whereStr : ''}`;
+            ${whereStr ? 'WHERE ' + whereStr : ''}`;
         }
 
         // console.log('getEntityByIds q: ', q);
