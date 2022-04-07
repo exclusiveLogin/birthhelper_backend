@@ -1,9 +1,9 @@
 import { forkJoin, Observable, of } from "rxjs";
-import { Context, sectionConfig, SectionKeys } from "./config";
+import {ConsultationPropertyMap, Context, sectionConfig, SectionKeys} from "./config";
 import { StoredIds, Summary } from "../search/engine";
-import { catchError, map, tap } from "rxjs/operators";
+import {catchError, filter, map, tap} from "rxjs/operators";
 import { cacheKeyGenerator } from "../search/sections.handler";
-import {FilterParams} from "../entity/entity_engine";
+import {Entity, FilterParams} from "../entity/entity_engine";
 
 type ChapterKeys = typeof sectionConfig[SectionKeys]
 type keys = ChapterKeys[number];
@@ -32,7 +32,7 @@ export class PipelineEngine {
     }
 
     consultation_summary_pipeline_default(): Observable<Summary[]> {
-        const cacheKey = `clinic.summary.default`;
+        const cacheKey = `consultation.summary.default`;
 
         const q = `SELECT contragent_id as id, 
                     COUNT(id) as count_slots, 
@@ -55,7 +55,7 @@ export class PipelineEngine {
     clinic_active_pipeline(): Observable<StoredIds> {
         const filters: FilterParams = { active: '1' };
 
-        return this.context.entityEngine.getEntities('ent_clinics', null, filters).pipe(
+        return this.context.entityEngine.getEntities('ent_clinic_contragents', null, filters).pipe(
             map(clinics => clinics.map(clinic => clinic.id)),
         );
     }
@@ -63,7 +63,7 @@ export class PipelineEngine {
     consultation_active_pipeline(): Observable<StoredIds> {
         const filters: FilterParams = { active: '1' };
 
-        return this.context.entityEngine.getEntities('ent_consultations', null, filters).pipe(
+        return this.context.entityEngine.getEntities('ent_consultation_contragents', null, filters).pipe(
             map(clinics => clinics.map(clinic => clinic.id)),
         );
     }
@@ -145,7 +145,6 @@ export class PipelineEngine {
 
         // console.log('clinic_placement_birth_section: ', q, cacheKey);
         return this.getEntitiesByDBOrCache<Summary>(q, cacheKey);
-
     }
 
     clinic_type_birth_section(birthTypeId: number): Observable<Summary[]> {
@@ -171,14 +170,21 @@ export class PipelineEngine {
 
         // console.log('clinic_placement_birth_section: ', q, cacheKey);
         return this.getEntitiesByDBOrCache<Summary>(q, cacheKey);
-
     }
 
-    pipelines: { [key in keys]: (arg: any) => Observable<Summary[]> } = {
+    consultation_avo_flag(propIdx: number): Observable<Entity[]> {
+        const prop = ConsultationPropertyMap[propIdx];
+        if (!prop) return of(null);
+        const filters: FilterParams = { [prop]: '1' };
+        return this.context.entityEngine.getEntities('ent_consultation_contragents', null, filters);
+    }
+
+    pipelines: { [key in keys]: (arg: any) => Observable<(Summary | Entity)[]> } = {
         clinic_facilities_birth_section: this.clinic_facilities_birth_section.bind(this),
         clinic_personal_birth_section: this.clinic_personal_birth_section.bind(this),
         clinic_placement_birth_section: this.clinic_placement_birth_section.bind(this),
         clinic_type_birth_section: this.clinic_type_birth_section.bind(this),
+        consultation_patology: this.consultation_avo_flag.bind(this),
     }
 
     summaryPipelines: { [key in SectionKeys]: () => Observable<Summary[]> } = {
@@ -214,9 +220,11 @@ export class PipelineEngine {
     getPipelineContextIds(key: keys, args: any[]): Observable<StoredIds[]> {
         const pipe = this.pipelines[key];
 
-        return pipe && args.length ?
-            forkJoin(args.map(arg => pipe(arg).pipe(map(result => result.map(r => r.id))))) :
-            of<StoredIds[]>(null);
+        return pipe && args.length
+            ? forkJoin(args.map(arg => pipe(arg).pipe(
+                filter(_ => !!_),
+                map(result => result.map(r => r.id)))))
+            : of<StoredIds[]>(null);
     }
 
     getPipelineContextSummary(key: keys, args: any[]): Observable<Summary[][]> {

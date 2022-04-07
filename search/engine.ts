@@ -269,7 +269,7 @@ export class SearchEngine {
         const keys = Object.keys(filters);
 
         // valueKeys
-        const pipes = keys.map((k: FilterSectionKeys, idx) => {
+        const pipes = keys.map((k: FilterSectionKeys) => {
             const type = config[k].type;
 
             const filterSection = filters[k];
@@ -327,7 +327,7 @@ export class SearchEngine {
         let hash: string;
         let searchKey: SectionKeys;
 
-        if(section === 'clinic') searchKey = section;
+        if(section === 'clinic' || section === 'consultation') searchKey = section;
         if(searchKey) {
             const valid = this.validator<typeof searchKey>(body || {}, searchKey);
             if(valid[0]) {

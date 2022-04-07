@@ -62,8 +62,8 @@ export const EntityRepoKeys = [
     'ent_doctor',
     'ent_service_containers',
     'ent_contragents',
-    'ent_clinics',
-    'ent_consultations',
+    'ent_clinic_contragents',
+    'ent_consultation_contragents',
     'ent_districts',
     'ent_phone_containers',
     'ent_facilities_containers',
@@ -120,7 +120,7 @@ export interface EntityField {
 
 export interface EntityLink{
     type: string,
-    entKey: string,
+    entKey: EntityKeys,
     title?: string,
     multiselect?: boolean,
     entType?: string,

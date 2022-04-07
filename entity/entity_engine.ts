@@ -258,7 +258,7 @@ export class EntityEngine {
 
         return  this.context.dbe.queryList(qf).pipe(
                 mapTo('Данные обновлены'),
-                tap(() => this.garbageHandler([config.db_name, name], createSections)),
+                tap(() => this.garbageHandler([config.db_name, ...name.split('_').filter(part => part === 'ent' || part === 'dict')], createSections)),
             ).toPromise();
     }
 
@@ -291,7 +291,7 @@ export class EntityEngine {
 
         return this.context.dbe.queryList(qd).pipe(
                 mapTo(`Запись с id = ${id} удалена`),
-                tap(() => this.garbageHandler([config.db_name, name], deleteSections)),
+                tap(() => this.garbageHandler([config.db_name, ...name.split('_').filter(part => part === 'ent' || part === 'dict')], deleteSections)),
             ).toPromise();
     }
 
@@ -330,7 +330,7 @@ export class EntityEngine {
             SELECT *, \`${ db }\`.\`id\` as _id 
             FROM \`${ db }\` JOIN \`contragents\` 
             ON \`${ db }\`.\`contragent\` = \`contragents\`.\`id\` 
-            ${whereStr ? 'AND ' + whereStr : ''}`;
+            ${whereStr ? 'WHERE ' + whereStr : ''}`;
         }
 
         // console.log('getEntityByIds q: ', q);
@@ -433,11 +433,17 @@ export class EntityEngine {
         // ОБОГОЩАЕМ сущности
         provider = this.metanizer(provider, fields, calc);
 
-        if(masterContragent) provider = this.contragentConcentrator(provider);
+        if(masterContragent){
+            provider = this.contragentConcentrator(provider);
+        }
 
-        if(generateSummary) provider = this.summarizer(provider, searchKey, hash);
+        if(generateSummary) {
+            provider = this.summarizer(provider, searchKey, hash);
+        }
 
-        if(slotConfig) provider = this.slotEnreacher(provider, slotConfig);
+        if(slotConfig){
+            provider = this.slotEnreacher(provider, slotConfig);
+        }
 
         return provider.pipe(tap(list => list.forEach &&
             list.forEach(ent => Object.keys(ent)
@@ -490,7 +496,7 @@ export class EntityEngine {
                     const hasClinic = !!ctg?.section_clinic;
 
                     // gen sql
-                    if (hasClinic) dbs.push(entities.ent_clinics.db_name);
+                    if (hasClinic) dbs.push(entities.ent_clinic_contragents.db_name);
 
                     if (dbs.length) {
                         const q = `SELECT * FROM ${dbs.join(' , ')} WHERE ${dbs.map(db => `${db}.contragent = ${ctg.id}` ).join(' AND ')}`;
@@ -512,7 +518,7 @@ export class EntityEngine {
     summarizer(pipeline: Observable<Entity[]>, sectionKey: SectionKeys, hash: string): Observable<Entity[]> {
         return pipeline.pipe(
             switchMap((entities) => combineLatest([of(entities), this.context.searchEngine.getSummary(sectionKey, hash)])),
-            map(([entities, summaries]) => entities.map(ent => ({...ent, summary: summaries.find(_ => _.id === ent.id) ?? null}))),
+            map(([entities, summaries]) => entities.map(ent => ({...ent, summary: summaries.find(_ => _.id === ent.contragent) ?? null}))),
         );
     }
 
@@ -521,7 +527,7 @@ export class EntityEngine {
         const contragentIDKey = config.contragent_id_key;
         const entityIDKey = config.entity_id_key;
         const entityKey = config.entity_key;
-        const contragentEntity = config.contragent_entity_key;
+        const contragentEntity = 'ent_contragents' ?? config.contragent_entity_key;
         const containerName = config.container_name;
         const section = config.section;
 

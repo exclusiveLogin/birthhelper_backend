@@ -49,9 +49,21 @@ export const sectionConfig = {
         'clinic_facilities_birth_section',
     ],
     consultation: [
-
+        'consultation_patology',
     ],
 } as const;
+
+export const ConsultationPropertyMap = [
+    'avo',
+    'anemy',
+    'anomaly_evolution',
+    'gestos',
+    'hypoxy',
+    'mioms',
+    'onko',
+    'home_visit'
+];
+
 export interface Context {
     dictionaryEngine: DictionaryEngine;
     searchEngine: SearchEngine;
@@ -106,7 +118,20 @@ export const getSearchConfig = (context: Context): SearchConfig => {
             }
         },
         consultation: {
-
+            consultation_patology: {
+                type: "flag",
+                title: 'Паталогии',
+                fetcher$: of([
+                    {id: 0, title: 'АВО статус'},
+                    {id: 1, title: 'Различные анемии'},
+                    {id: 2, title: 'Аномалии развития'},
+                    {id: 3, title: 'Гестозы'},
+                    {id: 4, title: 'Гипоксия'},
+                    {id: 5, title: 'Миомы'},
+                    {id: 6, title: 'Онкопатологии'},
+                    {id: 7, title: 'Вызов на дом'},
+                ])
+            }
         }
 
     };

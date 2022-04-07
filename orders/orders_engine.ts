@@ -169,10 +169,86 @@ export class OrderEngine {
                     : null;
             }
         } catch (e) {
-            throw new Error(e);
+            throw e;
         }
 
         return result;
+    }
+
+    async getTotalOfGroupedOrders(payload: OrderPayload): Promise<number> {
+        // status str generation
+        let statusStr = payload.status ? ` (status = ${payload.status}) ` : ` (1) `;
+        if (payload.status === 'inwork') statusStr = ` (status = "waiting" OR status = "rejected" OR status = "resolved") `;
+        if (payload.status === 'incomplete') statusStr = ` (status = "completed" OR status = "progressing" OR status = "canceled") `;
+        if (payload.status === 'inplan') statusStr = ` (status = "pending") `;
+
+        let q: string;
+        switch (payload.groupMode) {
+            case "session":
+                q = `SELECT COUNT(*) as \`total\` 
+                     FROM (
+                         SELECT \`session_id\` FROM \`orders\` 
+                         WHERE \`contragent_entity_id\`="${payload.contragent_entity_id}"
+                         AND ${statusStr}
+                         GROUP BY \`session_id\`
+                     ) AS t`;
+                break;
+            case "order":
+                q = `SELECT COUNT(*) as \`total\` 
+                     FROM (
+                        SELECT \`group_token\` FROM \`orders\`
+                        WHERE \`group_token\` IS NOT NULL
+                         AND \`contragent_entity_id\`="${payload.contragent_entity_id}"
+                         AND ${statusStr}
+                         GROUP BY \`group_token\`
+                     ) AS t`;
+                break;
+        }
+        try {
+            const  [{ total }] = await this.dbe.queryList<{total: number}>(q).toPromise();
+            return total;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    async getTotalOfOrdersByUser(uid: number): Promise<number> {
+        const q =
+            `SELECT COUNT(*) as total 
+            FROM \`orders\` 
+            WHERE user_id = ${uid} 
+            AND \`status\` != "deleted"`;
+
+        const [{total}] = await this.dbe.queryList<{total: number}>(q).toPromise();
+        return total;
+    }
+
+    async getTotalOfOrdersBySession(sid: number): Promise<number> {
+        const q =
+            `SELECT COUNT(*) as total 
+            FROM \`orders\` 
+            WHERE session_id = ${sid}
+            AND \`status\` != "deleted"
+            AND \`user_id\` = 3`;
+
+        const [{total}] = await this.dbe.queryList<{total: number}>(q).toPromise();
+        return total;
+    }
+
+    async getTotalOfOrdersMany(filters: FilterParams): Promise<number> {
+        const likeStr = [
+            ...generateQStr('ent_orders', filters, 'string'),
+            ...generateQStr('ent_orders', filters, 'flag')].join(' AND ');
+        const whereStr = [
+            ...generateQStr('ent_orders', filters, 'id')].join(' AND ');
+        const q =
+            `SELECT COUNT(*) as total 
+                FROM \`orders\` 
+                ${(whereStr) ? 'WHERE ' + whereStr : ''} 
+                ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} `;
+
+        const [{total}] = await this.dbe.queryList<{total: number}>(q).toPromise();
+        return total;
     }
 
     async getOrders(token: string, payload?: OrderPayload): Promise<(Order | OrderGroup)[]> {
@@ -188,6 +264,21 @@ export class OrderEngine {
         return authMode
             ? this.getOrdersByUser(uid)
             : this.getOrdersBySession(session);
+    }
+
+    async getTotalOfOrders(token: string, payload?: OrderPayload): Promise<(number)> {
+        const uid = await this.getUserIDBySession(token);
+        const authMode = await this.userISAuthorized(uid);
+        const session = await this.getSessionByToken(token);
+        if (payload) {
+            return payload.groupMode ?
+                this.getTotalOfGroupedOrders(payload) :
+                this.getTotalOfOrdersMany(payload.filters ?? {});
+        }
+
+        return authMode
+            ? this.getTotalOfOrdersByUser(uid)
+            : this.getTotalOfOrdersBySession(session);
     }
 
     async clearOrders(token: string): Promise<OkPacket> {
@@ -207,8 +298,6 @@ export class OrderEngine {
             ? this.ctx.dbe.query<OkPacket>(q_user).toPromise()
             : this.ctx.dbe.query<OkPacket>(q_session).toPromise();
     }
-
-
 
     async getSessionByToken(token: string): Promise<number> {
         return token ? this.ctx.authorizationEngine.getSessionByToken(token) : null;
@@ -289,8 +378,9 @@ export class OrderEngine {
         }
 
         try {
+            const total = await this.getTotalOfOrders(token, payload);
             const result = await this.actionToOrder(token, action, payload);
-            res.send(JSON.stringify({ context: 'orders', result }));
+            res.send(JSON.stringify({ context: 'orders', result, total }));
         } catch (e) {
             res.status(500);
             res.send({ error: e });
@@ -305,7 +395,6 @@ export class OrderEngine {
             tab_key,
             floor_key,
             section_key,
-            contragent_entity_key,
             contragent_entity_id,
             status,
             group_token,
@@ -426,8 +515,9 @@ export class OrderEngine {
         }
 
         try {
+            const total = await this.getTotalOfOrders(token);
             const result = await this.getOrders(token);
-            res.send(JSON.stringify({ context: 'orders', result }));
+            res.send(JSON.stringify({ context: 'orders', result, total }));
         } catch (e) {
             res.status(500);
             res.send({ error: e });

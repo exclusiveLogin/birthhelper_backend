@@ -210,6 +210,8 @@ export const entityRepo: EntityRepo = {
 
     ent_contragents: {
         db_name: 'contragents',
+        createAffectionSectionKeys: ['clinic', 'consultation'],
+        deleteAffectionSectionKeys: ['clinic', 'consultation'],
         filters: [
             {
                 name: 'title',
@@ -273,7 +275,7 @@ export const entityRepo: EntityRepo = {
         ],
     },
 
-    ent_clinics: {
+    ent_clinic_contragents: {
         db_name: 'clinics',
         searchKey: 'clinic',
         isContragent: true,
@@ -332,7 +334,7 @@ export const entityRepo: EntityRepo = {
         ]
     },
 
-    ent_consultations: {
+    ent_consultation_contragents: {
         db_name: 'consultation',
         searchKey: 'consultation',
         isContragent: true,
@@ -538,7 +540,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица клиник системы',
-                entKey: 'ent_clinics',
+                entKey: 'ent_clinic_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id'
@@ -600,7 +602,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица клиник системы',
-                entKey: 'ent_clinics',
+                entKey: 'ent_clinic_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id'
@@ -672,7 +674,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица клиник системы',
-                entKey: 'ent_clinics',
+                entKey: 'ent_clinic_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id'
@@ -700,7 +702,7 @@ export const entityRepo: EntityRepo = {
             { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
             { key: 'active', title: 'Активный слот', type: 'flag', showOnTable: false  },
             { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
-            { key: 'service_id', type: 'string', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
+            { key: 'service_id', type: 'id', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
             { key: 'contragent_id', type: 'id', title: 'id клиники', required: true, showOnTable: true, readonly: true },
             { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
             {
@@ -765,7 +767,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица клиник системы',
-                entKey: 'ent_clinics',
+                entKey: 'ent_clinic_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id',
@@ -782,9 +784,9 @@ export const entityRepo: EntityRepo = {
             {
                 title: 'Тип контрагента',
                 name: 'section',
-                type: 'id',
+                type: 'string',
                 dictKey: 'dict_section_type',
-                value: '2',
+                value: 'consultation',
                 valueKey: 'slug',
             },
         ],
@@ -794,12 +796,12 @@ export const entityRepo: EntityRepo = {
             { key: 'id', title: 'ID слота', type: 'id', readonly: true, showOnTable: false },
             { key: 'active', title: 'Активный слот', type: 'flag', showOnTable: false  },
             { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
-            { key: 'service_id', type: 'string', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
+            { key: 'service_id', type: 'id', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
             { key: 'contragent_id', type: 'id', title: 'id клиники', required: true, showOnTable: true, readonly: true },
             { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
             {
                 key: 'section',
-                type: 'id',
+                type: 'string',
                 title: 'Тип контрагента',
                 required: true,
                 showOnTable: true,
@@ -859,7 +861,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица женских консультаций',
-                entKey: 'ent_consultations',
+                entKey: 'ent_consultation_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id',
@@ -932,7 +934,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица женских консультаций системы',
-                entKey: 'ent_consultations',
+                entKey: 'ent_consultation_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id'
@@ -1004,7 +1006,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица женских консультаций системы',
-                entKey: 'ent_consultations',
+                entKey: 'ent_consultation_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id'
@@ -1076,7 +1078,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица женских консультаций системы',
-                entKey: 'ent_consultations',
+                entKey: 'ent_consultation_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id'
@@ -1148,7 +1150,7 @@ export const entityRepo: EntityRepo = {
             {
                 type: 'repo',
                 title: 'Таблица женских консультаций системы',
-                entKey: 'ent_consultations',
+                entKey: 'ent_consultation_contragents',
                 multiselect: false,
                 entType: 'entity',
                 proxyTo: 'contragent_id'

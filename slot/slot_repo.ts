@@ -69,7 +69,7 @@ export const slots: SlotRepo = {
         section: 'clinic',
         entity_key: 'ent_services', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
-        contragent_entity_key: 'ent_clinics',
+        contragent_entity_key: 'ent_clinic_contragents',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
@@ -96,7 +96,7 @@ export const slots: SlotRepo = {
         section: 'clinic',
         entity_key: 'ent_doctor', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
-        contragent_entity_key: 'ent_clinics',
+        contragent_entity_key: 'ent_clinic_contragents',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
@@ -123,7 +123,7 @@ export const slots: SlotRepo = {
         section: 'consultation',
         entity_key: 'ent_doctor', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
-        contragent_entity_key: 'ent_consultations',
+        contragent_entity_key: 'ent_consultation_contragents',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['consultation'],
         createAffectionSectionKeys: ['consultation'],
@@ -150,7 +150,7 @@ export const slots: SlotRepo = {
         section: 'clinic',
         entity_key: 'ent_birthtype', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
-        contragent_entity_key: 'ent_clinics',
+        contragent_entity_key: 'ent_clinic_contragents',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
@@ -177,7 +177,7 @@ export const slots: SlotRepo = {
         section: 'clinic',
         entity_key: 'ent_services', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
-        contragent_entity_key: 'ent_clinics',
+        contragent_entity_key: 'ent_clinic_contragents',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['clinic'],
         createAffectionSectionKeys: ['clinic'],
@@ -205,7 +205,7 @@ export const slots: SlotRepo = {
         section: 'consultation',
         entity_key: 'ent_services', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
-        contragent_entity_key: 'ent_consultations',
+        contragent_entity_key: 'ent_consultation_contragents',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['consultation'],
         createAffectionSectionKeys: ['consultation'],
@@ -233,7 +233,7 @@ export const slots: SlotRepo = {
         section: 'consultation',
         entity_key: 'ent_services', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
-        contragent_entity_key: 'ent_consultations',
+        contragent_entity_key: 'ent_consultation_contragents',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['consultation'],
         createAffectionSectionKeys: ['consultation'],
@@ -261,7 +261,7 @@ export const slots: SlotRepo = {
         section: 'consultation',
         entity_key: 'ent_services', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
-        contragent_entity_key: 'ent_consultations',
+        contragent_entity_key: 'ent_consultation_contragents',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['consultation'],
         createAffectionSectionKeys: ['consultation'],
@@ -288,7 +288,7 @@ export const slots: SlotRepo = {
         section: 'consultation',
         entity_key: 'ent_services', // ключ сущности
         contragent_id_key: 'contragent_id', // название поля для хранения ссылки на КА
-        contragent_entity_key: 'ent_consultations',
+        contragent_entity_key: 'ent_consultation_contragents',
         entity_id_key: 'service_id', // название поля для хранения ссылки на сущность
         deleteAffectionSectionKeys: ['consultation'],
         createAffectionSectionKeys: ['consultation'],
