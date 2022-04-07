@@ -4,7 +4,7 @@ server {
 	server_name birthhelper.ru;
 
 	index index.html;
-	
+
 	location / {
 		default_type text/html;
 		proxy_redirect off;
@@ -19,22 +19,7 @@ server {
 		# return 200 'test';
 		proxy_pass http://185.178.46.248:8092/;
 	}
-	
-	location /guide/ {
-		default_type text/html;
-		proxy_redirect off;
-		proxy_http_version 1.1;
-		proxy_cache_bypass $http_upgrade;
-		proxy_set_header Upgrade $http_upgrade;
-		proxy_set_header Connection 'upgrade';
-		proxy_set_header Host $host;
-		proxy_set_header X-Real-IP $remote_addr;
-		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-		proxy_set_header X-Forwarded-Proto $scheme;
-		# return 200 'test';
-		proxy_pass http://185.178.46.248:8090/;
-	}
-	
+
 	location /api/ {
 		default_type text/html;
 		proxy_redirect off;
