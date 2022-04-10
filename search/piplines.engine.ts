@@ -150,7 +150,7 @@ export class PipelineEngine {
     clinic_type_birth_section(birthTypeId: number): Observable<Summary[]> {
 
         const cacheKey = cacheKeyGenerator(
-            'ent_placement_slots',
+            'ent_birthtype_slots',
             'ent_birthtype',
             birthTypeId,
             'grouped',
@@ -179,12 +179,36 @@ export class PipelineEngine {
         return this.context.entityEngine.getEntities('ent_consultation_contragents', null, filters);
     }
 
+    consultation_services(type: number): Observable<Summary[]> {
+
+        const cacheKey = cacheKeyGenerator(
+            'consultation_slots',
+            'slot_category_type',
+            type,
+            'grouped',
+            'contragent_id');
+
+        // Scoring по клиникам содержащим данный вид палаты
+        const q = `SELECT contragent_id as id, 
+                    COUNT(id) as count_slots, 
+                    MAX(price) as max_price, 
+                    MIN(price) as min_price, 
+                    AVG(price) as avg_price 
+                    FROM service_slot 
+                    WHERE \`slot_category_type\` = ${type} 
+                    GROUP BY contragent_id`;
+
+        // console.log('clinic_placement_birth_section: ', q, cacheKey);
+        return this.getEntitiesByDBOrCache<Summary>(q, cacheKey);
+    }
+
     pipelines: { [key in keys]: (arg: any) => Observable<(Summary | Entity)[]> } = {
         clinic_facilities_birth_section: this.clinic_facilities_birth_section.bind(this),
         clinic_personal_birth_section: this.clinic_personal_birth_section.bind(this),
         clinic_placement_birth_section: this.clinic_placement_birth_section.bind(this),
         clinic_type_birth_section: this.clinic_type_birth_section.bind(this),
         consultation_patology: this.consultation_avo_flag.bind(this),
+        consultation_services: this.consultation_services.bind(this),
     }
 
     summaryPipelines: { [key in SectionKeys]: () => Observable<Summary[]> } = {

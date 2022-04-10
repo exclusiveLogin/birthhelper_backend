@@ -50,6 +50,7 @@ export const sectionConfig = {
     ],
     consultation: [
         'consultation_patology',
+        'consultation_services',
     ],
 } as const;
 
@@ -131,6 +132,15 @@ export const getSearchConfig = (context: Context): SearchConfig => {
                     {id: 6, title: 'Онкопатологии'},
                     {id: 7, title: 'Вызов на дом'},
                 ])
+            },
+            consultation_services: {
+                type: "flag",
+                title: 'Оказываемые услуги',
+                fetcher$: of([
+                    {id: 5, title: 'Ведение ЭКО беременности'},
+                    {id: 6, title: 'Ведение многоплодной беременности'},
+                    {id: 7, title: 'Онлайн консультации'},
+                ]),
             }
         }
 
