@@ -922,7 +922,7 @@ export const entityRepo: EntityRepo = {
                     }
                 ],
                 type: 'repo',
-                title: 'Таблица дополнительных услуг',
+                title: 'Таблица услуг ведения беременности',
                 entKey: 'ent_services',
                 multiselect: false,
                 entType: 'entity',
