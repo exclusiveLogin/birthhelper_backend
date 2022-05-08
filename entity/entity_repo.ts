@@ -223,6 +223,16 @@ export const entityRepo: EntityRepo = {
                 title: 'По Активности',
                 type: 'flag',
             },
+            {
+                name: 'section_clinic',
+                title: 'Имеет роддом',
+                type: 'flag',
+            },
+            {
+                name: 'section_consultation',
+                title: 'Имеет консультацию',
+                type: 'flag',
+            },
         ],
         fields: [
             { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },

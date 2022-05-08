@@ -1,6 +1,7 @@
 import {Cached} from "../cache.engine/cache.model";
 import {SectionKeys} from "../search/config";
 import { SlotKeys } from "../slot/slot_repo";
+import {DictionaryItem} from "../dictionary/dictionary_engine";
 export interface Permissions {
     create: number,
     delete: number,
@@ -33,6 +34,7 @@ export interface EntityFilter {
     readonly?: boolean,
     value?: any,
     valueKey?: string,
+    valueItems?: DictionaryItem[],
     dictKey?: string,
     overrideKeys?: string[],
     formLink?: {
