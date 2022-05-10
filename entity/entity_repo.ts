@@ -704,6 +704,7 @@ export const entityRepo: EntityRepo = {
                 dictKey: 'dict_section_type',
                 value: 'clinic',
                 valueKey: 'slug',
+                readonly: true,
             },
         ],
         container: null,
@@ -713,7 +714,7 @@ export const entityRepo: EntityRepo = {
             { key: 'active', title: 'Активный слот', type: 'flag', showOnTable: false  },
             { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
             { key: 'service_id', type: 'id', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
-            { key: 'contragent_id', type: 'id', title: 'id клиники', required: true, showOnTable: true, readonly: true },
+            { key: 'contragent_id', type: 'id', title: 'id контрагента', required: true, showOnTable: true, readonly: true },
             { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
             {
                 key: 'section',
@@ -794,10 +795,11 @@ export const entityRepo: EntityRepo = {
             {
                 title: 'Тип контрагента',
                 name: 'section',
-                type: 'string',
+                type: 'id',
                 dictKey: 'dict_section_type',
                 value: 'consultation',
                 valueKey: 'slug',
+                readonly: true,
             },
         ],
         container: null,
@@ -807,7 +809,7 @@ export const entityRepo: EntityRepo = {
             { key: 'active', title: 'Активный слот', type: 'flag', showOnTable: false  },
             { key: 'title', type: 'string', title: 'Название', required: false, showOnTable: true },
             { key: 'service_id', type: 'id', title: 'id услуги или пакета', required: true, showOnTable: true, readonly: true },
-            { key: 'contragent_id', type: 'id', title: 'id клиники', required: true, showOnTable: true, readonly: true },
+            { key: 'contragent_id', type: 'id', title: 'id контрагента', required: true, showOnTable: true, readonly: true },
             { key: 'price', type: 'string', title: 'цена услуги', required: true, showOnTable: true },
             {
                 key: 'section',
