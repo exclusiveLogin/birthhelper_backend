@@ -3,8 +3,8 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 185.178.46.248
--- Время создания: Мар 20 2022 г., 21:45
--- Версия сервера: 5.7.37-0ubuntu0.18.04.1
+-- Время создания: Май 10 2022 г., 09:17
+-- Версия сервера: 8.0.29-0ubuntu0.20.04.3
 -- Версия PHP: 8.0.16
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -28,7 +28,7 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `birthtype` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `icon` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `description` text COLLATE utf8_unicode_ci,
@@ -38,8 +38,8 @@ CREATE TABLE `birthtype` (
   `lack` text COLLATE utf8_unicode_ci,
   `motivator` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
   `bg_color` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `image_id` bigint(20) UNSIGNED DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Виды родов';
+  `image_id` bigint UNSIGNED DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci COMMENT='Виды родов';
 
 --
 -- Дамп данных таблицы `birthtype`
@@ -59,58 +59,57 @@ INSERT INTO `birthtype` (`id`, `icon`, `title`, `description`, `description_ext1
 --
 
 CREATE TABLE `clinics` (
-  `id` int(11) NOT NULL,
-  `contragent` bigint(20) UNSIGNED DEFAULT NULL,
+  `id` int NOT NULL,
+  `contragent` bigint UNSIGNED DEFAULT NULL,
   `status_iho` tinyint(1) DEFAULT NULL,
   `has_oms` tinyint(1) DEFAULT NULL,
   `has_dms` tinyint(1) DEFAULT NULL,
   `has_reanimation` tinyint(1) DEFAULT NULL,
-  `has_consultation` tinyint(1) DEFAULT NULL,
-  `stat_male` int(11) DEFAULT '0',
-  `stat_female` int(11) NOT NULL DEFAULT '0',
+  `stat_male` int DEFAULT '0',
+  `stat_female` int NOT NULL DEFAULT '0',
   `foreign_service` tinyint(1) DEFAULT NULL,
   `mom_with_baby` tinyint(1) DEFAULT NULL,
   `free_meets` tinyint(1) DEFAULT NULL,
-  `facilities_type` int(11) DEFAULT NULL,
-  `specialities_type` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+  `facilities_type` int DEFAULT NULL,
+  `specialities_type` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `clinics`
 --
 
-INSERT INTO `clinics` (`id`, `contragent`, `status_iho`, `has_oms`, `has_dms`, `has_reanimation`, `has_consultation`, `stat_male`, `stat_female`, `foreign_service`, `mom_with_baby`, `free_meets`, `facilities_type`, `specialities_type`) VALUES
-(1, 1, NULL, 1, 1, 1, 1, 1225, 667, NULL, 1, 0, 1, 1),
-(2, 2, NULL, 1, 1, 1, 1, 645, 666, NULL, 1, 1, 1, 1),
-(3, 3, 1, 1, 1, NULL, 1, 777, 666, NULL, 1, NULL, 1, 2),
-(4, 4, NULL, 1, 1, NULL, 1, 777, 666, NULL, 1, NULL, 1, 1),
-(5, 5, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, 1, 1),
-(6, 6, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, 1, 1),
-(7, 7, 1, 1, 1, 1, 1, 777, 666, NULL, 1, 1, 1, 1),
-(8, 8, 1, 1, 1, NULL, 1, 777, 666, NULL, 1, NULL, 1, 1),
-(9, 9, 1, 1, 1, 1, 1, 777, 666, NULL, 1, NULL, 1, 1),
-(10, 10, NULL, 1, 1, 1, 1, 777, 666, NULL, NULL, NULL, 1, 1),
-(11, 11, NULL, 1, 1, 1, 1, 777, 666, NULL, 1, 1, 1, 1),
-(12, 12, NULL, 1, 1, NULL, 1, 777, 666, NULL, NULL, NULL, 1, 1),
-(13, 13, 1, 1, 1, 0, 1, 777, 666, NULL, 1, NULL, 1, 1),
-(14, 14, 1, 1, 1, 1, 1, 777, 666, NULL, 1, NULL, 1, 1),
-(15, 15, NULL, 1, 1, 1, 1, 777, 666, NULL, 1, 1, 1, 1),
-(18, 18, NULL, 1, 1, 1, 1, 777, 666, NULL, 1, 1, 1, 1),
-(19, 19, NULL, 1, 1, 0, 1, 777, 666, NULL, NULL, NULL, 1, 1),
-(20, 20, 1, 1, 1, NULL, 1, 777, 666, NULL, 1, 0, 1, 1),
-(21, 21, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, 1, 2),
-(22, 22, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, 1, 2),
-(23, 23, 1, 1, 1, 1, 1, 777, 666, NULL, 1, NULL, 1, 1),
-(24, 24, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, 1, 2),
-(25, 25, 1, 1, 1, 1, 1, 777, 666, NULL, 1, 1, 1, 1),
-(26, 26, 1, 1, 1, 1, 1, 777, 666, NULL, 1, 1, 1, 1),
-(27, 27, 1, 1, 1, 0, 1, 777, 666, NULL, 1, NULL, 1, 1),
-(28, 28, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, 1, 2),
-(29, 29, 1, 1, 1, NULL, 1, 777, 666, NULL, 1, NULL, 1, 1),
-(30, 30, NULL, 1, 1, 1, 1, 777, 666, NULL, NULL, NULL, 1, 1),
-(32, 32, NULL, 1, 1, NULL, 1, 777, 666, NULL, 1, NULL, 1, 1),
-(33, 33, NULL, 1, 1, 1, 1, 777, 666, NULL, NULL, NULL, 1, 1),
-(34, 34, NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, 1, 1);
+INSERT INTO `clinics` (`id`, `contragent`, `status_iho`, `has_oms`, `has_dms`, `has_reanimation`, `stat_male`, `stat_female`, `foreign_service`, `mom_with_baby`, `free_meets`, `facilities_type`, `specialities_type`) VALUES
+(1, 1, NULL, 1, 1, 1, 1225, 667, NULL, 1, 0, 1, 1),
+(2, 2, NULL, 1, 1, 1, 645, 666, NULL, 1, 1, 1, 1),
+(3, 3, 1, 1, 1, NULL, 777, 666, NULL, 1, NULL, 1, 2),
+(4, 4, NULL, 1, 1, NULL, 777, 666, NULL, 1, NULL, 1, 1),
+(5, 5, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, 1, 1),
+(6, 6, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, 1, 1),
+(7, 7, 1, 1, 1, 1, 777, 666, NULL, 1, 1, 1, 1),
+(8, 8, 1, 1, 1, NULL, 777, 666, NULL, 1, NULL, 1, 1),
+(9, 9, 1, 1, 1, 1, 777, 666, NULL, 1, NULL, 1, 1),
+(10, 10, NULL, 1, 1, 1, 777, 666, NULL, NULL, NULL, 1, 1),
+(11, 11, NULL, 1, 1, 1, 777, 666, NULL, 1, 1, 1, 1),
+(12, 12, NULL, 1, 1, NULL, 777, 666, NULL, NULL, NULL, 1, 1),
+(13, 13, 1, 1, 1, 0, 777, 666, NULL, 1, NULL, 1, 1),
+(14, 14, 1, 1, 1, 1, 777, 666, NULL, 1, NULL, 1, 1),
+(15, 15, NULL, 1, 1, 1, 777, 666, NULL, 1, 1, 1, 1),
+(18, 18, NULL, 1, 1, 1, 777, 666, NULL, 1, 1, 1, 1),
+(19, 19, NULL, 1, 1, 0, 777, 666, NULL, NULL, NULL, 1, 1),
+(20, 20, 1, 1, 1, NULL, 777, 666, NULL, 1, 0, 1, 1),
+(21, 21, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, 1, 2),
+(22, 22, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, 1, 2),
+(23, 23, 1, 1, 1, 1, 777, 666, NULL, 1, NULL, 1, 1),
+(24, 24, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, 1, 2),
+(25, 25, 1, 1, 1, 1, 777, 666, NULL, 1, 1, 1, 1),
+(26, 26, 1, 1, 1, 1, 777, 666, NULL, 1, 1, 1, 1),
+(27, 27, 1, 1, 1, 0, 777, 666, NULL, 1, NULL, 1, 1),
+(28, 28, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, 1, 2),
+(29, 29, 1, 1, 1, NULL, 777, 666, NULL, 1, NULL, 1, 1),
+(30, 30, NULL, 1, 1, 1, 777, 666, NULL, NULL, NULL, 1, 1),
+(32, 32, NULL, 1, 1, NULL, 777, 666, NULL, 1, NULL, 1, 1),
+(33, 33, NULL, 1, 1, 1, 777, 666, NULL, NULL, NULL, 1, 1),
+(34, 34, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -119,13 +118,13 @@ INSERT INTO `clinics` (`id`, `contragent`, `status_iho`, `has_oms`, `has_dms`, `
 --
 
 CREATE TABLE `clinic_specialities_containers` (
-  `id` int(11) NOT NULL,
-  `container_id` int(11) NOT NULL,
-  `speciality_id` int(11) NOT NULL,
+  `id` int NOT NULL,
+  `container_id` int NOT NULL,
+  `speciality_id` int NOT NULL,
   `overrided_title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `overrided_description` text COLLATE utf8_unicode_ci,
   `comment` text COLLATE utf8_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `clinic_specialities_containers`
@@ -146,11 +145,11 @@ INSERT INTO `clinic_specialities_containers` (`id`, `container_id`, `speciality_
 --
 
 CREATE TABLE `clinic_specialities_containers_repo` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
   `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `description` text COLLATE utf8_unicode_ci,
   `comment` text COLLATE utf8_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `clinic_specialities_containers_repo`
@@ -166,11 +165,11 @@ INSERT INTO `clinic_specialities_containers_repo` (`id`, `title`, `description`,
 --
 
 CREATE TABLE `clinic_specialities_type` (
-  `id` int(11) NOT NULL,
-  `icon` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `title` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `description` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
-  `bg_color` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL
+  `id` int NOT NULL,
+  `icon` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci,
+  `bg_color` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -192,10 +191,9 @@ INSERT INTO `clinic_specialities_type` (`id`, `icon`, `title`, `description`, `b
 --
 
 CREATE TABLE `consultation` (
-  `id` int(11) NOT NULL,
-  `contragent` bigint(20) UNSIGNED DEFAULT NULL,
+  `id` int NOT NULL,
+  `contragent` bigint UNSIGNED DEFAULT NULL,
   `avo` tinyint(1) DEFAULT NULL,
-  `multi_birth` tinyint(1) DEFAULT NULL,
   `anemy` tinyint(1) DEFAULT NULL,
   `anomaly_evolution` tinyint(1) DEFAULT NULL,
   `gestos` tinyint(1) DEFAULT NULL,
@@ -203,17 +201,18 @@ CREATE TABLE `consultation` (
   `hypoxy` tinyint(1) DEFAULT NULL,
   `mioms` tinyint(1) DEFAULT NULL,
   `onko` tinyint(1) DEFAULT NULL,
-  `eco` tinyint(1) DEFAULT NULL,
   `home_visit` tinyint(1) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `consultation`
 --
 
-INSERT INTO `consultation` (`id`, `contragent`, `avo`, `multi_birth`, `anemy`, `anomaly_evolution`, `gestos`, `foreign_service`, `hypoxy`, `mioms`, `onko`, `eco`, `home_visit`) VALUES
-(21, 35, 1, 1, NULL, NULL, NULL, NULL, NULL, 1, 1, 1, 0),
-(22, 35, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0);
+INSERT INTO `consultation` (`id`, `contragent`, `avo`, `anemy`, `anomaly_evolution`, `gestos`, `foreign_service`, `hypoxy`, `mioms`, `onko`, `home_visit`) VALUES
+(21, 35, 1, NULL, NULL, NULL, NULL, NULL, 1, 1, 0),
+(24, 37, 1, 1, 1, 1, NULL, 1, 1, 1, 1),
+(25, 36, 1, 1, 1, 1, NULL, 1, 1, 1, 1),
+(27, 39, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -222,28 +221,28 @@ INSERT INTO `consultation` (`id`, `contragent`, `avo`, `multi_birth`, `anemy`, `
 --
 
 CREATE TABLE `contragents` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
   `active` tinyint(1) DEFAULT '1',
   `address_str` text COLLATE utf8_unicode_ci NOT NULL,
   `city` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
   `country` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
   `position_lat` float NOT NULL,
   `position_lon` float NOT NULL,
-  `phone_container_id` int(11) DEFAULT NULL,
+  `phone_container_id` int DEFAULT NULL,
   `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `description` mediumtext COLLATE utf8_unicode_ci,
-  `image_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `image_id` bigint UNSIGNED DEFAULT NULL,
   `licence` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
   `section_clinic` tinyint(1) NOT NULL DEFAULT '0',
   `section_consultation` tinyint(1) NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `contragents`
 --
 
 INSERT INTO `contragents` (`id`, `active`, `address_str`, `city`, `country`, `position_lat`, `position_lon`, `phone_container_id`, `title`, `description`, `image_id`, `licence`, `section_clinic`, `section_consultation`) VALUES
-(1, 1, 'г Москва, ул Верхняя Первомайская, д 57', 'Москва', 'Россия', 55.7998, 37.8021, 14, 'Родильный дом №20 филиал ГКБ им. Д.Д.Плетнёва', 'Родильный дом городской клинической больницы имени Д.Д. Плетнёва – одно из ведущих медицинских учреждений столицы, где получают помощь женщины и новорожденные малыши.nnПосле полной реконструкции роддома, которая длилась целых девять лет, клинику можно по праву назвать современной, комфортной и отлично оснащенной.nnВедение беременности и роды проходят здесь под наблюдением опытных врачей акушеров-гинекологов. В КДО ведут консультации терапевт, офтальмолог, оториноларинголог, кардиолог, эндокринолог, стоматолог.n', 29, '123', 1, 0),
+(1, 1, 'г Москва, ул Верхняя Первомайская, д 57', 'Москва', 'Россия', 55.7998, 37.8021, 14, 'Родильный дом №20 филиал ГКБ им. Д.Д.Плетнёва', 'Родильный дом городской клинической больницы имени Д.Д. Плетнёва – одно из ведущих медицинских учреждений столицы, где получают помощь женщины и новорожденные малыши. После полной реконструкции роддома, которая длилась целых девять лет, клинику можно по праву назвать современной, комфортной и отлично оснащенной. Ведение беременности и роды проходят здесь под наблюдением опытных врачей акушеров-гинекологов. ', 29, 'ЛО-77-01-012-830', 1, 1),
 (2, 1, 'г Москва, ул Вешняковская, д 23', 'Москва', 'Россия', 55.7308, 37.8335, 14, 'Родильный дом ГКБ №15 им. О.М. Филатова', 'Родильный дом ГКБ №15 им. О.М. Филатова – неотъемлемая часть крупнейшей многопрофильной больницы Москвы с ее возможностями: специалистами различных профилей и доступностью ультразвукового, рентгенологического обследований и лабораторных исследований.\n\nРоддом славится современными подходами в акушерстве и гинекологии. Например, именно здесь впервые была внедрена практика совместного пребывания матери и ребенка.\n\nПосле того, как в 2010 году роддом ГКБ №15 был открыт после масштабной реконструкции, это прекрасно оснащенный акушерский стационар, где женщины и их малыши получают плановую и экстренную акушерскую помощь.', 93, NULL, 1, 0),
 (3, 1, 'г Москва, ул Фортунатовская, д 1 к 2', 'Москва', 'Россия', 55.7915, 37.7394, 1, 'Родильный дом ГКБ №36 им. Ф.И. Иноземцева', 'Полностью обновленный Акушерско-гинекологический центр ГКБ имени Ф.И. Иноземцева был открыт после капитального ремонта 1 апреля 2015 года. Будущих мам ждут уютные палаты, опытные и доброжелательные специалисты, современное оборудование, позволяющее принимать роды любой сложности.\n\nВ индивидуальных родильных боксах, оснащенных по всем стандартам акушерской помощи, вы будете чувствовать себя спокойно и уверенно, а потрясающий вид на Москву из послеродового отделения сделает дни, проведенные здесь, незабываемыми.', 96, NULL, 1, 0),
 (4, 1, 'г Москва, Федеративный пр-кт, д 17', 'Москва', 'Россия', 55.7556, 37.8137, 1, 'Перинатальный центр ГКБ №70 им. Е.О. Мухина ', 'Перинатальный центр московской больницы № 70 им. Е.О. Мухина – современный медицинский центр, где женщины и дети могут получить весь спектр услуг в области как акушерства, гинекологии и педиатрии, так и диагностики, реабилитации.\n\nВ Центре специализируются на помощи женщинам с проблемой невынашивания беременности и сердечно-сосудистыми патологиями.\n\nМать и дитя здесь круглосуточно находятся вместе, за исключением случаев, когда ребенку требуется особая забота врачей. В отделении реабилитации проводится дополнительное обследование детей первого года жизни, а мамы обучаются навыкам помощи своим малышам.', NULL, NULL, 1, 0),
@@ -276,7 +275,9 @@ INSERT INTO `contragents` (`id`, `active`, `address_str`, `city`, `country`, `po
 (34, 0, '', '', '', 0, 0, 1, 'Родильный дом №67', 'Евромед ', NULL, NULL, 1, 0),
 (35, 1, 'г Москва, Кавказский б-р, д 45', 'Москва', 'Россия', 55.6276, 37.6502, 19, 'Женская консультация при ГБУЗ ГКБ им СС Юдина ', NULL, 112, NULL, 1, 1),
 (36, 1, 'г. Москва, ул. Щепкина, д. 35', 'Москва', 'Россия', 55.7819, 37.6293, 17, 'Женская консультация при EMC Щепкина ', 'Ведение беременности и родов любой сложности: у пациенток с сопутствующими заболеваниями, с рубцом на матке или  при многоплодной беременности.\nКоманда врачей с опытом работы в клиниках Европы, США и Израиля.\nКомфорт и удовольствие от пребывания: делюкс и люкс-студии, семейные люкс-апартаменты.', 116, 'ЛО-77-01-020774 от 26 ноября 2020 г.', 1, 1),
-(37, 1, 'г. Москва, Спиридоньевский пер., д. 5&#x2F;1', 'Москва', 'Россия', 55.7621, 37.5932, 17, 'Женская консультация при EMC Спиридоньевский', NULL, 118, 'Лицензия № ЛО-77-01-020774 от 26 ноября 2020 г.', 1, 1);
+(37, 1, 'г. Москва, Спиридоньевский пер., д. 5&#x2F;1', 'Москва', 'Россия', 55.7621, 37.5932, 17, 'Женская консультация при EMC Спиридоньевский', NULL, 118, 'Лицензия № ЛО-77-01-020774 от 26 ноября 2020 г.', 1, 1),
+(39, 1, 'поселение Внуковское, улица Лётчика Грицевца, 5, 1 этаж', 'Москва,', 'Россия', 55.6237, 37.3054, 20, 'Медок Солнцево', 'Женская консультация в Солнцево находится по адресу: город Москва, улица Летчика Грицевца, дом 5. В непосредственной близости от женской консультации располагается остановка «Микрорайон Солнцево-парк». Через эту остановку проходит маршрут автобусов №374 и 579. От остановки нужно будет пройти всего 70 метров. При желании к зданию, где размещается наш медицинский центр, можно легко подъехать на собственном автотранспорте. Для удобной парковки здесь предусмотрены специальные площадки, где практически всегда есть свободные места, куда можно без каких-либо проблем поставить свой автомобиль. Наши консультанты всегда готовы подробно ответить на все вопросы о том, как можно быстро добраться до нашего медицинского центра. Они помогут подобрать оптимальный маршрут, учитывая пожелания каждого клиента, решившего посетить наш медицинский центр. Чтобы получить всю дополнительную информацию, достаточно позвонить нашим консультантам по телефону или отправить сообщение в специальном разделе нашего сайта.', 120, 'ЛО-77-01-017450', 1, 1),
+(41, 1, 'Москва', 'Москва', 'Россия', 25165, 156456, 20, 'Сеть женских консультаций 9 месяцев', NULL, NULL, 'ЛО 156151651', 1, 1);
 
 -- --------------------------------------------------------
 
@@ -285,11 +286,11 @@ INSERT INTO `contragents` (`id`, `active`, `address_str`, `city`, `country`, `po
 --
 
 CREATE TABLE `districts` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
   `name` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
   `title` text COLLATE utf8_unicode_ci NOT NULL,
   `title_short` text COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `districts`
@@ -312,22 +313,22 @@ INSERT INTO `districts` (`id`, `name`, `title`, `title_short`) VALUES
 --
 
 CREATE TABLE `doctors` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `full_name` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `short_name` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `patronymic` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `experience` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'стаж',
-  `count` int(11) DEFAULT NULL COMMENT 'количество родов',
+  `count` int DEFAULT NULL COMMENT 'количество родов',
   `description_education` text COLLATE utf8_unicode_ci COMMENT 'образование',
   `description_experience` text COLLATE utf8_unicode_ci COMMENT 'проф навыки, сильные стороны',
   `description_pro` text COLLATE utf8_unicode_ci,
   `description_services` text COLLATE utf8_unicode_ci,
-  `category` bigint(20) UNSIGNED DEFAULT NULL,
-  `position` bigint(20) UNSIGNED DEFAULT NULL COMMENT 'специализация врача',
-  `clinic_id` int(11) DEFAULT NULL COMMENT 'Прикреплен к клинике (ID)',
-  `image_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `category` bigint UNSIGNED DEFAULT NULL,
+  `position` bigint UNSIGNED DEFAULT NULL COMMENT 'специализация врача',
+  `clinic_id` int DEFAULT NULL COMMENT 'Прикреплен к клинике (ID)',
+  `image_id` bigint UNSIGNED DEFAULT NULL,
   `def` tinyint(1) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Врачи системы';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci COMMENT='Врачи системы';
 
 --
 -- Дамп данных таблицы `doctors`
@@ -414,7 +415,15 @@ INSERT INTO `doctors` (`id`, `full_name`, `short_name`, `patronymic`, `experienc
 (85, 'Доула', 'Высшая категория', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 6, 5, NULL, NULL, 1),
 (86, 'Акушер-гинеколог', 'Первая категория', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 7, 1, NULL, NULL, 1),
 (87, 'Акушер-гинеколог', 'Вторая категория', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 8, 1, NULL, NULL, 1),
-(88, 'Врач-неонатолог', 'Первая категория', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 7, 2, NULL, NULL, 1);
+(88, 'Врач-неонатолог', 'Первая категория', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 7, 2, NULL, NULL, 1),
+(89, 'Оксана ', 'Пешева ', 'Николаевна', '13', 917, '2005 - Национальный исследовательский Мордовский государственный университет им. Н.П. Огарёва.\n2007 - Национальный исследовательский Мордовский государственный университет им. Н.П. Огарёва. Интернатура по специальности &quot;Акушер-гинеколог&quot;.\n2009 - Российская Медицинская Академия непрерывного профессионального образования - Кольпоскопия.\n2010 - Российская Медицинская Академия непрерывного профессионального образования - Тематическое усовершенствование по детской гинекологии.\n2012 - УЛГУ, Мед. Академия - Ультразвуковая диагностика.\n2017 - Российская Медицинская Академия непрерывного профессионального образования - УЗД.\n2017 - Российская Медицинская Академия непрерывного профессионального образования - акушерство и гинекология.', 'Закончившая в свое время НИМГУ им. Н.П. Огарёва, сегодня этот высококвалифицированный акушер-гинеколог имеет более двадцати научных публикаций и пользуется уважением не только своих пациенток, но и коллег по работе. Оксана Николаевна является членом Общества врачей, занимающихся изучением и лечением миомы шейки матки и специализируется на гинекологической эндокринологии, а также ведении беременности.', NULL, 'Общая гинекология, Гинекологическая эндокринология, Лечение миомы матки, Ведение беременности, Планирование беременности.', 6, 1, 39, 121, NULL),
+(90, ' Валентина ', 'Зуева', 'Николаевна', '13', 1000, '2005 - ГОУ ВПО Московская медицинская академия имени И.М. Сеченова\n2008 - Ординатура по специальности «акушерство и гинекология» ГОУ ВПО ММА имени И.М. Сеченова\n2008 -«Акушерство и гинекология» ГОУ ВПО ММА имени И.М. Сеченова\n2008 - «Ультразвуковая диагностика в акушерстве и гинекологии», МГМСУ\n2009 - «Эндокринология в акушерстве и гинекологии», ГОУ ДПО РМАПО\n2012 - Краткосрочное ПК «Диагностика и профилактика острозаразных дерматозов и ИППП», ГОУ ВПО РГМУ\n2013 - «Ультразвуковая диагностика» ИППО ФГБУ ГНЦ ФМБЦ им. А.И. Бурназяна ФМБА России\n2013 - «Акушерство и гинекология» ГОУ ВПО ПМГМУ имени И.М. Сеченова\n2018 - «Акушерство и гинекология» ГОУ ВПО ПМГМУ имени И.М. Сеченова\n2018 - «Ультразвуковая диагностика» ФГБОУ ВО РНИМУ имени Н.И. Пирогова', 'Московская медицинская академия имени И.М. Сеченова дала этому замечательному врачу высочайший уровень знаний и навыков, а человеческие качества дополнили этот прекрасный комплект. Благодаря опыту и компетенции сегодня Валентину Николаевну признают одним из лучших акушеров-гинекологов в Москве. Несмотря на то, что доктор имеет уникальный опыт, приоритетными направлениями деятельности для нее являются ведение беременности и ультразвуковая диагностика.', NULL, 'Планирование беременности, ведение беременности', 6, 1, 39, NULL, NULL),
+(91, 'Консультация', 'Иванова', 'И', '111', 111, 'увы', 'хз', NULL, NULL, NULL, NULL, 36, NULL, NULL),
+(92, 'Оксана ', 'Пешева ', 'Николаевна', '13', 917, '2005 Национальный исследовательский Мордовский государственный университет им. Н.П. Огарёва.\n\n2007 Национальный исследовательский Мордовский государственный университет им. Н.П. Огарёва. Интернатура по специальности &quot;Акушер-гинеколог&quot;.\n\n2009 Российская Медицинская Академия непрерывного профессионального образования - Кольпоскопия.\n\n2010 Российская Медицинская Академия непрерывного профессионального образования - Тематическое усовершенствование по детской гинекологии.\n\n2012 УЛГУ, Мед. Академия - Ультразвуковая диагностика.\n\n2017 Российская Медицинская Академия непрерывного профессионального образования - УЗД.\n\n2017 Российская Медицинская Академия непрерывного профессионального образования - акушерство и гинекология.', 'Высококвалифицированный акушер-гинеколог имеет более двадцати научных публикаций и пользуется уважением не только своих пациенток, но и коллег по работе. Оксана Николаевна является членом Общества врачей, занимающихся изучением и лечением миомы шейки матки и специализируется на гинекологической эндокринологии, а также ведении беременности.', NULL, NULL, 6, 1, 39, NULL, NULL),
+(93, 'Людмила ', 'Древаль ', 'Ивановна', '21', 1204, '1998\nДонецкий государственный Медицинский Университет им. М. Горького.\n2005\n&quot;Терапия&quot;, Кафедра ФУВ Донецкого государственного медицинского университета.\n2006\n&quot;Актуальные вопросы аллергологии&quot;, Кафедра ФУВ Донецкого государственного медицинского университета.\n2007\n&quot;Клиническая иммунология&quot;, Кафедра ФУВ Донецкого государственного медицинского университета.\n2008\n&quot;Терапия&quot;, Кафедра ФУВ Донецкого государственного медицинского университета.\n2012\n&quot;Вопросы профпатологии&quot;, Кафедра ФУВ Донецкого государственного медицинского университета.\n2013\n&quot;Терапия&quot;, Кафедра ФУВ Донецкого государственного медицинского университета.\nСертификат по клинической иммунологии.\nСертификат по аллергологии.', NULL, NULL, NULL, 6, 1, 39, 122, NULL),
+(94, 'Валентина ', 'Зуева ', 'Николаевна', '13', 1000, '2005\nГОУ ВПО Московская медицинская академия имени И.М. Сеченова\n2008\nОрдинатура по специальности «акушерство и гинекология» ГОУ ВПО ММА имени И.М. Сеченова\n2008\n«Акушерство и гинекология» ГОУ ВПО ММА имени И.М. Сеченова\n2008\n«Ультразвуковая диагностика в акушерстве и гинекологии», МГМСУ\n2009\n«Эндокринология в акушерстве и гинекологии», ГОУ ДПО РМАПО\n2012\nКраткосрочное ПК «Диагностика и профилактика острозаразных дерматозов и ИППП», ГОУ ВПО РГМУ\n2013\n«Ультразвуковая диагностика» ИППО ФГБУ ГНЦ ФМБЦ им. А.И. Бурназяна ФМБА России\n2013\n«Акушерство и гинекология» ГОУ ВПО ПМГМУ имени И.М. Сеченова\n2018\n«Акушерство и гинекология» ГОУ ВПО ПМГМУ имени И.М. Сеченова\n2018\n«Ультразвуковая диагностика» ФГБОУ ВО РНИМУ имени Н.И. Пирогова', NULL, NULL, NULL, 6, 1, 39, 124, NULL),
+(95, 'Ольга', 'Фролова', NULL, '10', 1000, NULL, NULL, NULL, NULL, 6, 1, 39, 126, NULL),
+(96, 'Олег', 'Яковлев', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 6, 1, 39, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -423,12 +432,12 @@ INSERT INTO `doctors` (`id`, `full_name`, `short_name`, `patronymic`, `experienc
 --
 
 CREATE TABLE `doctor_category_type` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `title` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `id` bigint UNSIGNED NOT NULL,
+  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL,
   `lettera` varchar(1) DEFAULT NULL,
-  `description` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
-  `bg_color` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `icon` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL
+  `description` text CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci,
+  `bg_color` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `icon` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -447,11 +456,11 @@ INSERT INTO `doctor_category_type` (`id`, `title`, `lettera`, `description`, `bg
 --
 
 CREATE TABLE `doctor_position_type` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `title` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `description` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
-  `bg_color` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `icon` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL
+  `id` bigint UNSIGNED NOT NULL,
+  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci,
+  `bg_color` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `icon` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -459,9 +468,9 @@ CREATE TABLE `doctor_position_type` (
 --
 
 INSERT INTO `doctor_position_type` (`id`, `title`, `description`, `bg_color`, `icon`) VALUES
-(1, 'Дежурная бригада', NULL, NULL, NULL),
-(2, 'Команда на выбор', NULL, NULL, NULL),
-(3, 'Муж или Родственники ', NULL, NULL, NULL),
+(1, 'Акушер-гинеколог', NULL, NULL, NULL),
+(2, 'Врач-неонатолог', NULL, NULL, NULL),
+(3, 'Врач-анестезиолог', NULL, NULL, NULL),
 (4, 'Акушерка', NULL, NULL, NULL),
 (5, 'Доула', NULL, NULL, NULL);
 
@@ -472,11 +481,11 @@ INSERT INTO `doctor_position_type` (`id`, `title`, `description`, `bg_color`, `i
 --
 
 CREATE TABLE `entity_type` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
   `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `name` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
   `comment` text COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Тип сущности';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci COMMENT='Тип сущности';
 
 --
 -- Дамп данных таблицы `entity_type`
@@ -493,13 +502,13 @@ INSERT INTO `entity_type` (`id`, `title`, `name`, `comment`) VALUES
 --
 
 CREATE TABLE `facilities_containers` (
-  `id` int(11) NOT NULL,
-  `container_id` int(11) NOT NULL,
-  `facility_id` int(11) NOT NULL,
+  `id` int NOT NULL,
+  `container_id` int NOT NULL,
+  `facility_id` int NOT NULL,
   `overrided_title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `overrided_description` text COLLATE utf8_unicode_ci,
   `comment` text COLLATE utf8_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `facilities_containers`
@@ -524,11 +533,11 @@ INSERT INTO `facilities_containers` (`id`, `container_id`, `facility_id`, `overr
 --
 
 CREATE TABLE `facilities_containers_repo` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
   `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `description` text COLLATE utf8_unicode_ci,
   `comment` text COLLATE utf8_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `facilities_containers_repo`
@@ -548,11 +557,11 @@ INSERT INTO `facilities_containers_repo` (`id`, `title`, `description`, `comment
 --
 
 CREATE TABLE `facilities_type` (
-  `id` int(11) NOT NULL,
-  `icon` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `title` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `description` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
-  `bg_color` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL
+  `id` int NOT NULL,
+  `icon` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci,
+  `bg_color` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -563,7 +572,6 @@ INSERT INTO `facilities_type` (`id`, `icon`, `title`, `description`, `bg_color`)
 (15, NULL, 'Трансфер в роддом', NULL, NULL),
 (16, NULL, 'Свободное посещение', NULL, NULL),
 (17, NULL, 'Совместное пребывание мамы и малыша', NULL, NULL),
-(18, NULL, '', '', NULL),
 (19, NULL, 'Гостевая парковка ', NULL, NULL);
 
 -- --------------------------------------------------------
@@ -573,12 +581,12 @@ INSERT INTO `facilities_type` (`id`, `icon`, `title`, `description`, `bg_color`)
 --
 
 CREATE TABLE `files` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `filename` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
-  `aws` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `id` bigint UNSIGNED NOT NULL,
+  `filename` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci NOT NULL,
+  `aws` varchar(570) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL,
   `folder` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `type` varchar(50) COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `files`
@@ -673,7 +681,15 @@ INSERT INTO `files` (`id`, `filename`, `aws`, `folder`, `type`) VALUES
 (115, 'Ворохобова_1646742636721.jpg', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/%D0%92%D0%BE%D1%80%D0%BE%D1%85%D0%BE%D0%B1%D0%BE%D0%B2%D0%B0_1646742636721.jpg', '/system-images', 'image/jpeg'),
 (116, 'ЕМС Щепкина_1647762272613.JPG', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/%D0%95%D0%9C%D0%A1%20%D0%A9%D0%B5%D0%BF%D0%BA%D0%B8%D0%BD%D0%B0_1647762272613.JPG', '/system-images', 'image/jpeg'),
 (117, 'ЕМС Щепкина_1647766221528.JPG', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/%D0%95%D0%9C%D0%A1%20%D0%A9%D0%B5%D0%BF%D0%BA%D0%B8%D0%BD%D0%B0_1647766221528.JPG', '/system-images', 'image/jpeg'),
-(118, 'EMC Спир_1647766501974.JPG', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/EMC%20%D0%A1%D0%BF%D0%B8%D1%80_1647766501974.JPG', '/system-images', 'image/jpeg');
+(118, 'EMC Спир_1647766501974.JPG', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/EMC%20%D0%A1%D0%BF%D0%B8%D1%80_1647766501974.JPG', '/system-images', 'image/jpeg'),
+(119, 'Фасад_1648369567744.jpg', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/%D0%A4%D0%B0%D1%81%D0%B0%D0%B4_1648369567744.jpg', '/system-images', 'image/jpeg'),
+(120, 'Medok_1648369766112.jpg', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/Medok_1648369766112.jpg', '/system-images', 'image/jpeg'),
+(121, 'Пешева_1648370671219.jpg', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/%D0%9F%D0%B5%D1%88%D0%B5%D0%B2%D0%B0_1648370671219.jpg', '/system-images', 'image/jpeg'),
+(122, 'Древаль_1000_1650815257230.jpg', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/%D0%94%D1%80%D0%B5%D0%B2%D0%B0%D0%BB%D1%8C_1000_1650815257230.jpg', '/system-images', 'image/jpeg'),
+(123, 'Древаль_1000_1650815848184.jpg', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/%D0%94%D1%80%D0%B5%D0%B2%D0%B0%D0%BB%D1%8C_1000_1650815848184.jpg', '/system-images', 'image/jpeg'),
+(124, 'Древаль_1000_1650815896577.jpg', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/%D0%94%D1%80%D0%B5%D0%B2%D0%B0%D0%BB%D1%8C_1000_1650815896577.jpg', '/system-images', 'image/jpeg'),
+(125, 'b16723ebdb79ed5c21ac8afbc3a252_1650899846574.jpg', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/b16723ebdb79ed5c21ac8afbc3a252_1650899846574.jpg', '/system-images', 'image/jpeg'),
+(126, '2019-12-08_15-22-58_1651001826372.jpg', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/2019-12-08_15-22-58_1651001826372.jpg', '/system-images', 'image/jpeg');
 
 -- --------------------------------------------------------
 
@@ -682,13 +698,13 @@ INSERT INTO `files` (`id`, `filename`, `aws`, `folder`, `type`) VALUES
 --
 
 CREATE TABLE `images` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `file_id` bigint(20) UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
+  `file_id` bigint UNSIGNED NOT NULL,
   `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `description` text COLLATE utf8_unicode_ci NOT NULL,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `images`
@@ -783,7 +799,15 @@ INSERT INTO `images` (`id`, `file_id`, `title`, `description`, `datetime_update`
 (115, 115, 'Родильный дом №1 ГКБ №67 им. Л.А. Ворохобова', 'null', '2022-03-08 12:30:37', '2022-03-08 12:30:37'),
 (116, 116, 'EMC Щепкина', 'null', '2022-03-20 07:44:33', '2022-03-20 07:44:33'),
 (117, 117, 'EMC Спиридоньевский', 'null', '2022-03-20 08:50:21', '2022-03-20 08:50:21'),
-(118, 118, 'EMC Спиридоньевский', 'null', '2022-03-20 08:55:02', '2022-03-20 08:55:02');
+(118, 118, 'EMC Спиридоньевский', 'null', '2022-03-20 08:55:02', '2022-03-20 08:55:02'),
+(119, 119, 'Медок Солнцево', 'null', '2022-03-27 08:26:08', '2022-03-27 08:26:08'),
+(120, 120, 'Медок Солнцево', 'null', '2022-03-27 08:29:26', '2022-03-27 08:29:26'),
+(121, 121, 'Пешева Оксана Николаевна', 'null', '2022-03-27 08:44:31', '2022-03-27 08:44:31'),
+(122, 122, 'Древаль Людмила Ивановна', 'null', '2022-04-24 15:47:37', '2022-04-24 15:47:37'),
+(123, 123, 'Зуева ', 'null', '2022-04-24 15:57:28', '2022-04-24 15:57:28'),
+(124, 124, 'Зуева ', 'null', '2022-04-24 15:58:16', '2022-04-24 15:58:16'),
+(125, 125, 'очень  крутая картинка', 'аваава', '2022-04-25 15:17:27', '2022-04-25 15:17:27'),
+(126, 126, 'null', 'null', '2022-04-26 19:37:06', '2022-04-26 19:37:06');
 
 -- --------------------------------------------------------
 
@@ -792,14 +816,14 @@ INSERT INTO `images` (`id`, `file_id`, `title`, `description`, `datetime_update`
 --
 
 CREATE TABLE `lk_permissions` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
   `contragent_entity_key` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `contragent_entity_id` bigint(20) NOT NULL,
-  `permission_id` bigint(20) UNSIGNED NOT NULL,
+  `contragent_entity_id` bigint NOT NULL,
+  `permission_id` bigint UNSIGNED NOT NULL,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `lk_permissions`
@@ -820,12 +844,12 @@ INSERT INTO `lk_permissions` (`id`, `user_id`, `contragent_entity_key`, `contrag
 --
 
 CREATE TABLE `lk_permission_type` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `slug` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `title` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `description` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
-  `icon` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `bg_color` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL
+  `id` bigint UNSIGNED NOT NULL,
+  `slug` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci NOT NULL,
+  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci,
+  `icon` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `bg_color` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -843,71 +867,34 @@ INSERT INTO `lk_permission_type` (`id`, `slug`, `title`, `description`, `icon`, 
 --
 
 CREATE TABLE `orders` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `user_id` bigint(20) UNSIGNED NOT NULL,
-  `session_id` bigint(20) UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
+  `session_id` bigint UNSIGNED NOT NULL,
   `slot_entity_key` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `slot_entity_id` bigint(20) UNSIGNED NOT NULL,
-  `contragent_entity_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `slot_entity_id` bigint UNSIGNED NOT NULL,
+  `contragent_entity_id` bigint UNSIGNED DEFAULT NULL,
   `section_key` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `tab_key` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `floor_key` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `utility` varchar(50) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'other',
-  `refferer` bigint(20) UNSIGNED NOT NULL,
+  `refferer` bigint UNSIGNED NOT NULL,
   `status` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
   `group_token` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `orders`
 --
 
 INSERT INTO `orders` (`id`, `user_id`, `session_id`, `slot_entity_key`, `slot_entity_id`, `contragent_entity_id`, `section_key`, `tab_key`, `floor_key`, `utility`, `refferer`, `status`, `group_token`, `datetime_update`, `datetime_create`) VALUES
-(10, 3, 323, 'ent_doctor_slots', 140, 1, 'clinic', 'doctors', 'doctors1_1', 'person', 3, 'pending', NULL, '2022-02-05 10:43:51', '2022-01-13 19:29:53'),
-(11, 3, 323, 'ent_placement_slots', 432, 1, 'clinic', 'placement', 'placement', 'placement', 3, 'pending', NULL, '2022-02-05 10:44:44', '2022-01-13 19:30:13'),
-(12, 3, 323, 'ent_birth_type_slots', 61, 1, 'clinic', 'birthtype', 'birthtype', 'other', 3, 'pending', NULL, '2022-01-13 19:30:20', '2022-01-13 19:30:20'),
-(13, 3, 323, 'ent_birth_additional_slots', 433, 1, 'clinic', 'other', 'other', 'other', 3, 'pending', NULL, '2022-02-03 13:42:50', '2022-01-13 19:30:27'),
-(19, 19, 275, 'ent_doctor_slots', 140, 1, 'clinic', 'doctors', 'doctors1_1', 'person', 19, 'pending', NULL, '2022-02-05 10:43:51', '2022-01-15 12:11:27'),
-(20, 19, 275, 'ent_placement_slots', 132, 1, 'clinic', 'placement', 'placement', 'placement', 19, 'deleted', NULL, '2022-02-05 10:44:44', '2022-01-15 12:11:32'),
-(21, 19, 275, 'ent_placement_slots', 432, 1, 'clinic', 'placement', 'placement', 'placement', 19, 'pending', NULL, '2022-02-05 10:44:44', '2022-01-15 12:11:34'),
-(22, 19, 275, 'ent_birth_type_slots', 61, 1, 'clinic', 'birthtype', 'birthtype', 'other', 19, 'pending', NULL, '2022-01-15 12:11:37', '2022-01-15 12:11:37'),
-(23, 19, 275, 'ent_birth_additional_slots', 433, 1, 'clinic', 'other', 'other', 'other', 19, 'deleted', NULL, '2022-02-03 13:42:50', '2022-01-15 12:11:40'),
-(24, 19, 323, 'ent_birth_additional_slots', 433, 1, 'clinic', 'other', 'other', 'other', 19, 'pending', NULL, '2022-02-03 13:42:50', '2022-01-18 15:20:22'),
-(84, 1, 323, 'ent_doctor_slots', 58, 15, 'clinic', 'doctors', 'doctors1_1', 'other', 1, 'deleted', NULL, '2022-02-12 15:17:50', '2022-02-12 15:17:09'),
-(85, 1, 323, 'ent_placement_slots', 8, 15, 'clinic', 'placement', 'placement', 'other', 1, 'deleted', NULL, '2022-02-12 15:17:48', '2022-02-12 15:17:11'),
-(86, 1, 323, 'ent_birth_additional_slots', 451, 15, 'clinic', 'other', 'other', 'other', 1, 'deleted', NULL, '2022-02-12 15:17:46', '2022-02-12 15:17:13'),
-(87, 1, 323, 'ent_doctor_slots', 140, 1, 'clinic', 'doctors', 'doctors1_1', 'other', 1, 'completed', '26f3367b-73e8-408c-8351-11ab1b2a16ee', '2022-02-12 15:22:52', '2022-02-12 15:17:56'),
-(88, 1, 323, 'ent_placement_slots', 432, 1, 'clinic', 'placement', 'placement', 'other', 1, 'completed', '26f3367b-73e8-408c-8351-11ab1b2a16ee', '2022-02-12 15:22:52', '2022-02-12 15:17:58'),
-(89, 1, 323, 'ent_birth_type_slots', 61, 1, 'clinic', 'birthtype', 'birthtype', 'other', 1, 'deleted', '26f3367b-73e8-408c-8351-11ab1b2a16ee', '2022-02-12 15:22:37', '2022-02-12 15:18:00'),
-(90, 1, 323, 'ent_birth_additional_slots', 433, 1, 'clinic', 'other', 'other', 'other', 1, 'completed', '26f3367b-73e8-408c-8351-11ab1b2a16ee', '2022-02-12 15:22:52', '2022-02-12 15:18:16'),
-(91, 1, 323, 'ent_birth_type_slots', 63, 1, 'clinic', 'birthtype', 'birthtype', 'other', 1, 'completed', '26f3367b-73e8-408c-8351-11ab1b2a16ee', '2022-02-12 15:22:52', '2022-02-12 15:22:37'),
-(92, 1, 323, 'ent_doctor_slots', 140, 1, 'clinic', 'doctors', 'doctors1_1', 'other', 1, 'pending', NULL, '2022-02-14 19:37:11', '2022-02-14 19:37:11'),
-(93, 1, 323, 'ent_placement_slots', 432, 1, 'clinic', 'placement', 'placement', 'other', 1, 'pending', NULL, '2022-02-14 19:37:13', '2022-02-14 19:37:13'),
-(94, 1, 323, 'ent_birth_type_slots', 61, 1, 'clinic', 'birthtype', 'birthtype', 'other', 1, 'pending', NULL, '2022-02-14 19:37:16', '2022-02-14 19:37:16'),
-(95, 1, 323, 'ent_birth_additional_slots', 433, 1, 'clinic', 'other', 'other', 'other', 1, 'pending', NULL, '2022-02-14 19:37:18', '2022-02-14 19:37:18'),
-(96, 1, 323, 'ent_birth_additional_slots', 434, 1, 'clinic', 'other', 'other', 'other', 1, 'pending', NULL, '2022-02-16 08:34:53', '2022-02-16 08:34:53'),
-(97, 3, 430, 'ent_doctor_slots', 140, 1, 'clinic', 'doctors', 'doctors1_1', 'other', 3, 'deleted', NULL, '2022-02-16 19:58:00', '2022-02-16 19:57:57'),
-(98, 3, 430, 'ent_doctor_slots', 140, 1, 'clinic', 'doctors', 'doctors1_1', 'other', 3, 'pending', NULL, '2022-02-16 19:58:03', '2022-02-16 19:58:03'),
-(99, 3, 430, 'ent_placement_slots', 132, 1, 'clinic', 'placement', 'placement', 'other', 3, 'deleted', NULL, '2022-02-16 19:58:59', '2022-02-16 19:58:14'),
-(100, 3, 430, 'ent_birth_type_slots', 61, 1, 'clinic', 'birthtype', 'birthtype', 'other', 3, 'pending', NULL, '2022-02-16 19:58:18', '2022-02-16 19:58:18'),
-(101, 3, 430, 'ent_birth_additional_slots', 435, 1, 'clinic', 'other', 'other', 'other', 3, 'pending', NULL, '2022-02-16 19:58:27', '2022-02-16 19:58:27'),
-(102, 3, 430, 'ent_placement_slots', 432, 1, 'clinic', 'placement', 'placement', 'other', 3, 'pending', NULL, '2022-02-16 19:59:05', '2022-02-16 19:59:05'),
-(103, 1, 323, 'ent_doctor_slots', 144, 2, 'clinic', 'doctors', 'doctors1_1', 'other', 1, 'pending', NULL, '2022-02-16 19:59:31', '2022-02-16 19:59:31'),
-(104, 1, 323, 'ent_placement_slots', 15, 2, 'clinic', 'placement', 'placement', 'other', 1, 'pending', NULL, '2022-02-16 19:59:35', '2022-02-16 19:59:35'),
-(105, 1, 323, 'ent_birth_type_slots', 69, 2, 'clinic', 'birthtype', 'birthtype', 'other', 1, 'pending', NULL, '2022-02-16 19:59:38', '2022-02-16 19:59:38'),
-(106, 1, 323, 'ent_birth_additional_slots', 440, 2, 'clinic', 'other', 'other', 'other', 1, 'pending', NULL, '2022-02-16 19:59:40', '2022-02-16 19:59:40'),
-(107, 19, 392, 'ent_doctor_slots', 144, 2, 'clinic', 'doctors', 'doctors1_1', 'other', 19, 'pending', NULL, '2022-03-08 17:43:30', '2022-03-08 17:43:30'),
-(108, 19, 392, 'ent_placement_slots', 14, 2, 'clinic', 'placement', 'placement', 'other', 19, 'pending', NULL, '2022-03-08 17:43:37', '2022-03-08 17:43:37'),
-(109, 19, 392, 'ent_birth_type_slots', 67, 2, 'clinic', 'birthtype', 'birthtype', 'other', 19, 'pending', NULL, '2022-03-08 17:43:40', '2022-03-08 17:43:40'),
-(110, 19, 392, 'ent_birth_additional_slots', 438, 2, 'clinic', 'other', 'other', 'other', 19, 'pending', NULL, '2022-03-08 17:43:44', '2022-03-08 17:43:44'),
-(111, 19, 392, 'ent_doctor_slots', 164, 7, 'clinic', 'doctors', 'doctors1_1', 'other', 19, 'pending', NULL, '2022-03-08 18:21:55', '2022-03-08 18:21:55'),
-(112, 19, 392, 'ent_placement_slots', 21, 7, 'clinic', 'placement', 'placement', 'other', 19, 'pending', NULL, '2022-03-08 18:22:01', '2022-03-08 18:22:01'),
-(113, 19, 392, 'ent_birth_type_slots', 85, 7, 'clinic', 'birthtype', 'birthtype', 'other', 19, 'pending', NULL, '2022-03-08 18:22:04', '2022-03-08 18:22:04'),
-(114, 3, 502, 'ent_doctor_slots', 140, 1, 'clinic', 'doctors', 'doctors1_1', 'other', 3, 'pending', NULL, '2022-03-10 17:55:37', '2022-03-10 17:55:37'),
-(115, 3, 502, 'ent_placement_slots', 132, 1, 'clinic', 'placement', 'placement', 'other', 3, 'pending', NULL, '2022-03-10 17:55:44', '2022-03-10 17:55:44'),
-(116, 3, 502, 'ent_birth_type_slots', 63, 1, 'clinic', 'birthtype', 'birthtype', 'other', 3, 'pending', NULL, '2022-03-10 17:55:48', '2022-03-10 17:55:48');
+(1, 1, 323, 'ent_doctor_slots', 58, 15, 'clinic', 'doctors', 'doctors1_1', 'other', 1, 'pending', NULL, '2022-04-22 17:18:14', '2022-04-22 17:18:14'),
+(2, 1, 323, 'ent_placement_slots', 8, 15, 'clinic', 'placement', 'placement', 'other', 1, 'pending', NULL, '2022-04-22 17:18:16', '2022-04-22 17:18:16'),
+(3, 1, 323, 'ent_birth_additional_slots', 451, 15, 'clinic', 'other', 'other', 'other', 1, 'pending', NULL, '2022-04-22 17:18:18', '2022-04-22 17:18:18'),
+(4, 19, 658, 'ent_doctor_slots', 140, 1, 'clinic', 'doctors', 'doctors1_1', 'other', 19, 'pending', NULL, '2022-04-24 08:47:48', '2022-04-24 08:47:48'),
+(5, 19, 658, 'ent_placement_slots', 432, 1, 'clinic', 'placement', 'placement', 'other', 19, 'pending', NULL, '2022-04-24 08:47:52', '2022-04-24 08:47:52'),
+(6, 19, 658, 'ent_birth_type_slots', 63, 1, 'clinic', 'birthtype', 'birthtype', 'other', 19, 'pending', NULL, '2022-04-24 08:47:59', '2022-04-24 08:47:59');
 
 -- --------------------------------------------------------
 
@@ -916,10 +903,10 @@ INSERT INTO `orders` (`id`, `user_id`, `session_id`, `slot_entity_key`, `slot_en
 --
 
 CREATE TABLE `order_contacts` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
   `group_token` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
-  `user_id` bigint(20) NOT NULL,
-  `session_id` bigint(20) NOT NULL,
+  `user_id` bigint NOT NULL,
+  `session_id` bigint NOT NULL,
   `phone` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
   `email` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
   `skype` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -931,20 +918,7 @@ CREATE TABLE `order_contacts` (
   `ch_telegram` tinyint(1) NOT NULL,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
---
--- Дамп данных таблицы `order_contacts`
---
-
-INSERT INTO `order_contacts` (`id`, `group_token`, `user_id`, `session_id`, `phone`, `email`, `skype`, `ch_email`, `ch_phone`, `ch_viber`, `ch_whatsapp`, `ch_skype`, `ch_telegram`, `datetime_create`, `datetime_update`) VALUES
-(1, 'cff22037-5039-4e1a-ad93-1784a27ebc1c', 1, 323, '89171215000', 'alter4444@gmail.com', 'exclusive_login', 0, 0, 0, 1, 0, 1, '2022-01-21 16:18:01', '2022-01-21 16:18:01'),
-(2, '9d13efb4-40c2-413c-8ccf-8c843515de7d', 1, 323, '89171215000', 'alter4444@gmail.com', 'exclusive_login', 0, 0, 0, 1, 0, 1, '2022-01-21 16:23:07', '2022-01-21 16:23:07'),
-(3, '8ffd8689-ad83-448c-9676-fbf41a448eef', 1, 323, '89171215000', 'alter4444@gmail.com', 'exclusive_login', 0, 0, 0, 1, 0, 1, '2022-01-21 16:27:16', '2022-01-21 16:27:16'),
-(4, '5617e72b-46ce-4168-b40d-b514c203c9fe', 1, 323, '89171215000', 'alter4444@gmail.com', 'exclusive_login', 0, 0, 0, 1, 0, 1, '2022-01-21 16:37:17', '2022-01-21 16:37:17'),
-(5, '2630668e-0fbe-4154-9a2a-79e67f3ba851', 1, 323, '89171215000', 'alter4444@gmail.com', 'exclusive_login', 0, 0, 0, 1, 0, 1, '2022-01-21 17:05:55', '2022-01-21 17:05:55'),
-(6, '26f2fa55-5751-4ae9-b49b-57b95b4e0801', 1, 323, '89171215000', 'alter4444@gmail.com', 'exclusive_login', 0, 0, 0, 1, 0, 1, '2022-02-12 08:55:48', '2022-02-12 08:55:48'),
-(7, '26f3367b-73e8-408c-8351-11ab1b2a16ee', 1, 323, '89171215000', 'alter4444@gmail.com', 'exclusive_login', 0, 0, 0, 1, 0, 1, '2022-02-12 15:19:49', '2022-02-12 15:19:49');
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -956,7 +930,7 @@ CREATE TABLE `order_status_type` (
   `slug` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
   `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `description` text COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `order_status_type`
@@ -979,24 +953,25 @@ INSERT INTO `order_status_type` (`slug`, `title`, `description`) VALUES
 --
 
 CREATE TABLE `phones` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
   `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `description` text COLLATE utf8_unicode_ci,
   `phone` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `comment` text COLLATE utf8_unicode_ci,
   `section` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `phones`
 --
 
 INSERT INTO `phones` (`id`, `title`, `description`, `phone`, `comment`, `section`) VALUES
-(8, 'Единая справочная &quot;Медси&quot;', '', '+7 (495) 021-47-02', NULL, 'consultation'),
-(9, 'Единая справочная &quot;Мать и дитя&quot;', NULL, '+7 (495) 127-42-46', NULL, 'clinic'),
-(10, 'Единая справочная &quot;Медок&quot;', '', '+7 (495) 241‒92‒50', NULL, 'consultation'),
+(8, 'Единая справочная Медси', '', '+7 (495) 021-47-02', NULL, 'consultation'),
+(9, 'Единая справочная Мать и дитя', NULL, '+7 (495) 127-42-46', NULL, 'clinic'),
+(10, 'Единая справочная Медок', '', '+7 (495) 241‒92‒50', NULL, 'consultation'),
 (11, 'Единая справочная ЕМС', NULL, '+7(495)933-66-55', NULL, 'clinic'),
-(12, 'Единая справочная &quot;СМ-Клиник&quot;', NULL, '+7 (495) 292-72-94', NULL, 'consultation');
+(12, 'Единая справочная СМ-Клиник', NULL, '+7 (495) 292-72-94', NULL, 'consultation'),
+(13, 'Контакт-центр Роддом 20', 'Контакт-центр Родильный дом №20 филиал ГКБ им. Д.Д.Плетнёва', '7 (495) 700-57-57 ', 'с 8.00-20.00 ежедневно', 'clinic');
 
 -- --------------------------------------------------------
 
@@ -1005,11 +980,11 @@ INSERT INTO `phones` (`id`, `title`, `description`, `phone`, `comment`, `section
 --
 
 CREATE TABLE `phones_containers_repo` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
   `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `description` text COLLATE utf8_unicode_ci,
   `comment` text COLLATE utf8_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `phones_containers_repo`
@@ -1019,7 +994,8 @@ INSERT INTO `phones_containers_repo` (`id`, `title`, `description`, `comment`) V
 (14, 'Телефоны Роддома Плетнева', 'Телефоны Роддома Плетнева', NULL),
 (17, 'Телефоны EMC', 'Справочник телефонов', NULL),
 (18, 'Медицинский центр Медси на Мичуринском проспекте', 'Медицинский центр Медси на Мичуринском проспекте', NULL),
-(19, 'Женская консультация на Кавказском бульваре', 'Женская консультация при ГБУЗ ГКБ им СС Юдина ДЗМ ЖК 5 ОСП', NULL);
+(19, 'Женская консультация на Кавказском бульваре', 'Женская консультация при ГБУЗ ГКБ им СС Юдина ДЗМ ЖК 5 ОСП', NULL),
+(20, 'Сеть женских консультаций Медок', 'В нашей сети женских консультаций трудятся 400 опытных врачей. В центрах «Медок» ведут прием гинекологи, терапевты-кардиологи, и эндокринологи. Средний стаж наших врачей не менее 10 лет. Большинство специалистов «Медок» – врачи первой и второй категории. Каждый десятый врач – кандидат медицинских наук, имеющий за плечами множество публикаций в авторитетных изданиях. Наши доктора постоянно совершенствуют свои профессиональные навыки на курсах, получая сертификаты таких ВУЗов как МГМУ имени И.М. Сеченова.\nМы занимаемся любыми случаями беременности: после ЭКО, после неудачной беременности, с патологиями в анамнезе, многоплодными.', NULL);
 
 -- --------------------------------------------------------
 
@@ -1028,11 +1004,11 @@ INSERT INTO `phones_containers_repo` (`id`, `title`, `description`, `comment`) V
 --
 
 CREATE TABLE `phone_containers` (
-  `id` int(11) NOT NULL,
-  `container_id` int(11) NOT NULL,
-  `phone_id` int(11) NOT NULL,
+  `id` int NOT NULL,
+  `container_id` int NOT NULL,
+  `phone_id` int NOT NULL,
   `comment` text COLLATE utf8_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `phone_containers`
@@ -1042,8 +1018,8 @@ INSERT INTO `phone_containers` (`id`, `container_id`, `phone_id`, `comment`) VAL
 (81, 17, 1, NULL),
 (82, 17, 4, NULL),
 (125, 18, 8, NULL),
-(128, 14, 10, NULL),
-(130, 19, 9, NULL);
+(130, 19, 9, NULL),
+(131, 14, 13, NULL);
 
 -- --------------------------------------------------------
 
@@ -1052,14 +1028,14 @@ INSERT INTO `phone_containers` (`id`, `container_id`, `phone_id`, `comment`) VAL
 --
 
 CREATE TABLE `roles` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
   `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `description` text COLLATE utf8_unicode_ci,
   `slug` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `rank` int(20) NOT NULL DEFAULT '0',
+  `rank` int NOT NULL DEFAULT '0',
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `roles`
@@ -1084,7 +1060,7 @@ CREATE TABLE `search` (
   `filters` text COLLATE utf8_unicode_ci NOT NULL,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `search`
@@ -1101,6 +1077,7 @@ INSERT INTO `search` (`hash`, `section`, `filters`, `datetime_create`, `datetime
 ('31ddd6fb33a0627128140fdb0efd246d', 'clinic', '{\"clinic_type_birth_section\":{\"1\":true},\"clinic_personal_birth_section\":{\"1\":true},\"clinic_facilities_birth_section\":{\"14\":true}}', '2021-09-13 14:54:26', '2021-09-13 14:54:26'),
 ('39348f75267a3215bcaf04fc9d50d91c', 'clinic', '{\"clinic_facilities_birth_section\":{\"2\":true}}', '2022-01-19 20:21:33', '2022-01-19 20:21:33'),
 ('393e94a6ef730bd5b9a133b359f62f70', 'clinic', '{\"clinic_type_birth_section\":{\"1\":true},\"clinic_placement_birth_section\":{\"3\":true}}', '2021-09-08 12:44:52', '2021-09-08 12:44:52'),
+('3b1058e9a28b97818f0940bb132dde16', 'consultation', '{\"consultation_patology\":{\"0\":true,\"1\":true}}', '2022-04-06 14:19:20', '2022-04-06 14:19:20'),
 ('3ee3d1ad4e35ce0dce0e19d9e3b9267e', 'clinic', '{\"clinic_placement_birth_section\":{\"22\":true}}', '2022-01-19 18:36:30', '2022-01-19 18:36:30'),
 ('3f610a8d28063a5451f80b9de7e0e781', 'clinic', '{\"clinic_type_birth_section\":{\"2\":true},\"clinic_personal_birth_section\":{\"1\":true,\"4\":true}}', '2022-01-19 18:35:13', '2022-01-19 18:35:13'),
 ('49a8f9f9fe3f8e78ba1c95cb5802a5d1', 'clinic', '{\"clinic_facilities_birth_section\":{\"14\":true}}', '2021-09-13 14:38:05', '2021-09-13 14:38:05'),
@@ -1113,6 +1090,7 @@ INSERT INTO `search` (`hash`, `section`, `filters`, `datetime_create`, `datetime
 ('63ab0eaccd46e1a7f4b7dc85cd91ef13', 'clinic', '{\"clinic_type_birth_section\":{\"1\":true,\"5\":true},\"clinic_placement_birth_section\":{\"3\":true},\"clinic_facilities_birth_section\":{\"14\":true}}', '2021-09-08 14:28:06', '2021-09-08 14:28:06'),
 ('69851710416198a557f177e975c1fedd', 'clinic', '{\"clinic_type_birth_section\":{\"2\":true},\"clinic_personal_birth_section\":{\"1\":true,\"4\":true},\"clinic_placement_birth_section\":{\"8\":true},\"clinic_facilities_birth_section\":{\"1\":true,\"2\":true,\"5\":true,\"14\":true,\"15\":true}}', '2022-01-19 18:35:41', '2022-01-19 18:35:41'),
 ('6a2e5a342ba5e5f020fedbb272a8e503', 'clinic', '{\"clinic_type_birth_section\":{\"1\":true,\"2\":true,\"3\":true,\"4\":true,\"5\":true,\"7\":true},\"clinic_placement_birth_section\":{\"8\":true}}', '2022-01-20 07:01:57', '2022-01-20 07:01:57'),
+('6b3084b436e1ef3a70b83e0ef4a00a3b', 'clinic', '{\"clinic_type_birth_section\":{\"1\":true},\"clinic_placement_birth_section\":{\"8\":true},\"clinic_facilities_birth_section\":{\"15\":true}}', '2022-04-10 16:19:42', '2022-04-10 16:19:42'),
 ('6b46ce709595a44c04cd266e42024217', 'clinic', '{\"clinic_type_birth_section\":{\"2\":true},\"clinic_personal_birth_section\":{\"1\":true,\"2\":true,\"3\":true,\"4\":true,\"5\":true},\"clinic_placement_birth_section\":{\"8\":true},\"clinic_facilities_birth_section\":{\"1\":true,\"2\":true,\"5\":true,\"14\":true,\"15\":true}}', '2022-01-19 18:35:55', '2022-01-19 18:35:55'),
 ('7291e7f40bdc9e588ff64e51688223cc', 'clinic', '{\"clinic_type_birth_section\":{\"1\":true},\"clinic_facilities_birth_section\":{\"1\":true}}', '2021-12-03 15:30:17', '2021-12-03 15:30:17'),
 ('7f6b2eaee2e9f1090d6ce3633151123a', 'clinic', '{\"clinic_type_birth_section\":{\"2\":true}}', '2021-09-08 12:44:28', '2021-09-08 12:44:28'),
@@ -1124,15 +1102,18 @@ INSERT INTO `search` (`hash`, `section`, `filters`, `datetime_create`, `datetime
 ('b0475438ab621656e9b96d66f2ccc26c', 'clinic', '{\"clinic_type_birth_section\":{\"1\":true,\"5\":true},\"clinic_placement_birth_section\":{\"3\":true}}', '2021-09-08 14:27:46', '2021-09-08 14:27:46'),
 ('b79f00dbe9651a149a73caaa4d7088f1', 'clinic', '{\"clinic_type_birth_section\":{\"3\":true,\"5\":true},\"clinic_personal_birth_section\":{\"5\":true}}', '2022-01-15 12:20:49', '2022-01-15 12:20:49'),
 ('b9025f2b48e91f971ef8c08a41c6667a', 'clinic', '{\"clinic_type_birth_section\":{\"1\":true,\"5\":true},\"clinic_placement_birth_section\":{\"1\":true},\"clinic_facilities_birth_section\":{\"14\":true}}', '2021-09-08 14:28:10', '2021-09-08 14:28:10'),
+('bdcd3c791ebe9d0390e04fc0b83caffc', 'consultation', '{\"consultation_patology\":{\"0\":true,\"1\":true,\"2\":true}}', '2022-04-07 14:05:31', '2022-04-07 14:05:31'),
 ('bee387e01b15bc29b2648bbb280eb559', 'clinic', '{\"clinic_type_birth_section\":{\"1\":true,\"5\":true},\"clinic_placement_birth_section\":{\"3\":true},\"clinic_facilities_birth_section\":{\"6\":true}}', '2021-09-08 14:28:01', '2021-09-08 14:28:01'),
 ('c114cd071da13ae2cc6551c4b1463679', 'clinic', '{\"clinic_personal_birth_section\":{\"3\":true,\"4\":true,\"5\":true},\"clinic_placement_birth_section\":{\"2\":true}}', '2021-09-08 14:49:03', '2021-09-08 14:49:03'),
 ('c8190ffe9904a9c6ab6c975de5830a22', 'clinic', '{\"clinic_type_birth_section\":{\"1\":true,\"2\":true,\"3\":true,\"4\":true,\"5\":true,\"7\":true},\"clinic_placement_birth_section\":{\"8\":true},\"clinic_facilities_birth_section\":{\"2\":true}}', '2022-01-19 20:21:55', '2022-01-19 20:21:55'),
 ('cdb51ef2f24bae131374d7d755c82e9b', 'clinic', '{\"clinic_facilities_birth_section\":{\"14\":true,\"15\":true}}', '2022-01-19 18:36:58', '2022-01-19 18:36:58'),
 ('cf8ad114917a369d5903795fe061988a', 'clinic', '{\"clinic_facilities_birth_section\":{\"2\":true,\"3\":true}}', '2022-01-19 20:19:06', '2022-01-19 20:19:06'),
 ('d206eb32cc2e91807d9f86f4189c9684', 'clinic', '{\"clinic_personal_birth_section\":{\"1\":true},\"clinic_facilities_birth_section\":{\"3\":true}}', '2022-01-13 19:26:03', '2022-01-13 19:26:03'),
+('d2b45b3d2e19ede6f0490a57438f1edf', 'consultation', '{\"consultation_patology\":{\"0\":true}}', '2022-04-07 14:05:26', '2022-04-07 14:05:26'),
 ('dcc00ffb1e54f7dc18ac3d95b564719a', 'clinic', '{\"clinic_type_birth_section\":{\"1\":true},\"clinic_personal_birth_section\":{\"1\":true,\"5\":true},\"clinic_placement_birth_section\":{\"3\":true},\"clinic_facilities_birth_section\":{\"2\":true,\"3\":true}}', '2021-11-05 11:43:01', '2021-11-05 11:43:01'),
 ('df618b6bcc4ca1c9083f55207804cdc9', 'clinic', '{\"clinic_type_birth_section\":{\"1\":true,\"2\":true,\"3\":true,\"4\":true,\"5\":true,\"7\":true},\"clinic_placement_birth_section\":{\"2\":true}}', '2021-09-08 14:49:19', '2021-09-08 14:49:19'),
 ('e2d38c524f53474c6468f6d287108ec9', 'clinic', '{\"clinic_placement_birth_section\":{\"3\":true},\"clinic_facilities_birth_section\":{\"14\":true}}', '2021-09-13 14:38:08', '2021-09-13 14:38:08'),
+('e3ef6b01979ce1c74c4612d45b300ff6', 'consultation', '{\"consultation_services\":{\"5\":true,\"6\":true,\"7\":true}}', '2022-04-12 19:31:22', '2022-04-12 19:31:22'),
 ('ec73ef61d8a3572053126b87cff8be03', 'clinic', '{\"clinic_type_birth_section\":{\"1\":true,\"3\":true,\"5\":true},\"clinic_facilities_birth_section\":{\"2\":true,\"6\":true,\"12\":true}}', '2022-01-15 12:21:41', '2022-01-15 12:21:41'),
 ('f8d1158390fe88cfc0e1db28048f04eb', 'clinic', '{\"clinic_type_birth_section\":{\"3\":true},\"clinic_personal_birth_section\":{\"1\":true},\"clinic_facilities_birth_section\":{\"3\":true}}', '2022-01-13 19:26:16', '2022-01-13 19:26:16'),
 ('f90d4375829c1fed89a10db759f8beb5', 'clinic', '{\"clinic_type_birth_section\":{\"1\":true},\"clinic_placement_birth_section\":{\"1\":true}}', '2021-09-08 14:28:16', '2021-09-08 14:28:16'),
@@ -1145,11 +1126,11 @@ INSERT INTO `search` (`hash`, `section`, `filters`, `datetime_create`, `datetime
 --
 
 CREATE TABLE `section_type` (
-  `id` bigint(20) NOT NULL,
+  `id` bigint NOT NULL,
   `title` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
   `slug` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
   `description` text COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `section_type`
@@ -1166,18 +1147,18 @@ INSERT INTO `section_type` (`id`, `title`, `slug`, `description`) VALUES
 --
 
 CREATE TABLE `services` (
-  `id` int(11) NOT NULL,
-  `title` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `description` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
-  `description_ext1` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
-  `description_ext2` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
-  `image_id` bigint(20) UNSIGNED DEFAULT NULL,
-  `article_id` int(11) DEFAULT NULL,
-  `trimester` int(11) DEFAULT NULL,
-  `slot_category_type` bigint(20) UNSIGNED DEFAULT NULL COMMENT 'Категория услуги',
+  `id` int NOT NULL,
+  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci,
+  `description_ext1` text CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci,
+  `description_ext2` text CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci,
+  `image_id` bigint UNSIGNED DEFAULT NULL,
+  `article_id` int DEFAULT NULL,
+  `trimester` int DEFAULT NULL,
+  `slot_category_type` bigint UNSIGNED DEFAULT NULL COMMENT 'Категория услуги',
   `adv` tinyint(1) DEFAULT NULL,
-  `area_min` int(11) UNSIGNED DEFAULT NULL,
-  `area_max` int(11) UNSIGNED DEFAULT NULL
+  `area_min` int UNSIGNED DEFAULT NULL,
+  `area_max` int UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -1185,9 +1166,9 @@ CREATE TABLE `services` (
 --
 
 INSERT INTO `services` (`id`, `title`, `description`, `description_ext1`, `description_ext2`, `image_id`, `article_id`, `trimester`, `slot_category_type`, `adv`, `area_min`, `area_max`) VALUES
-(4, 'Обследование (Check-up) 1 триместр', 'Вам предстоит сдать обширный список анализов:\nобщий и биохимический анализ крови;\nобщий анализ мочи;\nтесты на ВИЧ, СПИД, гепатиты, ТОРЧ-инфекции и ЗППП;\nкоагулограмма;\nмазок на вагинальную микрофлору.\nТакже важно определить вашу группу крови и резус-фактор, для диагностики возможных патологий работы сердца выполняется ЭКГ.\n\n', NULL, NULL, NULL, NULL, 1, 4, 1, 0, 0),
-(5, 'Обследование (Check-up) 2 триместр', 'На 18-21 неделе она проходит второй скрининг, «тройной тест», по которому врачи определяют уже более точно риск возможной патологии ребенка;\nС 18 по 21 неделю делают второе плановое УЗИ, оценивая состояние плаценты, околоплодных вод, смотрят, как развивается малыш, на этом сроке уже можно узнать его пол;\nСдают общий анализ мочи;\nСдают второе обследование на сифилис.', NULL, NULL, NULL, NULL, 2, 4, 1, 0, 0),
-(6, 'Обследование (Check-up) 3 триместр', 'В период с 30 по 34 неделю делают третье УЗИ, определяют рост, примерный вес малыша, смотрят его расположение в матке, изучают состояние плаценты, нет ли обвития пуповины, смотрят количество и качество околоплодных вод.\nВ период с 32 по 35 неделю делают КТГ (кардиотокографию), исследуют работу сердечно-сосудистой системы эмбриона, наблюдают его двигательную активность. Это исследование помогает определить, как чувствует себя ребенок, нет ли проблем в развитии.\nС 36 недели и до родов гинеколог осматривает беременную каждую неделю.\nНа 30 неделе врач дает направление на общий анализ мочи, общий анализ крови, биохимический анализ крови, анализ на ВИЧ и гепатит, третье обследование на сифилис, берется мазок на цитологическое исследование', NULL, NULL, NULL, NULL, 3, 4, 1, 0, 0),
+(4, 'Обследование (Check-up) 1 триместр', 'Вам предстоит сдать обширный список анализов:\nобщий и биохимический анализ крови;\nобщий анализ мочи;\nтесты на ВИЧ, СПИД, гепатиты, ТОРЧ-инфекции и ЗППП;\nкоагулограмма;\nмазок на вагинальную микрофлору.\nТакже важно определить вашу группу крови и резус-фактор, для диагностики возможных патологий работы сердца выполняется ЭКГ.\n\n', NULL, NULL, NULL, NULL, 1, 8, 0, 0, 0),
+(5, 'Обследование (Check-up).Многоплодная беременность.', 'На 18-21 неделе она проходит второй скрининг, «тройной тест», по которому врачи определяют уже более точно риск возможной патологии ребенка;\nС 18 по 21 неделю делают второе плановое УЗИ, оценивая состояние плаценты, околоплодных вод, смотрят, как развивается малыш, на этом сроке уже можно узнать его пол;\nСдают общий анализ мочи;\nСдают второе обследование на сифилис.', NULL, NULL, NULL, NULL, 2, 8, 0, 0, 0),
+(6, 'Обследование (Check-up).Многоплодная беременность.', 'В период с 30 по 34 неделю делают третье УЗИ, определяют рост, примерный вес малыша, смотрят его расположение в матке, изучают состояние плаценты, нет ли обвития пуповины, смотрят количество и качество околоплодных вод.\nВ период с 32 по 35 неделю делают КТГ (кардиотокографию), исследуют работу сердечно-сосудистой системы эмбриона, наблюдают его двигательную активность. Это исследование помогает определить, как чувствует себя ребенок, нет ли проблем в развитии.\nС 36 недели и до родов гинеколог осматривает беременную каждую неделю.\nНа 30 неделе врач дает направление на общий анализ мочи, общий анализ крови, биохимический анализ крови, анализ на ВИЧ и гепатит, третье обследование на сифилис, берется мазок на цитологическое исследование', NULL, NULL, NULL, NULL, 3, 8, 0, 0, 0),
 (8, 'Палата VIP', 'Уютная студия обеспечит максимальный комфорт и удовольствие от пребывания, возможность насладиться классической роскошью и элегантностью, станет приятным дополнением к долгожданному событию — рождению ребенка.', 'Уютная студия обеспечит максимальный комфорт и удовольствие от пребывания, возможность насладиться классической роскошью и элегантностью, станет приятным дополнением к долгожданному событию — рождению ребенка. В продуманном до мелочей интерьере гармонично объединены пространство для мамы и малыша и зона отдыха для ваших близких.', 'Интерьеры палат люкс оформлены в светлых тонах и создают ощущение уюта. В палатах современная мебель и бытовая техника: холодильник, электрочайник, вместительный шкаф-купе с зеркалом для одежды, кожаные кресла, передвижной журнальный столик. Кондиционер с климат-контролем, дезинфекторы воздуха и бесплатный wi-fi обеспечивают комфортные условия нахождения в стационаре. Для удобства пациентов палаты люкс оборудованы широкими кроватями. Отдельный туалет оснащен всем необходимым для выполнения санитарно-гигиенических процедур, в том числе и для тяжелобольных пациентов.', NULL, NULL, NULL, 2, NULL, 0, 0),
 (9, 'Трансфер в роддом', 'Обеспечение трансфера в роддом при возникновении признаков родов', 'При возникновении признаков начала родовой деятельности беременной необходимо незамедлительно ехать в роддом. Вызов кареты скорой помощи обусловлен договором на роды, и беременной не стоит волноваться за трансфер.', NULL, NULL, NULL, NULL, 4, NULL, NULL, NULL),
 (10, 'Маникюр', NULL, NULL, NULL, NULL, NULL, NULL, 4, NULL, NULL, NULL),
@@ -1197,7 +1178,12 @@ INSERT INTO `services` (`id`, `title`, `description`, `description_ext1`, `descr
 (19, 'Трансфер  ', 'Трансфер после выписки из роддома', NULL, NULL, NULL, NULL, NULL, 4, NULL, NULL, NULL),
 (20, 'Консультация психолога', NULL, NULL, NULL, NULL, NULL, NULL, 4, NULL, NULL, NULL),
 (21, 'Видеосъемка', NULL, NULL, NULL, NULL, NULL, NULL, 4, NULL, NULL, NULL),
-(22, 'Размещение в палате Делюкс', 'Комфортабельная палата отвечает высочайшими требованиям комфорта и безопасности и идеальна для совместного пребывания мамы и ребенка. Светлый, наполненный воздухом интерьер располагает к спокойному отдыху и заботе о малыше', NULL, NULL, 41, NULL, NULL, 2, NULL, NULL, NULL);
+(22, 'Размещение в палате Делюкс', 'Комфортабельная палата отвечает высочайшими требованиям комфорта и безопасности и идеальна для совместного пребывания мамы и ребенка. Светлый, наполненный воздухом интерьер располагает к спокойному отдыху и заботе о малыше', NULL, NULL, 41, NULL, NULL, 2, NULL, NULL, NULL),
+(24, 'Обследование (Check-up).Многоплодная беременность.', 'Вам предстоит сдать обширный список анализов:\nобщий и биохимический анализ крови;\nобщий анализ мочи;\nтесты на ВИЧ, СПИД, гепатиты, ТОРЧ-инфекции и ЗППП;\nкоагулограмма;\nмазок на вагинальную микрофлору.\nТакже важно определить вашу группу крови и резус-фактор, для диагностики возможных патологий работы сердца выполняется ЭКГ.\n\n', NULL, NULL, NULL, NULL, 1, 8, 0, NULL, NULL),
+(25, 'Обследование (Check-up) 1 триместр', 'Вам предстоит сдать обширный список анализов:\nобщий и биохимический анализ крови;\nобщий анализ мочи;\nтесты на ВИЧ, СПИД, гепатиты, ТОРЧ-инфекции и ЗППП;\nкоагулограмма;\nмазок на вагинальную микрофлору.\nТакже важно определить вашу группу крови и резус-фактор, для диагностики возможных патологий работы сердца выполняется ЭКГ.\n\n', NULL, NULL, NULL, NULL, 1, 8, 0, NULL, NULL),
+(26, 'Онлайн ведение беременности', NULL, NULL, NULL, NULL, NULL, 1, 4, NULL, NULL, NULL),
+(27, 'ЭКО', NULL, NULL, NULL, NULL, NULL, 1, 8, NULL, NULL, NULL),
+(28, 'йййй', NULL, NULL, NULL, NULL, NULL, 1, 6, 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1206,11 +1192,11 @@ INSERT INTO `services` (`id`, `title`, `description`, `description_ext1`, `descr
 --
 
 CREATE TABLE `services_containers_repo` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
   `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `description` text COLLATE utf8_unicode_ci,
   `comment` text COLLATE utf8_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `services_containers_repo`
@@ -1226,13 +1212,13 @@ INSERT INTO `services_containers_repo` (`id`, `title`, `description`, `comment`)
 --
 
 CREATE TABLE `service_containers` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `container_id` int(11) NOT NULL,
-  `service_id` int(11) NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
+  `container_id` int NOT NULL,
+  `service_id` int NOT NULL,
   `overrided_title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `overrided_description` text COLLATE utf8_unicode_ci,
   `comment` text COLLATE utf8_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `service_containers`
@@ -1250,20 +1236,20 @@ INSERT INTO `service_containers` (`id`, `container_id`, `service_id`, `overrided
 --
 
 CREATE TABLE `service_slot` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `section` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `image_id` bigint(20) UNSIGNED DEFAULT NULL,
-  `service_id` bigint(20) UNSIGNED NOT NULL,
-  `price` int(20) NOT NULL,
-  `benefit_price` int(11) DEFAULT NULL,
-  `benefit_percent` int(11) DEFAULT NULL,
-  `contragent_id` bigint(20) UNSIGNED NOT NULL,
-  `entity_type` bigint(20) UNSIGNED NOT NULL DEFAULT '1',
-  `slot_category_type` bigint(20) UNSIGNED DEFAULT NULL,
-  `facilities_type` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+  `image_id` bigint UNSIGNED DEFAULT NULL,
+  `service_id` bigint UNSIGNED NOT NULL,
+  `price` int NOT NULL,
+  `benefit_price` int DEFAULT NULL,
+  `benefit_percent` int DEFAULT NULL,
+  `contragent_id` bigint UNSIGNED NOT NULL,
+  `entity_type` bigint UNSIGNED NOT NULL DEFAULT '1',
+  `slot_category_type` bigint UNSIGNED DEFAULT NULL,
+  `facilities_type` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `service_slot`
@@ -1700,7 +1686,13 @@ INSERT INTO `service_slot` (`id`, `active`, `title`, `section`, `image_id`, `ser
 (454, 1, 'Трансфер из роддома', 'clinic', NULL, 19, 5000, NULL, NULL, 9, 1, 4, NULL),
 (455, 1, 'Визаж', 'clinic', NULL, 17, 20000, NULL, NULL, 20, 1, 4, NULL),
 (456, 1, 'Доула', 'clinic', NULL, 85, 34500, NULL, NULL, 33, 1, 1, NULL),
-(457, 1, 'Размещение в палате Люкс-студия', 'clinic', 43, 8, 230000, NULL, NULL, 15, 1, 2, 1);
+(457, 1, 'Размещение в палате Люкс-студия', 'clinic', 43, 8, 230000, NULL, NULL, 15, 1, 2, 1),
+(458, 1, 'Слава ФИО', 'consultation', NULL, 80, 15000, NULL, NULL, 36, 1, 1, NULL),
+(459, 1, 'ЕМС на Спиридоновке', 'consultation', NULL, 81, 15000, NULL, NULL, 37, 1, 1, NULL),
+(460, 1, 'Сheck-up 1 триместр', NULL, NULL, 4, 80000, NULL, NULL, 27, 1, 8, NULL),
+(462, 1, 'Многоплодная 3 триместр', NULL, NULL, 24, 60000, NULL, NULL, 27, 1, 8, NULL),
+(463, 1, 'Обследование (Check-up).Многоплодная беременность.', NULL, NULL, 24, 28000, NULL, NULL, 27, 1, 8, NULL),
+(464, 1, 'ййййй', NULL, NULL, 28, 2555, NULL, NULL, 27, 1, 6, NULL);
 
 -- --------------------------------------------------------
 
@@ -1709,12 +1701,12 @@ INSERT INTO `service_slot` (`id`, `active`, `title`, `section`, `image_id`, `ser
 --
 
 CREATE TABLE `sessions` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
   `token` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `sessions`
@@ -2009,7 +2001,163 @@ INSERT INTO `sessions` (`id`, `token`, `user_id`, `datetime_create`, `datetime_u
 (557, 'f18c4a54-e308-4414-a8d2-6030ae241b8b', 3, '2022-03-19 09:57:55', '2022-03-19 09:57:55'),
 (558, 'd675e40d-8ff0-4cbe-b9a3-39e715a1be41', 3, '2022-03-19 16:22:56', '2022-03-19 16:22:56'),
 (559, '54d402bc-b8e9-444f-a9dc-a3d09da6d592', 3, '2022-03-20 04:17:36', '2022-03-20 04:17:36'),
-(560, '71e6aa6f-3762-4ca6-96ae-873c88555983', 19, '2022-03-20 05:50:59', '2022-03-20 05:51:09');
+(560, '71e6aa6f-3762-4ca6-96ae-873c88555983', 3, '2022-03-20 05:50:59', '2022-04-03 14:21:36'),
+(561, '4a088679-138d-4816-88da-cf94faab5b2a', 3, '2022-03-21 01:33:56', '2022-03-21 01:33:56'),
+(562, '52312836-c38d-4b98-90e7-a34879b69f52', 3, '2022-03-21 02:38:47', '2022-03-21 02:38:47'),
+(563, '56506147-e230-4564-b482-817b33bce1f9', 3, '2022-03-22 00:09:36', '2022-03-22 00:09:36'),
+(564, '5bcc6a0f-213f-4648-acdf-38fd95d8b341', 3, '2022-03-24 19:07:37', '2022-03-24 19:07:37'),
+(565, '4bb52a7c-c382-4529-8dca-faef83dd7dcf', 3, '2022-03-26 02:19:07', '2022-03-26 02:19:07'),
+(566, '23bae337-ff78-40d0-93ab-fc769b66b1ed', 3, '2022-03-26 20:38:08', '2022-03-26 20:38:08'),
+(567, '304c2a2f-8bb7-4885-af64-a7cdeaf9f649', 3, '2022-03-28 09:41:04', '2022-03-28 09:41:04'),
+(568, '152a1eeb-7731-4c7c-9b1c-2c5b5d5b9f03', 3, '2022-03-28 11:57:57', '2022-03-28 11:57:57'),
+(569, '9090b053-554f-4e25-b133-7d0c94862995', 3, '2022-03-28 12:13:01', '2022-03-28 12:13:01'),
+(570, 'e5ead960-3ddd-4097-af6d-6389d144bdc1', 3, '2022-03-28 12:13:11', '2022-03-28 12:13:11'),
+(571, 'a9ce76ec-5039-484c-92c4-95810eabf1b6', 3, '2022-03-28 19:58:20', '2022-03-28 19:58:20'),
+(572, 'bff27192-d634-46ee-b7c4-59422b25fb7e', 3, '2022-03-29 16:48:33', '2022-03-29 16:48:33'),
+(573, 'f51f556f-c62e-4a64-9c86-6df804288c67', 3, '2022-03-29 17:35:48', '2022-03-29 17:35:48'),
+(574, '9cd95b64-31f7-4486-9a14-fc7d699427a9', 3, '2022-03-29 18:25:07', '2022-03-29 18:25:07'),
+(575, '02ed5b56-33c3-40bb-81f0-de2a85f6c277', 3, '2022-03-29 18:44:37', '2022-03-29 18:44:37'),
+(576, '099b3a22-4374-4a76-b7ee-89f2e856f4a2', 3, '2022-03-30 03:57:46', '2022-03-30 03:57:46'),
+(577, '02256ae7-8b7d-4a80-a067-c3ac35be7bc2', 3, '2022-03-30 10:25:31', '2022-03-30 10:25:31'),
+(578, '1df488fd-7016-4621-9bd0-f08e32244264', 3, '2022-03-30 19:52:45', '2022-03-30 19:52:45'),
+(579, '58eed9d6-056b-42c8-a6c9-90f580cdb36c', 3, '2022-03-30 23:54:36', '2022-03-30 23:54:36'),
+(580, '8f63a6b6-3736-431d-ba69-0c58a8c1b712', 3, '2022-03-31 02:24:15', '2022-03-31 02:24:15'),
+(581, '0857f0f1-302f-45b3-884d-4763b553a66b', 3, '2022-03-31 15:37:15', '2022-03-31 15:37:15'),
+(582, 'bad328b3-45f4-43b7-bfd9-44d4eca06b45', 3, '2022-03-31 18:42:58', '2022-03-31 18:42:58'),
+(583, '69334330-4975-4781-aac0-862be51d263c', 3, '2022-03-31 19:08:15', '2022-03-31 19:08:15'),
+(584, '9619d8be-52d4-4a95-a065-2d225c54b90b', 3, '2022-03-31 19:21:01', '2022-03-31 19:21:01'),
+(585, '1e02b23e-d57e-4c9c-8071-9a9b506a3627', 3, '2022-03-31 21:22:50', '2022-03-31 21:22:50'),
+(586, '5da2d8c0-bb3e-4c2c-b27d-c080ead036a2', 3, '2022-03-31 21:59:53', '2022-03-31 21:59:53'),
+(587, '7b212374-b813-4be3-abde-d70a1ce95b9b', 3, '2022-03-31 22:00:07', '2022-03-31 22:00:07'),
+(588, 'cf4b9997-d75e-436e-8dd4-c39b26a9e640', 3, '2022-03-31 22:15:41', '2022-03-31 22:15:41'),
+(589, '3583941c-a599-48e5-89cf-330d1db8deee', 3, '2022-03-31 22:59:10', '2022-03-31 22:59:10'),
+(590, '774cb744-9c13-4007-83c6-374e2f366be5', 3, '2022-04-01 00:10:23', '2022-04-01 00:10:23'),
+(591, '4b90b29c-4522-4164-8a6b-824ccf1dab5a', 3, '2022-04-01 02:17:08', '2022-04-01 02:17:08'),
+(592, 'c4fbc0e1-c5a6-4d9a-9315-c492d3f9e6d5', 3, '2022-04-01 02:34:50', '2022-04-01 02:34:50'),
+(593, 'bae12827-83b0-4fba-9f48-7aa91e8ea38f', 3, '2022-04-01 03:38:27', '2022-04-01 03:38:27'),
+(594, 'f2445ef6-0b8b-43de-b2a3-17bbaf93d017', 3, '2022-04-01 05:22:45', '2022-04-01 05:22:45'),
+(595, '6b63222e-ea27-43eb-98f3-95f254f767da', 3, '2022-04-01 05:36:34', '2022-04-01 05:36:34'),
+(596, '7aa4b178-a0c4-4fb6-ac71-c506c4e57c32', 3, '2022-04-01 07:16:07', '2022-04-01 07:16:07'),
+(597, '2c3998cc-951f-4cd9-99cd-d00933da47a5', 3, '2022-04-01 08:36:41', '2022-04-01 08:36:41'),
+(598, 'a395f306-4492-4f7b-8aae-de469d8cb4ad', 3, '2022-04-01 09:23:45', '2022-04-01 09:23:45'),
+(599, '895ec6f0-bb14-4bbf-980d-0c82a9674823', 3, '2022-04-01 10:21:41', '2022-04-01 10:21:41'),
+(600, 'aa217e24-f938-4efe-8342-dba154794558', 3, '2022-04-01 10:42:53', '2022-04-01 10:42:53'),
+(601, 'c555c143-f7c0-4ea7-8aea-4bb3d1bd552c', 3, '2022-04-01 11:03:51', '2022-04-01 11:03:51'),
+(602, '6eca96e4-9d2c-4f5b-a924-47aa953c1cec', 3, '2022-04-01 12:25:14', '2022-04-01 12:25:14'),
+(603, '64d10f68-e10b-4600-9499-48ff802ff5bd', 3, '2022-04-01 13:07:24', '2022-04-01 13:07:24'),
+(604, 'e6e608d0-54f2-48c3-b63a-7ccb04fdbe06', 3, '2022-04-01 13:20:13', '2022-04-01 13:20:13'),
+(605, 'a059cbf8-2f37-463d-8771-d555e43b6a82', 3, '2022-04-01 13:43:14', '2022-04-01 13:43:14'),
+(606, '91b35a08-f011-45be-b400-cc4f5bc7a51f', 3, '2022-04-01 14:58:05', '2022-04-01 14:58:05'),
+(607, '7228bd59-8b62-4c1c-850a-b3b541707bba', 3, '2022-04-01 15:34:02', '2022-04-01 15:34:02'),
+(608, 'ce5400ee-8692-4152-b6a2-85afae9d9480', 3, '2022-04-01 17:04:21', '2022-04-01 17:04:21'),
+(609, '951bfbb5-e6c0-4c58-a46f-03470b1382e5', 3, '2022-04-01 17:56:41', '2022-04-01 17:56:41'),
+(610, '347765ee-49f8-453e-aa00-9d9a5cbaa6d8', 3, '2022-04-01 20:29:29', '2022-04-01 20:29:29'),
+(611, '4c973498-df8a-4f9b-9986-56e57c888599', 3, '2022-04-01 21:23:35', '2022-04-01 21:23:35'),
+(612, 'e5e9b2d2-1ea2-484a-927e-d6d1ec0e192d', 3, '2022-04-01 23:32:33', '2022-04-01 23:32:33'),
+(613, 'fdd8888f-8499-4e50-a45e-f396dd054af2', 3, '2022-04-02 00:16:02', '2022-04-02 00:16:02'),
+(614, 'af2ce1e5-2b9d-4996-b146-720ef941830f', 3, '2022-04-02 00:36:00', '2022-04-02 00:36:00'),
+(615, 'bcd1fcd0-015b-41af-9740-6fd8593faff4', 3, '2022-04-02 03:39:38', '2022-04-02 03:39:38'),
+(616, '11b67600-39be-405a-8274-c50d9c8a2dd6', 3, '2022-04-02 03:54:49', '2022-04-02 03:54:49'),
+(617, 'dfa7198f-4cdc-41ef-b8c0-721ae91c5f01', 3, '2022-04-02 04:14:52', '2022-04-02 04:14:52'),
+(618, '44b66241-a97d-42f4-817d-a409c2b206c8', 3, '2022-04-02 04:31:00', '2022-04-02 04:31:00'),
+(619, '141d5621-274e-4614-a8ba-b2ee6906b663', 3, '2022-04-02 08:06:45', '2022-04-02 08:06:45'),
+(620, 'ab15e654-b5e0-4c66-9ad0-7ed4979ace4b', 3, '2022-04-02 08:37:58', '2022-04-02 08:37:58'),
+(621, '4c2963e0-733b-4131-8831-1e7c39288513', 3, '2022-04-02 08:59:19', '2022-04-02 08:59:19'),
+(622, '4cbe2d0e-f260-4aa7-b457-6e29767b9fb3', 3, '2022-04-02 09:18:30', '2022-04-02 09:18:30'),
+(623, '5d21b72e-3bdc-4e35-9963-13e92dc5a516', 3, '2022-04-02 09:30:16', '2022-04-02 09:30:16'),
+(624, '15ad0db8-a50d-487e-bdc5-ce8ae1e8c7d9', 3, '2022-04-02 09:41:30', '2022-04-02 09:41:30'),
+(625, '37b242a1-dd11-44f1-acdd-6c50b2112d75', 3, '2022-04-02 09:57:50', '2022-04-02 09:57:50'),
+(626, 'a1281cae-744f-4a7e-84d6-66ffb0c589cc', 3, '2022-04-02 10:30:26', '2022-04-02 10:30:26'),
+(627, '9d9b13bb-8b8f-47f4-938f-1ceb3a4744b4', 3, '2022-04-02 10:45:56', '2022-04-02 10:45:56'),
+(628, 'b94610dd-ff7b-43d7-845b-b6fdc67b32b0', 3, '2022-04-02 11:05:20', '2022-04-02 11:05:20'),
+(629, '6e425de4-5992-417f-a2c9-e3a3bda554af', 3, '2022-04-02 11:32:10', '2022-04-02 11:32:10'),
+(630, '585ddf86-aa5e-460c-8f35-8e7a62306fbf', 3, '2022-04-02 11:32:14', '2022-04-02 11:32:14'),
+(631, '1b83371e-62df-4c1c-a105-4404c6daddc6', 3, '2022-04-02 11:47:41', '2022-04-02 11:47:41'),
+(632, '26c3ef5c-0d7b-4819-ab87-e35b3ae1cf30', 3, '2022-04-02 13:02:37', '2022-04-02 13:02:37'),
+(633, '90cecb25-c5af-4be0-990b-4a5298b5d513', 3, '2022-04-02 14:57:15', '2022-04-02 14:57:15'),
+(634, 'f8e8cd1f-ad7f-4c3a-902a-58e54b5ab761', 3, '2022-04-02 16:01:00', '2022-04-02 16:01:00'),
+(635, '88c5f5d6-e890-4449-9ce6-756823cb61e9', 3, '2022-04-02 17:23:12', '2022-04-02 17:23:12'),
+(636, '5a3aba25-4e41-4801-b744-c0cbc26c5c2a', 3, '2022-04-02 18:12:02', '2022-04-02 18:12:02'),
+(637, '9f1bedf5-0593-496b-909f-0fffb9cc08c3', 3, '2022-04-02 19:48:16', '2022-04-02 19:48:16'),
+(638, 'df22bbb9-2f1c-46cf-86ef-91bb1bd1ffa3', 3, '2022-04-02 20:27:29', '2022-04-02 20:27:29'),
+(639, 'e6cfbd17-c00e-40e9-a2a3-8185f2bc91e9', 3, '2022-04-02 20:41:08', '2022-04-02 20:41:08'),
+(640, '75bc4efc-b9f0-42e5-ad8f-2d2f86c6c59c', 3, '2022-04-02 20:59:15', '2022-04-02 20:59:15'),
+(641, '246e5ba7-937b-446c-ba7e-025f8fda439b', 3, '2022-04-02 21:36:29', '2022-04-02 21:36:29'),
+(642, '6165ab40-5cef-47b4-83c9-0e935b55fc4b', 3, '2022-04-02 22:06:26', '2022-04-02 22:06:26'),
+(643, '9d210838-4917-4ffa-b7a1-c129e470cdca', 3, '2022-04-02 22:22:49', '2022-04-02 22:22:49'),
+(644, '7d3473a0-7708-4399-a0ec-3b7b330ab101', 3, '2022-04-02 22:50:12', '2022-04-02 22:50:12'),
+(645, '35b1789c-a645-4010-b5b0-982084cf7ac9', 3, '2022-04-03 00:37:23', '2022-04-03 00:37:23'),
+(646, '76c425b7-41b7-4fcb-b60d-b6dfe33780c4', 3, '2022-04-03 01:28:51', '2022-04-03 01:28:51'),
+(647, 'ef203861-a079-4061-860f-1dd3473c0e88', 3, '2022-04-03 03:25:13', '2022-04-03 03:25:13'),
+(648, '4438d99f-ea6f-437b-bafa-909ad50456f0', 3, '2022-04-03 04:25:51', '2022-04-03 04:25:51'),
+(649, 'aed3f152-8418-444b-a543-a60ad348103d', 3, '2022-04-03 05:53:57', '2022-04-03 05:53:57'),
+(650, '0da76c10-2c02-4d01-b555-34ef02e8b34f', 3, '2022-04-03 06:06:07', '2022-04-03 06:06:07'),
+(651, '37876048-6394-4a63-a874-9068cc3b535a', 3, '2022-04-03 07:31:54', '2022-04-03 07:31:54'),
+(652, 'fc206a2f-6763-4c55-84b9-585d34a14669', 3, '2022-04-03 08:47:44', '2022-04-03 08:47:44'),
+(653, 'db8a41b8-6f1b-441c-b474-bf40477506b3', 3, '2022-04-03 10:11:49', '2022-04-03 10:11:49'),
+(654, 'c4793617-9728-4cfd-96ce-beb922e3e6e1', 3, '2022-04-03 14:16:14', '2022-04-03 14:16:14'),
+(655, '608a05e3-97fc-4e0a-875c-e33a5929209a', 3, '2022-04-03 14:16:25', '2022-04-03 14:16:25'),
+(656, '5245d056-2c87-4086-9283-7315a74cae9b', 3, '2022-04-03 14:17:40', '2022-04-03 14:17:40'),
+(657, '42010aeb-aa30-4f50-a7f2-5c007ba7d002', 3, '2022-04-03 14:21:03', '2022-04-03 14:21:03'),
+(658, '5d7ef3af-b314-4a7f-8b93-0c7a680b5687', 19, '2022-04-03 14:21:58', '2022-04-03 14:22:11'),
+(659, '973d77a6-8df2-4717-b9f9-4c5feed82020', 3, '2022-04-03 16:07:21', '2022-04-03 16:07:21'),
+(660, 'a9d7905d-b236-4892-8177-e4d2f4bbbeef', 3, '2022-04-03 16:54:29', '2022-04-03 16:54:29'),
+(661, '79fe97a8-fe15-4d4d-9e7c-48326ae53839', 3, '2022-04-03 19:39:20', '2022-04-03 19:39:20'),
+(662, 'c17de22c-e58d-470b-a89b-f1d9f295f025', 3, '2022-04-03 20:44:09', '2022-04-03 20:44:09'),
+(663, '0fed337c-ebbd-43eb-bff9-08978dafa374', 3, '2022-04-03 21:10:39', '2022-04-03 21:10:39'),
+(664, '82e9a1de-b372-437c-b3a7-a94e154e893b', 3, '2022-04-03 22:26:32', '2022-04-03 22:26:32'),
+(665, '646ac346-34e9-4931-9ea9-5a7325aae4e2', 3, '2022-04-04 00:29:19', '2022-04-04 00:29:19'),
+(666, 'b362f8a7-d338-4e0c-963f-8848092fbd3c', 3, '2022-04-04 06:14:06', '2022-04-04 06:14:06'),
+(667, '5f3b6ac9-6e66-425d-ad10-d7391b77e15b', 3, '2022-04-04 07:14:20', '2022-04-04 07:14:20'),
+(668, '38eadc39-c958-4194-b3f1-b175c4a9693b', 3, '2022-04-04 09:49:18', '2022-04-04 09:49:18'),
+(669, '98bad4f8-123d-447c-a303-faa47cfec336', 3, '2022-04-04 16:16:43', '2022-04-04 16:16:43'),
+(670, '37209bc0-0a70-4cea-a52d-fb8b8a7f6620', 3, '2022-04-05 00:06:58', '2022-04-05 00:06:58'),
+(671, '0c06c8f6-22da-445d-ab52-705786d53695', 3, '2022-04-05 18:16:54', '2022-04-05 18:16:54'),
+(672, 'b9e866dd-d6d1-4f9d-8f98-d96dd01c79e1', 3, '2022-04-06 11:59:49', '2022-04-06 11:59:49'),
+(673, 'd079ff49-cc5c-4dc6-980c-e8408aacfcda', 3, '2022-04-06 18:44:49', '2022-04-06 18:44:49'),
+(674, '9d19926c-159b-4452-b84f-05e96e9f1c1d', 3, '2022-04-07 04:02:48', '2022-04-07 04:02:48'),
+(675, '1716749d-34f6-4647-9cec-36dbbf5ed70f', 3, '2022-04-07 09:09:27', '2022-04-07 09:09:27'),
+(676, '0aa130bb-4545-47be-bd0b-69dcecda3882', 3, '2022-04-07 14:33:17', '2022-04-07 14:33:17'),
+(677, 'bafb5e66-e10f-4b5f-9d36-e52fbd355162', 3, '2022-04-07 14:35:43', '2022-04-07 14:35:43'),
+(678, 'd33f6cd8-0102-4730-8fb0-f1cf0e722d96', 3, '2022-04-08 03:10:40', '2022-04-08 03:10:40'),
+(679, '5997d3ba-2a7b-4262-8d26-b4408fa3e155', 3, '2022-04-08 03:59:22', '2022-04-08 03:59:22'),
+(680, '9e4e9871-992d-4f9e-b4cb-bab8ad1be821', 3, '2022-04-08 04:07:46', '2022-04-08 04:07:46'),
+(681, '54c0fd17-ed66-418c-aa96-450cf1a6096e', 3, '2022-04-08 16:33:02', '2022-04-08 16:33:02'),
+(682, '5430bd5c-21ae-4d27-b003-bd13082b7ef9', 3, '2022-04-09 10:12:36', '2022-04-09 10:12:36'),
+(683, '2dd13082-679f-4ee0-8ee2-502a2565f9f0', 3, '2022-04-09 10:13:11', '2022-04-09 10:13:11'),
+(684, 'b75f660d-396a-4d83-856b-7f1ca34e11b1', 3, '2022-04-09 23:46:51', '2022-04-09 23:46:51'),
+(685, 'c0bd5976-08af-46f6-9773-9e3f6bcaceb6', 19, '2022-04-10 16:18:16', '2022-04-10 17:00:11'),
+(686, '547c97b8-fc79-426c-aeed-077da03d469b', 3, '2022-04-11 11:12:57', '2022-04-11 11:12:57'),
+(687, 'bae1b7b3-ee7f-4f24-8821-2fabedc1387c', 3, '2022-04-12 04:32:46', '2022-04-12 04:32:46'),
+(688, '3fdddb6c-19f9-4226-8efa-d54beac35f4a', 3, '2022-04-15 22:53:20', '2022-04-15 22:53:20'),
+(689, '5c3f1eb3-49ad-4bf5-ab3d-522324aa7802', 3, '2022-04-16 00:26:16', '2022-04-16 00:26:16'),
+(690, '07f50939-fb3a-48d3-bcc1-803d89f86fe6', 3, '2022-04-16 00:26:32', '2022-04-16 00:26:32'),
+(691, 'd1bf53fd-1a42-45ad-bbde-e169f9885c0e', 3, '2022-04-16 00:39:27', '2022-04-16 00:39:27'),
+(692, 'd0de3b2b-c9c5-4bf1-9917-fad8790907b2', 3, '2022-04-16 00:40:10', '2022-04-16 00:40:10'),
+(693, 'd4ff2ed3-dfd9-4053-b461-1339ee5bb1a9', 3, '2022-04-16 00:40:19', '2022-04-16 00:40:19'),
+(694, '10e013c5-df5f-4ba6-9db1-b58c058dbe81', 3, '2022-04-16 00:41:01', '2022-04-16 00:41:01'),
+(695, '92ea7e5c-179d-4a99-9911-20b7cd97825a', 3, '2022-04-16 00:44:20', '2022-04-16 00:44:20'),
+(696, '475bc279-1d83-4ff2-bb1f-3d0e1614e8aa', 3, '2022-04-16 16:29:47', '2022-04-16 16:29:47'),
+(697, '5bf8e333-ed5c-409c-a853-f83fd366cc24', 3, '2022-04-18 17:36:04', '2022-04-18 17:36:04'),
+(698, 'b5c89e0d-4026-4680-aa7e-ccddfd5d3be5', 3, '2022-04-19 00:52:05', '2022-04-19 00:52:05'),
+(699, 'e4835e90-908f-4741-b085-41145b8e3b8d', 3, '2022-04-19 02:24:29', '2022-04-19 02:24:29'),
+(700, 'ee81ca41-5793-4ad9-993f-baf0990c1a4c', 3, '2022-04-19 11:09:05', '2022-04-19 11:09:05'),
+(701, '3e694b80-7695-4da1-901d-55ff4646a780', 3, '2022-04-24 00:41:47', '2022-04-24 00:41:47'),
+(702, '58a4ca5a-348b-48d3-8951-6c32bb93051a', 3, '2022-04-26 05:35:55', '2022-04-26 05:35:55'),
+(703, '2eeb2b39-6253-4ddb-af6b-3884f70932c9', 3, '2022-04-28 05:15:33', '2022-04-28 05:15:33'),
+(704, 'cd4bfd40-9773-45ac-958f-4a69bdc35565', 3, '2022-04-29 06:51:45', '2022-04-29 06:51:45'),
+(705, 'c7fe07ff-b4e3-482f-914c-6bd70df63afe', 3, '2022-04-30 01:11:12', '2022-04-30 01:11:12'),
+(706, 'e6c14630-1a87-43f5-8b0a-37762d95de8b', 3, '2022-05-01 11:24:29', '2022-05-01 11:24:29'),
+(707, 'dde45a96-403b-4b92-85c4-c0eabc8717c0', 3, '2022-05-02 03:19:34', '2022-05-02 03:19:34'),
+(708, 'feeb765d-a039-4363-94f3-35c34a4e38ab', 3, '2022-05-02 15:16:11', '2022-05-02 15:16:11'),
+(709, 'ea5c0e25-22b2-49b2-a599-5932c39cde3b', 3, '2022-05-03 15:23:28', '2022-05-03 15:23:28'),
+(710, 'cdb8309d-8793-4fcc-b5b3-3a094048eeb9', 3, '2022-05-03 21:22:29', '2022-05-03 21:22:29'),
+(711, 'fe287253-ea2b-4b39-8ea1-8aee385e99ad', 3, '2022-05-05 12:59:21', '2022-05-05 12:59:21'),
+(712, 'e7e0991a-c4d0-431c-9145-c7e74aa51771', 3, '2022-05-06 05:26:05', '2022-05-06 05:26:05'),
+(713, 'c0006d2c-e84d-482f-baec-2645e5b13720', 3, '2022-05-06 06:46:30', '2022-05-06 06:46:30'),
+(714, '6f20cd66-1827-4eda-968a-bf4d1dbb2364', 3, '2022-05-07 23:55:09', '2022-05-07 23:55:09'),
+(715, '77aba712-ed28-4d66-b02a-07561149622a', 3, '2022-05-08 12:20:39', '2022-05-08 12:20:39'),
+(716, '89989f92-27f6-40c1-8425-d226d2b6dc28', 3, '2022-05-10 06:14:56', '2022-05-10 06:14:56');
 
 -- --------------------------------------------------------
 
@@ -2018,12 +2166,12 @@ INSERT INTO `sessions` (`id`, `token`, `user_id`, `datetime_create`, `datetime_u
 --
 
 CREATE TABLE `slot_category_type` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
   `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `description` text COLLATE utf8_unicode_ci,
   `icon` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `bg_color` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Словарь категорий услуг';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci COMMENT='Словарь категорий услуг';
 
 --
 -- Дамп данных таблицы `slot_category_type`
@@ -2046,13 +2194,13 @@ INSERT INTO `slot_category_type` (`id`, `title`, `description`, `icon`, `bg_colo
 --
 
 CREATE TABLE `trimester` (
-  `id` int(11) NOT NULL,
-  `name` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `id` int NOT NULL,
+  `name` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci NOT NULL,
   `title` varchar(50) CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
-  `description` text CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `icon` varchar(150) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `bg_color` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `article_id` int(11) DEFAULT NULL
+  `description` text CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci NOT NULL,
+  `icon` varchar(150) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `bg_color` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `article_id` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -2071,17 +2219,17 @@ INSERT INTO `trimester` (`id`, `name`, `title`, `description`, `icon`, `bg_color
 --
 
 CREATE TABLE `users` (
-  `id` bigint(20) UNSIGNED NOT NULL COMMENT 'id',
+  `id` bigint UNSIGNED NOT NULL COMMENT 'id',
   `active` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'статус активности юзера',
   `login` varchar(50) COLLATE utf8_unicode_ci NOT NULL COMMENT 'логин',
   `password` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'пароль',
-  `role` bigint(20) UNSIGNED NOT NULL COMMENT 'роль в системе (привилегии)',
+  `role` bigint UNSIGNED NOT NULL COMMENT 'роль в системе (привилегии)',
   `activation` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'активационный код(для активации учетки при регистрации)',
   `first_name` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `last_name` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `patronymic` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `photo_id` bigint(20) UNSIGNED DEFAULT NULL,
-  `status_type` int(11) DEFAULT NULL COMMENT 'статус пользователя  (планирует , выбирает , беременна, родила ...)',
+  `photo_id` bigint UNSIGNED DEFAULT NULL,
+  `status_type` int DEFAULT NULL COMMENT 'статус пользователя  (планирует , выбирает , беременна, родила ...)',
   `multi_pregnant` tinyint(1) DEFAULT '0' COMMENT 'многоплодная беременность',
   `client_birthday_datetime` timestamp NULL DEFAULT NULL COMMENT 'дата рождения клиента',
   `conception_datetime` timestamp NULL DEFAULT NULL COMMENT 'дата зачатия ребенка если беременна',
@@ -2095,13 +2243,13 @@ CREATE TABLE `users` (
   `ch_whatsapp` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'предпочитаемый канал связи',
   `ch_telegram` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'предпочитаемый канал связи',
   `ch_email` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'предпочитаемый канал связи',
-  `height` int(11) DEFAULT NULL COMMENT 'Рост',
-  `weight` int(11) DEFAULT NULL COMMENT 'Вес',
-  `clothes_size` int(10) UNSIGNED DEFAULT NULL COMMENT 'Размер одежды',
-  `shoes_size` int(10) UNSIGNED DEFAULT NULL COMMENT 'Размер обуви',
+  `height` int DEFAULT NULL COMMENT 'Рост',
+  `weight` int DEFAULT NULL COMMENT 'Вес',
+  `clothes_size` int UNSIGNED DEFAULT NULL COMMENT 'Размер одежды',
+  `shoes_size` int UNSIGNED DEFAULT NULL COMMENT 'Размер обуви',
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `users`
@@ -2121,12 +2269,12 @@ INSERT INTO `users` (`id`, `active`, `login`, `password`, `role`, `activation`, 
 --
 
 CREATE TABLE `user_status_type` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
   `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `description` text COLLATE utf8_unicode_ci,
   `icon` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `bg_color` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Словарь категорий услуг';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci COMMENT='Словарь категорий услуг';
 
 --
 -- Дамп данных таблицы `user_status_type`
@@ -2415,211 +2563,211 @@ ALTER TABLE `user_status_type`
 -- AUTO_INCREMENT для таблицы `birthtype`
 --
 ALTER TABLE `birthtype`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT для таблицы `clinics`
 --
 ALTER TABLE `clinics`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT для таблицы `clinic_specialities_containers`
 --
 ALTER TABLE `clinic_specialities_containers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT для таблицы `clinic_specialities_containers_repo`
 --
 ALTER TABLE `clinic_specialities_containers_repo`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT для таблицы `clinic_specialities_type`
 --
 ALTER TABLE `clinic_specialities_type`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT для таблицы `consultation`
 --
 ALTER TABLE `consultation`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT для таблицы `contragents`
 --
 ALTER TABLE `contragents`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT для таблицы `districts`
 --
 ALTER TABLE `districts`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT для таблицы `doctors`
 --
 ALTER TABLE `doctors`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=89;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
 
 --
 -- AUTO_INCREMENT для таблицы `doctor_category_type`
 --
 ALTER TABLE `doctor_category_type`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT для таблицы `doctor_position_type`
 --
 ALTER TABLE `doctor_position_type`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT для таблицы `entity_type`
 --
 ALTER TABLE `entity_type`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT для таблицы `facilities_containers`
 --
 ALTER TABLE `facilities_containers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=157;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=157;
 
 --
 -- AUTO_INCREMENT для таблицы `facilities_containers_repo`
 --
 ALTER TABLE `facilities_containers_repo`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT для таблицы `facilities_type`
 --
 ALTER TABLE `facilities_type`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT для таблицы `files`
 --
 ALTER TABLE `files`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=119;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=127;
 
 --
 -- AUTO_INCREMENT для таблицы `images`
 --
 ALTER TABLE `images`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=119;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=127;
 
 --
 -- AUTO_INCREMENT для таблицы `lk_permissions`
 --
 ALTER TABLE `lk_permissions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT для таблицы `lk_permission_type`
 --
 ALTER TABLE `lk_permission_type`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT для таблицы `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=117;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT для таблицы `order_contacts`
 --
 ALTER TABLE `order_contacts`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT для таблицы `phones`
 --
 ALTER TABLE `phones`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT для таблицы `phones_containers_repo`
 --
 ALTER TABLE `phones_containers_repo`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT для таблицы `phone_containers`
 --
 ALTER TABLE `phone_containers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=132;
 
 --
 -- AUTO_INCREMENT для таблицы `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT для таблицы `section_type`
 --
 ALTER TABLE `section_type`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT для таблицы `services`
 --
 ALTER TABLE `services`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT для таблицы `services_containers_repo`
 --
 ALTER TABLE `services_containers_repo`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT для таблицы `service_containers`
 --
 ALTER TABLE `service_containers`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT для таблицы `service_slot`
 --
 ALTER TABLE `service_slot`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=458;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=465;
 
 --
 -- AUTO_INCREMENT для таблицы `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=561;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=717;
 
 --
 -- AUTO_INCREMENT для таблицы `slot_category_type`
 --
 ALTER TABLE `slot_category_type`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT для таблицы `trimester`
 --
 ALTER TABLE `trimester`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT для таблицы `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'id', AUTO_INCREMENT=22;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'id', AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT для таблицы `user_status_type`
 --
 ALTER TABLE `user_status_type`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Ограничения внешнего ключа сохраненных таблиц
@@ -2629,78 +2777,78 @@ ALTER TABLE `user_status_type`
 -- Ограничения внешнего ключа таблицы `birthtype`
 --
 ALTER TABLE `birthtype`
-  ADD CONSTRAINT `birthtype_ibfk_1` FOREIGN KEY (`image_id`) REFERENCES `images` (`id`);
+  ADD CONSTRAINT `birthtype_ibfk_1` FOREIGN KEY (`image_id`) REFERENCES `images` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Ограничения внешнего ключа таблицы `clinics`
 --
 ALTER TABLE `clinics`
-  ADD CONSTRAINT `clinics_ibfk_1` FOREIGN KEY (`contragent`) REFERENCES `contragents` (`id`);
+  ADD CONSTRAINT `clinics_ibfk_1` FOREIGN KEY (`contragent`) REFERENCES `contragents` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Ограничения внешнего ключа таблицы `doctors`
 --
 ALTER TABLE `doctors`
-  ADD CONSTRAINT `doctors_ibfk_1` FOREIGN KEY (`category`) REFERENCES `doctor_category_type` (`id`),
-  ADD CONSTRAINT `doctors_ibfk_2` FOREIGN KEY (`position`) REFERENCES `doctor_position_type` (`id`),
-  ADD CONSTRAINT `doctors_ibfk_3` FOREIGN KEY (`image_id`) REFERENCES `images` (`id`);
+  ADD CONSTRAINT `doctors_ibfk_1` FOREIGN KEY (`category`) REFERENCES `doctor_category_type` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `doctors_ibfk_2` FOREIGN KEY (`position`) REFERENCES `doctor_position_type` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `doctors_ibfk_3` FOREIGN KEY (`image_id`) REFERENCES `images` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Ограничения внешнего ключа таблицы `images`
 --
 ALTER TABLE `images`
-  ADD CONSTRAINT `images_ibfk_1` FOREIGN KEY (`file_id`) REFERENCES `files` (`id`);
+  ADD CONSTRAINT `images_ibfk_1` FOREIGN KEY (`file_id`) REFERENCES `files` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Ограничения внешнего ключа таблицы `lk_permissions`
 --
 ALTER TABLE `lk_permissions`
-  ADD CONSTRAINT `lk_permissions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `lk_permissions_ibfk_2` FOREIGN KEY (`permission_id`) REFERENCES `lk_permission_type` (`id`);
+  ADD CONSTRAINT `lk_permissions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `lk_permissions_ibfk_2` FOREIGN KEY (`permission_id`) REFERENCES `lk_permission_type` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Ограничения внешнего ключа таблицы `orders`
 --
 ALTER TABLE `orders`
-  ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`refferer`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `orders_ibfk_3` FOREIGN KEY (`status`) REFERENCES `order_status_type` (`slug`),
-  ADD CONSTRAINT `orders_ibfk_4` FOREIGN KEY (`session_id`) REFERENCES `sessions` (`id`);
+  ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`refferer`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `orders_ibfk_3` FOREIGN KEY (`status`) REFERENCES `order_status_type` (`slug`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `orders_ibfk_4` FOREIGN KEY (`session_id`) REFERENCES `sessions` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Ограничения внешнего ключа таблицы `phones`
 --
 ALTER TABLE `phones`
-  ADD CONSTRAINT `phones_ibfk_1` FOREIGN KEY (`section`) REFERENCES `section_type` (`slug`);
+  ADD CONSTRAINT `phones_ibfk_1` FOREIGN KEY (`section`) REFERENCES `section_type` (`slug`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Ограничения внешнего ключа таблицы `services`
 --
 ALTER TABLE `services`
-  ADD CONSTRAINT `services_ibfk_1` FOREIGN KEY (`slot_category_type`) REFERENCES `slot_category_type` (`id`),
-  ADD CONSTRAINT `services_ibfk_2` FOREIGN KEY (`image_id`) REFERENCES `images` (`id`);
+  ADD CONSTRAINT `services_ibfk_1` FOREIGN KEY (`slot_category_type`) REFERENCES `slot_category_type` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `services_ibfk_2` FOREIGN KEY (`image_id`) REFERENCES `images` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Ограничения внешнего ключа таблицы `service_slot`
 --
 ALTER TABLE `service_slot`
-  ADD CONSTRAINT `service_slot_ibfk_1` FOREIGN KEY (`entity_type`) REFERENCES `entity_type` (`id`),
-  ADD CONSTRAINT `service_slot_ibfk_2` FOREIGN KEY (`slot_category_type`) REFERENCES `slot_category_type` (`id`),
-  ADD CONSTRAINT `service_slot_ibfk_3` FOREIGN KEY (`image_id`) REFERENCES `images` (`id`),
-  ADD CONSTRAINT `service_slot_ibfk_4` FOREIGN KEY (`section`) REFERENCES `section_type` (`slug`);
+  ADD CONSTRAINT `service_slot_ibfk_1` FOREIGN KEY (`entity_type`) REFERENCES `entity_type` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `service_slot_ibfk_2` FOREIGN KEY (`slot_category_type`) REFERENCES `slot_category_type` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `service_slot_ibfk_3` FOREIGN KEY (`image_id`) REFERENCES `images` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `service_slot_ibfk_4` FOREIGN KEY (`section`) REFERENCES `section_type` (`slug`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Ограничения внешнего ключа таблицы `sessions`
 --
 ALTER TABLE `sessions`
-  ADD CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+  ADD CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Ограничения внешнего ключа таблицы `users`
 --
 ALTER TABLE `users`
-  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role`) REFERENCES `roles` (`id`),
-  ADD CONSTRAINT `users_ibfk_2` FOREIGN KEY (`photo_id`) REFERENCES `images` (`id`);
+  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role`) REFERENCES `roles` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `users_ibfk_2` FOREIGN KEY (`photo_id`) REFERENCES `images` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
