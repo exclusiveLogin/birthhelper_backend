@@ -102,6 +102,7 @@ export const slots: SlotRepo = {
         createAffectionSectionKeys: ['clinic'],
         restrictsOfSlot: [
             { key: 'slot_category_type', value: 1},
+            { key: 'section', value: 'clinic'},
         ]
     },
     slot_consultation_doctors: {
@@ -129,6 +130,7 @@ export const slots: SlotRepo = {
         createAffectionSectionKeys: ['consultation'],
         restrictsOfSlot: [
             { key: 'slot_category_type', value: 1},
+            { key: 'section', value: 'consultation'},
         ]
     },
     slot_birth_type: {

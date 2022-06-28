@@ -694,8 +694,8 @@ export const entityRepo: EntityRepo = {
 
     ent_doctor_slots: {
         db_name: 'service_slot',
-        deleteAffectionSectionKeys: ['clinic'],
-        createAffectionSectionKeys: ['clinic'],
+        deleteAffectionSectionKeys: ['clinic', 'consultation'],
+        createAffectionSectionKeys: ['clinic', 'consultation'],
         filters: [
             {
                 title: 'Тип контрагента',
@@ -789,8 +789,8 @@ export const entityRepo: EntityRepo = {
 
     ent_consultation_doctor_slots: {
         db_name: 'service_slot',
-        deleteAffectionSectionKeys: ['clinic'],
-        createAffectionSectionKeys: ['clinic'],
+        deleteAffectionSectionKeys: ['clinic', 'consultation'],
+        createAffectionSectionKeys: ['clinic', 'consultation'],
         filters: [
             {
                 title: 'Тип контрагента',
