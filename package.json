@@ -11,7 +11,7 @@
     "deploy": "tsc && pm2 restart ecosystem.config.js",
     "deploy:local": "tsc && pm2 restart ecosystem.config.js --env local",
     "deploy:docker": "tsc && pm2-runtime ecosystem.config.js --env local",
-    "docker:build": "npm i && tsc && docker build -t exclusivelogin/birthhelper-back .",
+    "docker:build": "npm i && tsc && docker build --platform linux/amd64 -t exclusivelogin/birthhelper-back .",
     "docker:publish": "npm run docker:build && docker login && docker push exclusivelogin/birthhelper-back",
     "docker:run": "docker pull exclusivelogin/birthhelper-back && docker run --rm -d -p 8091:3000 exclusivelogin/birthhelper-back"
   },
