@@ -9,6 +9,9 @@ module.exports = {
     autorestart: true,
     watch: false,
     max_memory_restart: '1G',
+    wait_ready: true,
+    listen_timeout: 10000,
+    kill_timeout : 10000,
     env: {
         NODE_ENV: 'development',
         HOST: 'localhost'
