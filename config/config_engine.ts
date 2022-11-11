@@ -25,7 +25,7 @@ export class ConfigEngine {
                         const fieldKey = consumer.restrictorsDict.entityFieldKey;
                         const key = `${consumer.key}_${dictItem.id}`;
                         const required = consumer?.restrictorsDict?.required?.some(r => r === dictItem.id) ?? false;
-                        const selectMode: SelectMode = consumer?.restrictorsDict?.selectModeMap?.find(sm => sm.id === dictItem.id)?.selectMode ?? 'multi';
+                        const selectMode: SelectMode = consumer?.restrictorsDict?.selectModeMap?.find(sm => sm.id === dictItem.id)?.selectMode ?? consumer?.restrictorsDict?.floorSettings?.selectMode ?? 'multi';
                         const targetConsumer: Consumer =  {...consumer, restrictorsDict: null, key, restrictors: [{ key: fieldKey, value: dictItem.id}]};
                         const targetFloor: TabFloorSetting = { ...consumer?.restrictorsDict?.floorSettings, consumerKeys: [key], required, selectMode, key, title: dictItem.title };
                         const curIdxFloor = consumer?.restrictorsDict?.orders?.indexOf(dictItem.id) ?? -1;

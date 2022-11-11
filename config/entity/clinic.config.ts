@@ -86,7 +86,7 @@ export const ClinicConfig: Config = {
         {
             key: 'doctors',
             title: 'Специалисты',
-            selectMode: 'single',
+            selectMode: 'multi',
             floors: [],
         },
         {
