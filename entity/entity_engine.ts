@@ -157,7 +157,7 @@ export class EntityEngine {
                 map(result => result?.[0]?.cnt ?? 0));
         }
 
-        console.log('что то пошло не так... Сущность сета не определена');
+        console.error('что то пошло не так... Сущность сета не определена');
         return throwError('Сущность сета не определена');
     }
 
@@ -310,6 +310,7 @@ export class EntityEngine {
     }
 
     getEntitiesByIds(ids: number[], key: EntityKeys, skip = 0): Observable<Entity[]> {
+        if(!ids?.length) return of([]);
         const config = entities[key];
         const isContragent = config.isContragent;
         const db = config.db_name;
