@@ -252,7 +252,7 @@ export class SearchEngine {
 
     getEntitiesIDByHash(key: SectionKeys, hash: string): Observable<StoredIds>{
         const config = this.searchConfig[key];
-        if(!config) return null;
+        if(!config) return of([]);
 
         // проверяем кеш
         const stored = this.getSearchStore(key, hash);
@@ -263,7 +263,7 @@ export class SearchEngine {
 
         // забираем фильтры по хешу
         const filters = this.getFilterStore(key, hash);
-        if(!filters) return null;
+        if(!filters) return of([]);
 
         // генерируем пайп поиска.
         const keys = Object.keys(filters);
