@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 185.178.46.248
--- Время создания: Янв 13 2023 г., 14:40
+-- Время создания: Янв 13 2023 г., 16:06
 -- Версия сервера: 8.0.31-0ubuntu0.20.04.1
 -- Версия PHP: 8.0.26
 
@@ -184,6 +184,23 @@ INSERT INTO `clinic_specialities_type` (`id`, `icon`, `title`, `description`, `b
 (4, NULL, 'Заболевания сердечнососудистой системы', NULL, NULL),
 (5, NULL, 'Патология сосудов', NULL, NULL),
 (6, NULL, 'Сахарный диабет', NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `comment`
+--
+
+CREATE TABLE `comment` (
+  `id` bigint UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb3_unicode_ci NOT NULL,
+  `feedback_id` bigint UNSIGNED NOT NULL,
+  `comment_id` bigint UNSIGNED NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
+  `datetime_create` timestamp NOT NULL,
+  `datetime_update` timestamp NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -602,6 +619,21 @@ INSERT INTO `facilities_type` (`id`, `icon`, `title`, `description`, `bg_color`)
 -- --------------------------------------------------------
 
 --
+-- Структура таблицы `feedback`
+--
+
+CREATE TABLE `feedback` (
+  `id` bigint UNSIGNED NOT NULL,
+  `target_entity_key` text COLLATE utf8mb3_unicode_ci NOT NULL,
+  `target_entity_id` int NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
+  `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Структура таблицы `files`
 --
 
@@ -961,6 +993,21 @@ INSERT INTO `images` (`id`, `file_id`, `title`, `description`, `datetime_update`
 (188, 188, 'Видео', 'null', '2022-11-20 14:09:40', '2022-11-20 14:09:40'),
 (189, 189, 'Трансфер', 'null', '2022-11-20 14:16:39', '2022-11-20 14:16:39'),
 (190, 190, 'Трансфер', 'null', '2022-11-20 14:17:31', '2022-11-20 14:17:31');
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `likes`
+--
+
+CREATE TABLE `likes` (
+  `id` bigint UNSIGNED NOT NULL,
+  `feedback_id` bigint UNSIGNED NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
+  `target_type` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
+  `target_id` int NOT NULL,
+  `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -2982,6 +3029,19 @@ INSERT INTO `user_status_type` (`id`, `title`, `description`, `icon`, `bg_color`
 (3, 'Беременна', NULL, NULL, NULL),
 (4, 'Родила', NULL, NULL, NULL);
 
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `vote`
+--
+
+CREATE TABLE `vote` (
+  `id` bigint UNSIGNED NOT NULL,
+  `feedback_id` bigint UNSIGNED NOT NULL,
+  `rate` int NOT NULL,
+  `title` text COLLATE utf8mb3_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+
 --
 -- Индексы сохранённых таблиц
 --
@@ -3018,6 +3078,16 @@ ALTER TABLE `clinic_specialities_containers_repo`
 --
 ALTER TABLE `clinic_specialities_type`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Индексы таблицы `comment`
+--
+ALTER TABLE `comment`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `id` (`id`),
+  ADD KEY `feedback_id` (`feedback_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `comment_id` (`comment_id`);
 
 --
 -- Индексы таблицы `consultation`
@@ -3088,6 +3158,14 @@ ALTER TABLE `facilities_type`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Индексы таблицы `feedback`
+--
+ALTER TABLE `feedback`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `id` (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Индексы таблицы `files`
 --
 ALTER TABLE `files`
@@ -3100,6 +3178,15 @@ ALTER TABLE `files`
 ALTER TABLE `images`
   ADD UNIQUE KEY `id` (`id`),
   ADD KEY `file_id` (`file_id`);
+
+--
+-- Индексы таблицы `likes`
+--
+ALTER TABLE `likes`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `id` (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `feedback_id` (`feedback_id`);
 
 --
 -- Индексы таблицы `lk_permissions`
@@ -3253,6 +3340,14 @@ ALTER TABLE `user_status_type`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Индексы таблицы `vote`
+--
+ALTER TABLE `vote`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `id` (`id`),
+  ADD KEY `feedback_id` (`feedback_id`);
+
+--
 -- AUTO_INCREMENT для сохранённых таблиц
 --
 
@@ -3285,6 +3380,12 @@ ALTER TABLE `clinic_specialities_containers_repo`
 --
 ALTER TABLE `clinic_specialities_type`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT для таблицы `comment`
+--
+ALTER TABLE `comment`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT для таблицы `consultation`
@@ -3347,6 +3448,12 @@ ALTER TABLE `facilities_type`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
+-- AUTO_INCREMENT для таблицы `feedback`
+--
+ALTER TABLE `feedback`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT для таблицы `files`
 --
 ALTER TABLE `files`
@@ -3357,6 +3464,12 @@ ALTER TABLE `files`
 --
 ALTER TABLE `images`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=191;
+
+--
+-- AUTO_INCREMENT для таблицы `likes`
+--
+ALTER TABLE `likes`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT для таблицы `lk_permissions`
@@ -3467,6 +3580,12 @@ ALTER TABLE `user_status_type`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT для таблицы `vote`
+--
+ALTER TABLE `vote`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- Ограничения внешнего ключа сохраненных таблиц
 --
 
@@ -3483,6 +3602,14 @@ ALTER TABLE `clinics`
   ADD CONSTRAINT `clinics_ibfk_1` FOREIGN KEY (`contragent`) REFERENCES `contragents` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
+-- Ограничения внешнего ключа таблицы `comment`
+--
+ALTER TABLE `comment`
+  ADD CONSTRAINT `comment_ibfk_1` FOREIGN KEY (`feedback_id`) REFERENCES `feedback` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `comment_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `comment_ibfk_3` FOREIGN KEY (`comment_id`) REFERENCES `comment` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+--
 -- Ограничения внешнего ключа таблицы `doctors`
 --
 ALTER TABLE `doctors`
@@ -3491,10 +3618,23 @@ ALTER TABLE `doctors`
   ADD CONSTRAINT `doctors_ibfk_3` FOREIGN KEY (`image_id`) REFERENCES `images` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
+-- Ограничения внешнего ключа таблицы `feedback`
+--
+ALTER TABLE `feedback`
+  ADD CONSTRAINT `feedback_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+--
 -- Ограничения внешнего ключа таблицы `images`
 --
 ALTER TABLE `images`
   ADD CONSTRAINT `images_ibfk_1` FOREIGN KEY (`file_id`) REFERENCES `files` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+--
+-- Ограничения внешнего ключа таблицы `likes`
+--
+ALTER TABLE `likes`
+  ADD CONSTRAINT `likes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `likes_ibfk_2` FOREIGN KEY (`feedback_id`) REFERENCES `feedback` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Ограничения внешнего ключа таблицы `lk_permissions`
@@ -3547,6 +3687,12 @@ ALTER TABLE `sessions`
 ALTER TABLE `users`
   ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role`) REFERENCES `roles` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   ADD CONSTRAINT `users_ibfk_2` FOREIGN KEY (`photo_id`) REFERENCES `images` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+--
+-- Ограничения внешнего ключа таблицы `vote`
+--
+ALTER TABLE `vote`
+  ADD CONSTRAINT `vote_ibfk_1` FOREIGN KEY (`feedback_id`) REFERENCES `feedback` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
