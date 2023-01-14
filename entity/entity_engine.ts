@@ -798,10 +798,12 @@ export class EntityEngine {
 
         entity.get('/:id/filters',
             this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.context.authorizationEngine.checkPrivateEntity.bind(this.context.authorizationEngine),
             this.entityFilterHandler.bind(this));
 
         entity.get('/:id/set',
             this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.context.authorizationEngine.checkPrivateEntity.bind(this.context.authorizationEngine),
             this.entitySetHandler.bind(this));
 
         entity.get('/file/:id',
@@ -810,10 +812,12 @@ export class EntityEngine {
 
         entity.get('/:id',
             this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.context.authorizationEngine.checkPrivateEntity.bind(this.context.authorizationEngine),
             this.queryEntityHandler.bind(this));
 
         entity.get('/:id/:eid',
             this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, null),
+            this.context.authorizationEngine.checkPrivateEntity.bind(this.context.authorizationEngine),
             this.queryEntityHandler.bind(this));
 
         entity.post('/file',
@@ -826,11 +830,13 @@ export class EntityEngine {
         entity.delete('/:id',
             jsonparser,
             this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, 7),
+            this.context.authorizationEngine.checkPrivateEntity.bind(this.context.authorizationEngine),
             this.deleteEntityHandler.bind(this));
 
         entity.post('/:id',
             jsonparser,
             this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, 7),
+            this.context.authorizationEngine.checkPrivateEntity.bind(this.context.authorizationEngine),
             this.createEntityHandler.bind(this));
 
         return entity;

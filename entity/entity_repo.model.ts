@@ -10,6 +10,7 @@ export interface Permissions {
 }
 export interface Entity extends Cached {
     db_name: string,
+    private?: boolean,
     filters: EntityFilter[],
     isContragent?: boolean,
     container?: string,

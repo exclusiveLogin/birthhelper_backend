@@ -53,6 +53,13 @@ export class AuthorizationEngine {
         next();
     }
 
+    checkPrivateEntity(req: Request, res: Response, next: Function) {
+        const entityKey = req.params.id as EntityKeys;
+        const entityConfig = this.context.entityEngine.getEntityParams(entityKey);
+
+        entityConfig?.private ? this.sendEntityIsPrivate(res) : next();
+    }
+
     sendTokenNotValid(response: Response, reason?: string) {
         response.status(401);
         response.send({auth: false, error: reason ? reason : 'Токен устарел'});
@@ -61,6 +68,11 @@ export class AuthorizationEngine {
     sendNotPermitted(response: Response, reason?: string) {
         response.status(403);
         response.send({auth: false, error: reason ? reason : 'Запрошенное действие не разрешено'});
+    }
+
+    sendEntityIsPrivate(response: Response, reason?: string) {
+        response.status(403);
+        response.send({auth: false, error: reason ? reason : 'Приватная сущность. Доступ запрещен'});
     }
 
     sendServerError(response: Response, reason?: string) {
