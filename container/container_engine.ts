@@ -217,7 +217,7 @@ export class ContainerEngine {
     }
 
     garbageHandler(keys: string[], sections: SectionKeys[]): void {
-        keys.forEach(k => this.context.cacheEngine.softClearBykey(k));
+        keys.forEach(k => this.context.cacheEngine.softClearByKey(k));
         sections.forEach(k => this.context.searchEngine.resetSearchStoreBySection(k));
         sections.forEach(k => this.context.searchEngine.resetSummaryStoreBySection(k));
     }

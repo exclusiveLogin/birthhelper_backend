@@ -1,12 +1,12 @@
 import * as express from "express";
 import {CacheEngine} from "../cache.engine/cache_engine";
-import {Response, Router} from "express";
+import {Request, Response, Router} from "express";
 import {Observable, throwError} from "rxjs";
 import {generateFilterQStr} from "../db/sql.helper";
 import {DataBaseService} from "../db/sql";
 import {Context} from "../search/config";
 import {tap} from "rxjs/operators";
-import { dictionaries } from "./dictionary_repo";
+import {dictionaries, IDictionaryFilters} from "./dictionary_repo";
 export interface DictionaryItem {
     id: number;
     title: string;
@@ -25,40 +25,57 @@ export class DictionaryEngine {
         this.dbe = context.dbe;
     }
 
-    getDict(id: string, limit = '200', skip = '0'): Observable<DictionaryItem[]> {
-        const dict = dictionaries[id];
-        if(!dict) {
-            return throwError(`Словарь ${id} не найден`);
+    getDict(id: string, params: Request['query'] = {}, limit = '200', skip = '0'): Observable<DictionaryItem[]> {
+
+        if(!id) {
+            return throwError(`ID словаря не определен`);
         }
 
-        const fetchFromDB = (): Observable<DictionaryItem[]> => {
-            let limstr = `${ !!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip  : '' }`;
+        const dictionaryConfig = dictionaries[id];
+        if(!dictionaryConfig) {
+            return throwError(`Словарь ${id} не найден`);
+        }
+        let filters = dictionaryConfig?.filters ?? [];
 
-            let likeStr = [...generateFilterQStr(dict?.filters || [], 'string'), ...generateFilterQStr(dict?.filters || [], 'flag')].join(' AND ');
-            let whereStr = [...generateFilterQStr(dict?.filters || [], 'id')].join(' AND ');
+        filters = [
+            ...filters,
+            ...dictionaryConfig.autocomplete
+                .filter(fk => fk.key in params)
+                .map(ac => ({key: ac.key, type: ac.type, value: params[ac.key] } as IDictionaryFilters))
+        ];
 
-            let q =
-                `SELECT * 
-                FROM \`${ dict.db }\` 
+        let limstr = `${ !!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip  : '' }`;
+
+        const likeStr = [
+            ...generateFilterQStr(filters, 'string'),
+            ...generateFilterQStr(filters, 'flag')]
+            .join(' AND ');
+        const whereStr = [...generateFilterQStr(filters, 'id')]
+            .join(' AND ');
+
+        const q =
+            `SELECT * 
+                FROM \`${ dictionaryConfig.db }\` 
                 ${(whereStr) ? 'WHERE ' + whereStr : ''} 
                 ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''} 
                 ${limstr}`;
 
+        const fetchFromDB = (): Observable<DictionaryItem[]> => {
             return this.dbe.queryList<DictionaryItem>(q).pipe(
-                tap(data => this.ce.saveCacheData(`${id}`, data)),
+                tap(data => this.ce.saveCacheData(`${q}`, data)),
                 tap(result => {
-                    if( dict.titleMap || dict.titleAddMap ){
+                    if( dictionaryConfig.titleMap || dictionaryConfig.titleAddMap ){
                         result && result.forEach( r => {
-                            r.title = dict.titleMap.map(f => r[f]).join(', ');
-                            r.title = dict.titleAddMap ? r.title + ` ( ${dict.titleAddMap.map(f => r[f]).join(', ')} )` : r.title;
+                            r.title = dictionaryConfig.titleMap.map(f => r[f]).join(', ');
+                            r.title = dictionaryConfig.titleAddMap ? r.title + ` ( ${dictionaryConfig.titleAddMap.map(f => r[f]).join(', ')} )` : r.title;
                         })
                     }
                 }),
             );
         };
 
-        if(this.ce.checkCache(id)) {
-            return this.ce.getCachedByKey(id);
+        if(this.ce.checkCache(q)) {
+            return this.ce.getCachedByKey(q);
         } else {
             return fetchFromDB()
         }
@@ -72,8 +89,7 @@ export class DictionaryEngine {
 
     getRouter(): Router {
         return this.dict.get('/:id', (req, res) => {
-            const id = req.params.id;
-            if (!!id) this.getDict(id).subscribe((data) => res.send(data),  error => this.sendError(res, error));
+            this.getDict(req.params.id, req.query).subscribe((data) => res.send(data),  error => this.sendError(res, error));
         });
     }
 }
