@@ -208,12 +208,12 @@ export class EntityEngine {
     }
 
     garbageHandler(keys: string[], sections: SectionKeys[]): void {
-        keys.forEach(k => this.cacheEngine.softClearBykey(k));
+        keys.forEach(k => this.cacheEngine.softClearByKey(k));
         sections.forEach(k => this.searchEngine.resetSearchStoreBySection(k));
         sections.forEach(k => this.searchEngine.resetSummaryStoreBySection(k));
     }
 
-    async createEntity(name, data) {
+    async createEntity(name: string, data: unknown) {
         if(!data) return Promise.reject('Нет данных для создания или изменеиня сущности');
         const config = this.getEntityParams(name);
         if(!config) return Promise.reject('Нет конфигурации для сущности: ' + name);
@@ -258,7 +258,7 @@ export class EntityEngine {
 
         return  this.context.dbe.queryList(qf).pipe(
                 mapTo('Данные обновлены'),
-                tap(() => this.garbageHandler([config.db_name, ...name.split('_').filter(part => part === 'ent' || part === 'dict')], createSections)),
+                tap(() => this.garbageHandler([config.db_name, ...name.split('_').filter(part => part !== 'ent' && part !== 'dict')], createSections)),
             ).toPromise();
     }
 

@@ -3,6 +3,7 @@ export interface IDictionary {
     titleMap?: string[];
     titleAddMap?: string[];
     filters?: IDictionaryFilters[];
+    autocomplete?: IDictionaryAutocompleteFilters[];
 }
 
 export interface IDictionaryFilters {
@@ -11,7 +12,13 @@ export interface IDictionaryFilters {
     type: 'string' | 'number' | 'flag';
 }
 
-export const dictionaries: { [key: string]: IDictionary } = {
+export interface IDictionaryAutocompleteFilters {
+    key: string;
+    field: string;
+    type: 'string' | 'number' | 'flag';
+}
+
+export const dictionaries: Record<string, IDictionary> = {
     dict_trimester_service: {db: 'trimester'},
     dict_clinics: {db: 'clinics'},
     dict_consultations: {db: 'consultation'},
@@ -46,7 +53,10 @@ export const dictionaries: { [key: string]: IDictionary } = {
             }
         ]
     },
-    dict_district: {db: 'districts'},
+    dict_district: {db: 'districts', autocomplete: [
+            {key: 'title', field: 'title', type: 'string'},
+            {key: 'name', field: 'name', type: 'string'}
+        ]},
     dict_phone_container: {db: 'phones_containers_repo'},
     dict_entity_type: {db: 'entity_type'},
     dict_birthtype: {db: 'birthtype'},
