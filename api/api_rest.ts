@@ -12,6 +12,7 @@ function apiRootHandler(req, res){
 
 export function getAPIMiddleware(context: Context): Router {
     api.use('/dict', context.dictionaryEngine.getRouter());
+    api.use('/feedback', context.feedbackEngine.getRouter());
     api.use('/slots', context.slotEngine.getRouter());
     api.use('/containers', context.containerEngine.getRouter());
     api.use('/configurator', context.configEngine.getRouter());
