@@ -18,6 +18,7 @@ import {CommentEngine} from "./comment/comment_engine";
 import {LikeEngine} from "./like/like_engine";
 import {TagEngine} from "./tag/tag_engine";
 import {FeedbackEngine} from "./feedback/feedback_engine";
+import {VoteEngine} from "./vote/vote_engine";
 
 
 // context
@@ -37,6 +38,7 @@ const context: Context = {
     likeEngine: null,
     tagEngine: null,
     feedbackEngine: null,
+    voteEngine: null,
 }
 
 // providers
@@ -55,6 +57,7 @@ const COME: CommentEngine = new CommentEngine(context);
 const LE: LikeEngine = new LikeEngine(context);
 const TE: TagEngine = new TagEngine(context);
 const FBE: FeedbackEngine = new FeedbackEngine(context);
+const VE: VoteEngine = new VoteEngine(context);
 
 let app = express();
 function jsonHeaders(req, res, next) {

@@ -14,6 +14,7 @@ import {FeedbackEngine} from "../feedback/feedback_engine";
 import {LikeEngine} from "../like/like_engine";
 import {CommentEngine} from "../comment/comment_engine";
 import {TagEngine} from "../tag/tag_engine";
+import {VoteEngine} from "../vote/vote_engine";
 
 export type SearchConfig = {
     [section in SectionKeys]: { [key in typeof sectionConfig[section][number]]?: SearchSectionConfig};
@@ -85,6 +86,7 @@ export interface Context {
     likeEngine: LikeEngine;
     commentEngine: CommentEngine;
     tagEngine: TagEngine;
+    voteEngine: VoteEngine;
 }
 export const getSearchConfig = (context: Context): SearchConfig => {
     const searchConfig: SearchConfig = {
