@@ -3,8 +3,9 @@ export interface FeedbackComment {
     id?: number;
     title?: string;
     text: string;
-    target?: number;
+    targetId?: number;
     feedbackId?: number;
+    userId?: number;
 }
 
 export interface FeedbackVote {
