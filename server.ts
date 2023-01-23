@@ -14,6 +14,10 @@ import { ConfigEngine } from "./config/config_engine";
 import { getAdminMiddleware } from "./api/admin_rest";
 import { getAPIMiddleware } from "./api/api_rest";
 import { OrderEngine } from "./orders/orders_engine";
+import {CommentEngine} from "./comment/comment_engine";
+import {LikeEngine} from "./like/like_engine";
+import {TagEngine} from "./tag/tag_engine";
+import {FeedbackEngine} from "./feedback/feedback_engine";
 
 
 // context
@@ -29,6 +33,10 @@ const context: Context = {
     slotEngine: null,
     configEngine: null,
     orderEngine: null,
+    commentEngine: null,
+    likeEngine: null,
+    tagEngine: null,
+    feedbackEngine: null,
 }
 
 // providers
@@ -43,6 +51,10 @@ const CNE: ContainerEngine = new ContainerEngine(context);
 const SLE: SlotEngine = new SlotEngine(context);
 const CFGE: ConfigEngine = new ConfigEngine(context);
 const OE: OrderEngine = new OrderEngine(context);
+const COME: CommentEngine = new CommentEngine(context);
+const LE: LikeEngine = new LikeEngine(context);
+const TE: TagEngine = new TagEngine(context);
+const FBE: FeedbackEngine = new FeedbackEngine(context);
 
 let app = express();
 function jsonHeaders(req, res, next) {
