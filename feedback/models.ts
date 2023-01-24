@@ -15,6 +15,15 @@ export interface FeedbackVote {
     description?: string;
     feedbackId?: number;
 }
+
+export interface FeedbackLike {
+    id?: number;
+    feedbackId: number;
+    userId?: number;
+    datetime_create?: string;
+    datetime_update?: string;
+}
+
 export interface FeedbackRequest {
     id?: number;
     action: FeedbackAction;
@@ -23,12 +32,4 @@ export interface FeedbackRequest {
     tags: number[];
     likes: Array<FeedbackLike>;
     dislikes: Array<FeedbackLike>;
-}
-
-export interface FeedbackLike {
-    id?: number;
-    feedbackId: number;
-    userId?: number;
-    datetime_create?: string;
-    datetime_update?: string;
 }

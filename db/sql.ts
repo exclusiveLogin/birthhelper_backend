@@ -1,10 +1,12 @@
 import {sqlConfig} from "./sql.config";
-import {Observable} from "rxjs";
+import {Observable, of, pipe} from "rxjs";
 import {Context} from "../search/config";
 import { createPool } from "mysql";
+import {map, switchMap, tap} from "rxjs/operators";
+import {Entity} from "../entity/entity_engine";
 
 export class DataBaseService {
-    constructor(context: Context) {
+    constructor(private context: Context) {
         context.dbe = this;
     }
 
@@ -34,5 +36,33 @@ export class DataBaseService {
                 observer.complete();
             });
         });
+    }
+
+    saveToCache(cacheKey?: string, data?: any): void {
+        if(cacheKey) this.context.cacheEngine.saveCacheData(cacheKey, data);
+    }
+
+    getEntityFromDB(query: string, cacheKey?: string): Observable<Entity> {
+        const pipeline = this.query<Entity>(query);
+        return pipeline.pipe(
+            switchMap((result) =>
+                this.context.cacheEngine.checkCache(cacheKey) ?
+                    this.context.cacheEngine.getCachedByKey<Entity>(cacheKey) :
+                    of(result)),
+            tap((result) => this.saveToCache(cacheKey, result)),
+        )
+
+    }
+
+    getEntitiesFromDB(query: string, cacheKey?: string): Observable<Entity[]> {
+        const pipeline = this.queryList<Entity>(query);
+        return pipeline.pipe(
+            switchMap((result) =>
+                this.context.cacheEngine.checkCache(cacheKey) ?
+                    this.context.cacheEngine.getCachedByKey<Entity[]>(cacheKey) :
+                    of(result)),
+            tap((result) => this.saveToCache(cacheKey, result)),
+        )
+
     }
 }

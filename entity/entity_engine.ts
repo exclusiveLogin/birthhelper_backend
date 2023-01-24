@@ -175,7 +175,7 @@ export class EntityEngine {
                     map(result => result.length || 0));
             const provider = hash && ids$ ? ids$ : this.getSetFromDB(key, filters);
 
-            provider.subscribe(result =>
+            provider.pipe(take(1)).subscribe(result =>
                     res.send({
                         total: result,
                         fields: entities[req.params.id].fields || [],
@@ -334,14 +334,9 @@ export class EntityEngine {
             ${whereStr ? 'WHERE ' + whereStr : ''}`;
         }
 
-        // console.log('getEntityByIds q: ', q);
-        return of(cacheKey)
-            .pipe(
-                switchMap(k => this.cacheEngine.checkCache(k) ?
-                    this.cacheEngine.getCachedByKey<Entity[]>(k) :
-                    this.context.dbe.queryList<Entity>(q).pipe(
-                        tap(_ => _.forEach($ => $.id = $._id ? $._id : $.id)),
-                        tap(data => this.cacheEngine.saveCacheData(k, data)))));
+        return this.context.dbe.getEntitiesFromDB(q, cacheKey).pipe(
+            tap(_ => _.forEach($ => $.id = $._id ? $._id : $.id)),
+        )
     }
 
     getEntityPortion(key: EntityKeys, filters?: FilterParams, skip: number = 0, limit: number = 20): Observable<Entity[]> {
