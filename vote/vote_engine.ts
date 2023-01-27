@@ -1,13 +1,17 @@
-import {CacheEngine} from "../cache.engine/cache_engine";
-import {DataBaseService} from "../db/sql";
 import {Context} from "../search/config";
 
 export class VoteEngine {
-    ce: CacheEngine;
-    dbe: DataBaseService;
+    context: Context
     constructor(context: Context) {
-        context.likeEngine = this;
-        this.ce = context.cacheEngine;
-        this.dbe = context.dbe;
+        context.voteEngine = this;
+        this.context = context;
+    }
+
+    getVotesByContext(section?: string, utility?: string){
+        let filters = {};
+        if( section ) filters = {...filters, section}
+        if( utility ) filters = {...filters, utility}
+
+        return this.context.dictionaryEngine.getDict('dict_votes', filters);
     }
 }
