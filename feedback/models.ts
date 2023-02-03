@@ -1,35 +1,24 @@
+import {Comment} from "../comment/model";
+import {Vote} from "../vote/model";
+import {Like} from "../like/model";
+
 export type FeedbackAction = 'CREATE' | 'ANSWER' | 'LIKE' | 'DISLIKE' | 'ISSUES';
-export interface FeedbackComment {
-    id?: number;
-    title?: string;
-    text: string;
-    targetId?: number;
-    feedbackId?: number;
-    userId?: number;
-}
-
-export interface FeedbackVote {
-    id?: number;
-    rate: number;
-    title: string;
-    description?: string;
-    feedbackId?: number;
-}
-
-export interface FeedbackLike {
-    id?: number;
-    feedbackId: number;
-    userId?: number;
-    datetime_create?: string;
-    datetime_update?: string;
-}
-
-export interface FeedbackRequest {
-    id?: number;
+export interface FeedbackResponse {
+    id: number;
+    target_entity_key: string;
+    target_entity_id: number;
     action: FeedbackAction;
-    comment: FeedbackComment;
-    votes: Array<FeedbackVote>;
-    tags: number[];
-    likes: Array<FeedbackLike>;
-    dislikes: Array<FeedbackLike>;
+    comment: Comment;
+    votes: Array<Vote>;
+    likes: Array<Like>;
+    dislikes: Array<Like>;
+}
+
+export interface Feedback {
+    id: number;
+    target_entity_key: string;
+    target_entity_id: number;
+    user_id: number;
+    datetime_create: string;
+    datetime_update: string;
 }

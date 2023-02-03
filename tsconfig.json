@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
-    "allowJs": true,
     "sourceMap": true,
     "declaration": false,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
+    "rootDir": "./",
+    "baseUrl": "./",
     "target": "ES6",
     "module": "CommonJS",
     "esModuleInterop": true,
