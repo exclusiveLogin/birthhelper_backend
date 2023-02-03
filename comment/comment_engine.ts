@@ -1,31 +1,35 @@
 import {Context} from "../search/config";
-import {EscapeFunctions} from "mysql";
 import {Comment} from "./model";
 import {Observable} from "rxjs";
+import {map} from "rxjs/operators";
+import {escape} from "mysql";
 
 
 export class CommentEngine {
     context: Context;
-    escape: EscapeFunctions['escape'];
     constructor(context: Context) {
         context.commentEngine = this;
         this.context = context;
-        this.escape = context.dbe.pool.escape;
     }
 
     getAllCommentsByFeedback(id: number): Observable<Comment[]> {
-        const q = `SELECT * FROM \`comments\` WHERE feedback_id=${this.escape(id)}`;
+        const q = `SELECT * FROM \`comments\` WHERE feedback_id=${escape(id)}`;
         return this.context.dbe.queryList<Comment>(q);
     }
 
     getCommentsByParentId(id: number): Observable<Comment[]> {
-        const q = `SELECT * FROM \`comments\` WHERE comment_id=${this.escape(id)}`;
+        const q = `SELECT * FROM \`comments\` WHERE comment_id=${escape(id)}`;
         return this.context.dbe.queryList<Comment>(q);
     }
 
     getCommentById(id: number): Observable<Comment> {
-        const q = `SELECT * FROM \`comments\` WHERE id=${this.escape(id)}`;
+        const q = `SELECT * FROM \`comments\` WHERE id=${escape(id)}`;
         return this.context.dbe.query<Comment>(q);
+    }
+
+    getMasterCommentByFeedbackId(id: number): Observable<Comment> {
+        const q = `SELECT * FROM \`comments\` WHERE feedback_id=${escape(id)} AND comment_id IS NULL`;
+        return this.context.dbe.queryList<Comment>(q).pipe(map(result => result?.[0] ?? null));
     }
 
     addCommentToFeedback(feedbackID: number, comment: Partial<Comment>, userId: number, parent?: number): Observable<Comment> {
@@ -38,11 +42,11 @@ export class CommentEngine {
                         comment_id
                     )
                     VALUES (
-                        ${this.escape(feedbackID)}, 
-                        ${this.escape(userId)},
-                        ${this.escape(comment.title)}, 
-                        ${this.escape(comment.description ?? '')},
-                        ${this.escape(parent ?? null)}, 
+                        ${escape(feedbackID)}, 
+                        ${escape(userId)},
+                        ${escape(comment.title)}, 
+                        ${escape(comment.description ?? '')},
+                        ${escape(parent ?? null)}, 
                     )`;
 
         return this.context.dbe.query<Comment>(q);
@@ -50,8 +54,8 @@ export class CommentEngine {
 
     deleteCommentById(id: number): Observable<unknown> {
         const q = `DELETE FROM \`comments\`
-                    WHERE id=${this.escape(id)} 
-                    AND comment_id=${this.escape(id)}`;
+                    WHERE id=${escape(id)} 
+                    AND comment_id=${escape(id)}`;
         return this.context.dbe.query(q);
     }
 

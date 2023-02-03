@@ -1,6 +1,8 @@
 import {Context} from "../search/config";
-import {Observable} from "rxjs";
+import {Observable, of} from "rxjs";
 import {Vote} from "./model";
+import {escape} from "mysql";
+import {Comment} from "../comment/model";
 
 export class VoteEngine {
     context: Context
@@ -18,6 +20,7 @@ export class VoteEngine {
     }
 
     getVotesByFeedback(id: number): Observable<Vote[]> {
-        return
+        const q = `SELECT * FROM \`votes\` WHERE feedback_id=${escape(id)}`;
+        return this.context.dbe.queryList<Vote>(q);
     }
 }
