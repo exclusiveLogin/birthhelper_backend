@@ -22,3 +22,18 @@ export interface Feedback {
     datetime_create: string;
     datetime_update: string;
 }
+export interface SummaryVotes {
+    avr: number;
+    min: number;
+    max: number;
+    total: number;
+}
+
+export interface RateByVote extends SummaryVotes{
+    slug: string;
+}
+
+export interface SummaryRateByTargetResponse {
+    summary: SummaryVotes;
+    summary_by_votes: Array<RateByVote>;
+}

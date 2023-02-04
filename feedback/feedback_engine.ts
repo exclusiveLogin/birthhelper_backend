@@ -2,12 +2,15 @@ import * as express from "express";
 import {NextFunction, Request, Response, Router} from "express";
 import {Context} from "../search/config";
 import {forkJoin, Observable, of} from "rxjs";
-import {Feedback, FeedbackResponse} from "./models";
+import {Feedback, FeedbackResponse, RateByVote, SummaryRateByTargetResponse, SummaryVotes} from "./models";
 import {escape} from "mysql";
 import {Comment} from "../comment/model";
 import {Vote} from "../vote/model";
 import {Like} from "../like/model";
 import {map} from "rxjs/operators";
+import bodyparser from "body-parser";
+
+const jsonparser = bodyparser.json();
 
 
 export class FeedbackEngine {
@@ -87,8 +90,59 @@ export class FeedbackEngine {
                         }) : null)
         );
     }
+
+    getSummaryRateByTarget(targetKey: string, targetId: number): Observable<SummaryVotes> {
+        const q = `SELECT COUNT(*) as total,  MAX(rate) as max, MIN(rate) as min, AVG(rate) as avr 
+                    FROM votes 
+                    WHERE feedback_id 
+                    IN (SELECT id FROM feedback 
+                        WHERE target_entity_key = "${targetKey}" 
+                        AND target_entity_id = ${targetId}
+                    )`;
+
+        return this.context.dbe.query<SummaryVotes>(q);
+    }
+
+    getSummaryRateByTargetGrouped(targetKey: string, targetId: number): Observable<RateByVote[]> {
+        const q = `SELECT COUNT(*) as total,  vote_slug as slug, MAX(rate) as max, MIN(rate) as min, AVG(rate) as avr 
+                    FROM votes 
+                    WHERE feedback_id 
+                    IN (
+                        SELECT id FROM feedback 
+                        WHERE target_entity_key = "${targetKey}" 
+                        AND target_entity_id = ${targetId}
+                    ) GROUP BY vote_slug;`;
+
+        return this.context.dbe.queryList<RateByVote>(q);
+    }
+
+    getAllStatsByTarget(targetKey: string, targetId: number): Observable<SummaryRateByTargetResponse> {
+        return forkJoin([
+            this.getSummaryRateByTarget(targetKey, targetId),
+            this.getSummaryRateByTargetGrouped(targetKey, targetId)]
+        ).pipe(
+            map(([summary, summary_by_votes]) => ({summary, summary_by_votes}))
+        );
+    }
+
     getRouter(): Router {
-        return this.feedback.get('/:id', async (req, res) => {
+        // feedback/stats?key=consultation&id=1
+        this.feedback.get('/stats', async (req, res) => {
+            try {
+                const targetKey: string = req.query?.['key'] as string;
+                const targetId = Number(req.query?.['id']);
+
+                if (Number.isNaN(targetId) || !targetKey) this.sendError(res, 'Передан не валиднй target');
+
+                const summary = await this.getAllStatsByTarget(targetKey, targetId).toPromise();
+
+                res.send(summary);
+            } catch (e) {
+                this.sendError(res, e);
+            }
+        });
+
+        this.feedback.get('/:id', async (req, res) => {
             try {
                 const feedbackId = Number(req.params.id);
                 if (Number.isNaN(feedbackId)) this.sendError(res, 'Передан не валиднй feedback id');
@@ -102,5 +156,23 @@ export class FeedbackEngine {
                 this.sendError(res, e);
             }
         });
+
+
+
+        // feedback/stats BODY: entities: {key, id}[]
+        this.feedback.post('/stats', jsonparser, async (req, res) => {
+            try {
+                const targets = req.body?.['targets'] as Array<{ key: string, id: number }>;
+                if (!targets?.length) this.sendError(res, 'Передан не валиднй targets');
+
+                const summary = await Promise.all(targets.map(({key, id}) => this.getAllStatsByTarget(key, id).pipe(map(r => ({...r, target_entity_key: key, target_entity_id: id}))).toPromise()));
+
+                res.send(summary);
+            } catch (e) {
+                this.sendError(res, e);
+            }
+        });
+
+        return this.feedback;
     }
 }
