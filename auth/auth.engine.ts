@@ -1,7 +1,7 @@
 import express = require('express');
 import uuid = require('uuid');
-import {IUser, UserRole, UserSession} from '../models/user.interface';
 import bodyParser = require('body-parser');
+import {IUser, UserRole, UserSession} from '../models/user.interface';
 import {Context} from "../search/config";
 import {map, mapTo} from "rxjs/operators";
 import {OkPacket} from "mysql";
@@ -108,6 +108,10 @@ export class AuthorizationEngine {
         const token = req.headers?.['token'] as string;
         if(!token) return Promise.reject('Токен не передан');
         return token;
+    }
+
+    getUserAgent(req: Request): string {
+        return req.headers?.['user-agent'] ?? '' as string;
     }
 
     async getUserById(id: number): Promise<IUser> {
@@ -257,12 +261,12 @@ export class AuthorizationEngine {
         ).toPromise();
     }
 
-    async changeUserForSession(token, userId): Promise<OkPacket> {
+    async changeUserForSession(token: string, userId: number, ua: string): Promise<OkPacket> {
         // проверяем есть ли сессия
         const sessionId = await this.getSessionByToken(token);
         if(!sessionId) return Promise.reject('Активная сессия не найдена');
 
-        const q = `UPDATE \`sessions\` SET \`user_id\` = ${userId} WHERE \`id\` = ${sessionId}`;
+        const q = `UPDATE \`sessions\` SET \`user_id\` = ${userId}, \`user_agent\` = "${ua}" WHERE \`id\` = ${sessionId}`;
         return this.context.dbe.query<OkPacket>(q).toPromise();
     }
 
@@ -319,8 +323,9 @@ export class AuthorizationEngine {
         try {
             const token = await this.getToken(req);
             const guestID = await this.getGuestID();
+            const ua = this.getUserAgent(req);
 
-            await this.changeUserForSession(token, guestID);
+            await this.changeUserForSession(token, guestID, ua);
 
             // await this.cleanCurrentSession(token);
             res.send(JSON.stringify({
@@ -468,6 +473,7 @@ export class AuthorizationEngine {
         console.log('post auth', req.body);
         const userLogin: string = req.body['login'];
         const userPassword: string = req.body['password'];
+        const userAgent: string = this.getUserAgent(req);
         let token = null;
         let userId: number = null;
 
@@ -486,7 +492,7 @@ export class AuthorizationEngine {
 
         if (userId) {
             try{
-                await this.changeUserForSession(token, userId);
+                await this.changeUserForSession(token, userId, userAgent);
                 res.send(JSON.stringify({
                     auth: true,
                     token,
