@@ -165,7 +165,10 @@ export class FeedbackEngine {
                 const targets = req.body?.['targets'] as Array<{ key: string, id: number }>;
                 if (!targets?.length) this.sendError(res, 'Передан не валиднй targets');
 
-                const summary = await Promise.all(targets.map(({key, id}) => this.getAllStatsByTarget(key, id).pipe(map(r => ({...r, target_entity_key: key, target_entity_id: id}))).toPromise()));
+                const summary = await Promise.all(targets.map(({key, id}) =>
+                    this.getAllStatsByTarget(key, id)
+                        .pipe(map(r => ({...r, target_entity_key: key, target_entity_id: id})))
+                        .toPromise()));
 
                 res.send(summary);
             } catch (e) {
