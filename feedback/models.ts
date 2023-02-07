@@ -1,6 +1,7 @@
 import {Comment} from "../comment/model";
 import {Vote} from "../vote/model";
 import {Like} from "../like/model";
+import {User} from "../models/user.interface";
 
 export type FeedbackAction = 'CREATE' | 'ANSWER' | 'LIKE' | 'DISLIKE' | 'ISSUES';
 export interface FeedbackResponse {
@@ -12,6 +13,7 @@ export interface FeedbackResponse {
     votes: Array<Vote>;
     likes: Array<Like>;
     dislikes: Array<Like>;
+    user: User;
 }
 
 export interface Feedback {
@@ -37,3 +39,4 @@ export interface SummaryRateByTargetResponse {
     summary: SummaryVotes;
     summary_by_votes: Array<RateByVote>;
 }
+

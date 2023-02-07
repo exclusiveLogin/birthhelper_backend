@@ -5,6 +5,7 @@ export interface Comment {
     title: string;
     description?: string;
     comment_id?: number;
+    replies: number;
     datetime_update?: string;
     datetime_create?: string;
 }

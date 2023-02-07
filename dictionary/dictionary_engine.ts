@@ -36,12 +36,17 @@ export class DictionaryEngine {
             return throwError(`Словарь ${id} не найден`);
         }
         let filters = dictionaryConfig?.filters ?? [];
+        const autocompletes = dictionaryConfig?.autocomplete;
 
         filters = [
             ...filters,
-            ...dictionaryConfig.autocomplete
-                .filter(fk => fk.key in params)
-                .map(ac => ({key: ac.key, type: ac.type, value: params[ac.key] } as IDictionaryFilters))
+            ...(
+                autocompletes ?
+                autocompletes
+                    .filter(fk => fk.key in params)
+                    .map(ac => ({key: ac.key, type: ac.type, value: params[ac.key] } as IDictionaryFilters)) :
+                []
+            )
         ];
 
         let limstr = `${ !!skip ? ' LIMIT ' + limit + ' OFFSET ' + skip  : '' }`;

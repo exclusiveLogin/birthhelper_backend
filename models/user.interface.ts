@@ -1,14 +1,3 @@
-export interface IUser {
-    id: number;
-    active: boolean;
-    login: string;
-    password: string;
-    image: string;
-    activation: string;
-    datetime_create: string;
-    datetime_update: string;
-}
-
 export interface UserRole {
     id: number;
     slug: string;
@@ -95,6 +84,7 @@ export class User {
     weight: number;
     clothes_size: number;
     shoes_size: number;
+    activation: string;
 
     constructor(src: UserSrc) {
         this.multi_pregnant = !!src.multi_pregnant;
@@ -106,6 +96,7 @@ export class User {
         this.ch_telegram = !!src.ch_telegram;
         this.ch_email = !!src.ch_email;
         this.active = !!src.active;
+        this.activation = src.activation;
 
         this.id = src.id;
         this.login = src.login;

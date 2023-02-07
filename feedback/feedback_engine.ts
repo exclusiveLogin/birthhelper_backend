@@ -1,14 +1,15 @@
 import * as express from "express";
 import {NextFunction, Request, Response, Router} from "express";
 import {Context} from "../search/config";
-import {forkJoin, Observable, of} from "rxjs";
+import {forkJoin, from, Observable, of} from "rxjs";
 import {Feedback, FeedbackResponse, RateByVote, SummaryRateByTargetResponse, SummaryVotes} from "./models";
 import {escape} from "mysql";
 import {Comment} from "../comment/model";
 import {Vote} from "../vote/model";
 import {Like} from "../like/model";
-import {map} from "rxjs/operators";
+import {map, switchMap, tap} from "rxjs/operators";
 import bodyparser from "body-parser";
+import {User} from "../models/user.interface";
 
 const jsonparser = bodyparser.json();
 
@@ -43,16 +44,22 @@ export class FeedbackEngine {
         const q = `SELECT * FROM \`feedback\` WHERE id=${escape(id)}`;
         return this.context.dbe.queryList<Feedback>(q).pipe(map(([feedback]) => feedback ?? null));
     }
-
-    getFeedbackListByTarget(targetEntityKey: number, targetId: number): Observable<Feedback[]> {
-        const q = `SELECT * FROM \`feedback\` 
-                    WHERE target_entity_key = "${escape(targetEntityKey)}" 
+    getUserById(id: number): Observable<User> {
+        return  from(this.context.authorizationEngine.getUserById(id));
+    }
+    getFeedbackListByTarget(targetEntityKey: string, targetId: number): Observable<Feedback[]> {
+        const q = `SELECT * FROM \`feedback\`
+                    WHERE target_entity_key = ${escape(targetEntityKey)} 
                     AND target_entity_id = ${escape(targetId)}`;
+        console.log('q:', q);
         return this.context.dbe.queryList<Feedback>(q);
     }
 
     getCommentByFeedback(id: number): Observable<Comment> {
         return this.context.commentEngine.getMasterCommentByFeedbackId(id);
+    }
+    getCommentsByMasterComment(commentId: number): Observable<Comment[]> {
+        return this.context.commentEngine.getCommentsByParentId(commentId);
     }
     getVotesByFeedback(id: number): Observable<Vote[]> {
         return this.context.voteEngine.getVotesByFeedback(id);
@@ -60,34 +67,42 @@ export class FeedbackEngine {
     getStatsByFeedback(id: number): Observable<{ likes: Like[], dislikes: Like[] }> {
         return this.context.likeEngine.getStatsByFeedback(id, 'feedback');
     }
-
+    getFeedbackListWithData(targetKey: string, targetId: number): Observable<FeedbackResponse[]> {
+        return this.getFeedbackListByTarget(targetKey, targetId).pipe(
+            tap(list => console.log('List:', list)),
+            switchMap(list => forkJoin(list.map(fb => this.getFeedbackWithData(fb.id))))
+        )
+    }
     getFeedbackWithData(id: number): Observable<FeedbackResponse> {
         const feedbackRequest = this.getFeedbackById(id);
         const feedbackVotesRequest = this.getVotesByFeedback(id);
         const feedbackCommentsRequest = this.getCommentByFeedback(id);
         const feedbackLikesRequest = this.getStatsByFeedback(id);
-        return forkJoin(
-            [feedbackRequest,
-                feedbackVotesRequest,
-                feedbackCommentsRequest,
-                feedbackLikesRequest]).pipe(
-                    map((
-                        [
-                            feedback,
-                            votes,
-                            comment,
-                            {likes, dislikes}
-                        ]) => feedback ?
-                        ({
-                            id: feedback.id,
-                            votes,
-                            likes,
-                            dislikes,
-                            action: 'ANSWER',
-                            comment,
-                            target_entity_id: feedback?.target_entity_id,
-                            target_entity_key: feedback?.target_entity_key
-                        }) : null)
+
+        return feedbackRequest.pipe(
+            switchMap(feedback =>
+                forkJoin([
+                    of(feedback),
+                    feedbackVotesRequest,
+                    feedbackCommentsRequest,
+                    feedbackLikesRequest,
+                    this.getUserById(feedback.user_id)
+                ])
+            ),
+            map((
+                [
+                    feedback, votes, comment, {likes, dislikes}, user
+                ]) => feedback ? ({
+                    id: feedback.id,
+                    votes,
+                    user,
+                    likes,
+                    dislikes,
+                    action: 'ANSWER',
+                    comment,
+                    target_entity_id: feedback?.target_entity_id,
+                    target_entity_key: feedback?.target_entity_key
+                }) : null)
         );
     }
 
@@ -135,6 +150,21 @@ export class FeedbackEngine {
                 if (Number.isNaN(targetId) || !targetKey) this.sendError(res, 'Передан не валиднй target');
 
                 const summary = await this.getAllStatsByTarget(targetKey, targetId).toPromise();
+
+                res.send(summary);
+            } catch (e) {
+                this.sendError(res, e);
+            }
+        });
+
+        this.feedback.get('/list', async (req, res) => {
+            try {
+                const targetKey: string = req.query?.['key'] as string;
+                const targetId = Number(req.query?.['id']);
+
+                if (Number.isNaN(targetId) || !targetKey) this.sendError(res, 'Передан не валиднй target');
+
+                const summary = await this.getFeedbackListWithData(targetKey, targetId).toPromise();
 
                 res.send(summary);
             } catch (e) {

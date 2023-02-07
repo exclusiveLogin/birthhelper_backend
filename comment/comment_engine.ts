@@ -28,7 +28,13 @@ export class CommentEngine {
     }
 
     getMasterCommentByFeedbackId(id: number): Observable<Comment> {
-        const q = `SELECT * FROM \`comments\` WHERE feedback_id=${escape(id)} AND comment_id IS NULL`;
+        const q = `SELECT *, 
+                    (SELECT COUNT(*) 
+                        FROM \`comments\` 
+                        WHERE comment_id = com.id) as replies
+                         FROM \`comments\` as com 
+                    WHERE feedback_id = ${escape(id)}
+                    AND comment_id IS NULL`;
         return this.context.dbe.queryList<Comment>(q).pipe(map(result => result?.[0] ?? null));
     }
 

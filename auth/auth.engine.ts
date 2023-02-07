@@ -1,7 +1,7 @@
 import express = require('express');
 import uuid = require('uuid');
 import bodyParser = require('body-parser');
-import {IUser, UserRole, UserSession} from '../models/user.interface';
+import { User, UserRole, UserSession, UserSrc } from '../models/user.interface';
 import {Context} from "../search/config";
 import {map, mapTo} from "rxjs/operators";
 import {OkPacket} from "mysql";
@@ -114,11 +114,12 @@ export class AuthorizationEngine {
         return req.headers?.['user-agent'] ?? '' as string;
     }
 
-    async getUserById(id: number): Promise<IUser> {
+    async getUserById(id: number): Promise<User> {
         const q = `SELECT * FROM \`users\` WHERE \`id\` = ${id}`;
 
-        return this.context.dbe.queryList(q).pipe(
-            map(result => (result as any as IUser)?.[0]),
+        return this.context.dbe.queryList<UserSrc>(q).pipe(
+            map(result => result?.[0]),
+            map(userSrc => new User(userSrc)),
         ).toPromise();
     }
 
@@ -169,8 +170,8 @@ export class AuthorizationEngine {
     async getUserIdByCredential(login: string, password: string): Promise<number> {
         const q = `SELECT * FROM \`users\` WHERE \`login\` = "${login}" AND password = "${password}"`;
 
-        return this.context.dbe.queryList(q).pipe(
-            map(result => (result as any as IUser)?.[0]?.id),
+        return this.context.dbe.queryList<UserSrc>(q).pipe(
+            map(result => result?.[0]?.id),
         ).toPromise();
     }
 
@@ -179,16 +180,16 @@ export class AuthorizationEngine {
 
         // console.log('getUserIdByActivation: ', q);
 
-        return this.context.dbe.queryList(q).pipe(
-            map(result => (result as any as IUser)?.[0]?.id),
+        return this.context.dbe.queryList<UserSrc>(q).pipe(
+            map(result => result?.[0]?.id),
         ).toPromise();
     }
 
     async getGuestID(): Promise<number> {
         const q = `SELECT * FROM \`users\` WHERE \`login\` = "guest" AND password IS NULL`;
 
-        return this.context.dbe.queryList(q).pipe(
-            map(result => (result as any as IUser)?.[0]?.id),
+        return this.context.dbe.queryList<UserSrc>(q).pipe(
+            map(result => result?.[0]?.id),
         ).toPromise();
     }
 
@@ -196,8 +197,8 @@ export class AuthorizationEngine {
         const q = `SELECT * FROM \`users\` WHERE \`login\` = "${login}"`;
         // console.log('q: ', q);
 
-        return this.context.dbe.queryList(q).pipe(
-            map(result => !!(result as any as IUser)?.[0]?.id),
+        return this.context.dbe.queryList<UserSrc>(q).pipe(
+            map(result => !!result?.[0]?.id),
         ).toPromise();
     }
 
@@ -452,10 +453,10 @@ export class AuthorizationEngine {
 
                 res.send(JSON.stringify({
                     signup: false,
-                    activated: !!user.active,
+                    activated: !!user?.active,
                     error: 'Пользователь с таким логином уже существует',
                     login: userLogin,
-                    activation: user.activation,
+                    activation: user?.activation,
                 }));
             }
         } else {
