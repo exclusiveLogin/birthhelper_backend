@@ -94,6 +94,7 @@ export const EntityRepoKeys = [
     'ent_orders',
     'ent_lk_permission_type',
     'ent_lk_permissions',
+    'ent_vote_type',
 ] as const;
 
 export type EntityKeys = typeof EntityRepoKeys[number]

@@ -73,4 +73,5 @@ export const dictionaries: Record<string, IDictionary> = {
     dict_lk_permission_type: {db: 'lk_permission_type'},
     dict_section_type: {db: 'section_type'},
     dict_votes: {db: 'vote_type'},
+    dict_feedback_entity_type: {db: 'feedback_entity_type'},
 };

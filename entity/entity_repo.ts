@@ -1368,4 +1368,18 @@ export const entityRepo: EntityRepo = {
         ]
     },
 
+    ent_vote_type: {
+        db_name: 'vote_type',
+        filters: [],
+        container: null,
+        fields: [
+            { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },
+            { key: 'slug', title: 'Slug', type: 'string', readonly: false, showOnTable: true, },
+            { key: 'title', title: 'Название', type: 'string', readonly: false, showOnTable: true },
+            { key: 'section', title: 'Тип', type: 'string', readonly: false, showOnTable: true, useDict: true, dctKey: 'dict_section_type', valueKey: 'slug'},
+            { key: 'feedback_entity_type', title: 'Тип', type: 'string', readonly: false, showOnTable: true, useDict: true, dctKey: 'dict_feedback_entity_type', valueKey: 'slug' },
+            { key: 'slot_category_type', title: 'Категория услуги', type: 'dict', readonly: false, showOnTable: true, useDict: true, dctKey: 'dict_slot_category_type' },
+        ]
+    },
+
 };
