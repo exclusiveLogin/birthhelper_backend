@@ -38,7 +38,7 @@ export class CommentEngine {
         return this.context.dbe.queryList<Comment>(q).pipe(map(result => result?.[0] ?? null));
     }
 
-    addCommentToFeedback(feedbackID: number, comment: string, userId: number, parent?: number): Observable<Comment> {
+    addCommentToFeedback(feedbackID: number, comment: string, userId: number, parent?: number): Promise<Comment> {
         const q = `INSERT INTO comments 
                     (
                         feedback_id, 
@@ -50,10 +50,10 @@ export class CommentEngine {
                         ${escape(feedbackID)}, 
                         ${escape(userId)},
                         ${escape(comment)},
-                        ${escape(parent ?? null)}, 
+                        ${escape(parent ?? null)}
                     )`;
 
-        return this.context.dbe.query<Comment>(q);
+        return this.context.dbe.query<Comment>(q).toPromise();
     }
 
     deleteCommentById(id: number): Observable<unknown> {
