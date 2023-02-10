@@ -107,7 +107,9 @@ export class FeedbackEngine {
     }
 
     getSummaryRateByTarget(targetKey: string, targetId: number): Observable<SummaryVotes> {
-        const q = `SELECT COUNT(*) as total,  MAX(rate) as max, MIN(rate) as min, AVG(rate) as avr 
+        const q = `SELECT (SELECT COUNT(*) FROM feedback 
+                        WHERE target_entity_key = "${targetKey}" 
+                        AND target_entity_id = ${targetId} ) as total,  MAX(rate) as max, MIN(rate) as min, AVG(rate) as avr 
                     FROM votes 
                     WHERE feedback_id 
                     IN (SELECT id FROM feedback 
@@ -115,7 +117,9 @@ export class FeedbackEngine {
                         AND target_entity_id = ${targetId}
                     )`;
 
-        return this.context.dbe.query<SummaryVotes>(q);
+        return this.context.dbe.queryList<SummaryVotes>(q).pipe(
+            map(_ => _?.[0]),
+        );
     }
 
     getSummaryRateByTargetGrouped(targetKey: string, targetId: number): Observable<RateByVote[]> {
