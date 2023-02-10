@@ -103,7 +103,6 @@ export class SlotEngine {
         const params: Slot = this.getSlotParams(name);
         if(!(data && params)) return false;
 
-        console.log('validator: ', data, params.required_fields);
         const reqFields = params.required_fields;
         return reqFields.every(rf => !!data[rf]);
     }

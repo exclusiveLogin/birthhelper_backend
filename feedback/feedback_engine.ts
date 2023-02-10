@@ -51,7 +51,6 @@ export class FeedbackEngine {
         const q = `SELECT * FROM \`feedback\`
                     WHERE target_entity_key = ${escape(targetEntityKey)} 
                     AND target_entity_id = ${escape(targetId)}`;
-        console.log('q:', q);
         return this.context.dbe.queryList<Feedback>(q);
     }
 
@@ -69,7 +68,6 @@ export class FeedbackEngine {
     }
     getFeedbackListWithData(targetKey: string, targetId: number): Observable<FeedbackResponse[]> {
         return this.getFeedbackListByTarget(targetKey, targetId).pipe(
-            tap(list => console.log('List:', list)),
             switchMap(list => forkJoin([...list.map(fb => this.getFeedbackWithData(fb.id))]))
         )
     }

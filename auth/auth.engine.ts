@@ -382,7 +382,6 @@ export class AuthorizationEngine {
 
     // активация пользователя
     async urlHandler(req, res) {
-        console.log("url: ", req.protocol, req.headers);
         res.send(JSON.stringify({
             url: `${req.headers}`,
         }));
@@ -390,7 +389,6 @@ export class AuthorizationEngine {
 
     // смена пароля
     async patchHandler(req, res) {
-        console.log('patch auth', req.body);
         const userLogin: string = req.body['login'];
         const userPassword: string = req.body['password'];
 

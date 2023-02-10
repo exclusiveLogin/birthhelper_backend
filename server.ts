@@ -84,5 +84,5 @@ app.use('/static', express.static('/usr/src/app/uploads/',{ fallthrough: false, 
 });
 
 app.listen(3000, function () {
-    console.log('Example app listening on port 3000!');
+    console.log('Birthhelper service listening on port 3000!');
   });

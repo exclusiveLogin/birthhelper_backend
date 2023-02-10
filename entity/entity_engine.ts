@@ -151,7 +151,6 @@ export class EntityEngine {
                      ${likeStr ? ( whereStr ? ' AND ' : ' WHERE ') + likeStr : ''}`;
             }
 
-            console.log('getSetFromDB', q);
             return this.context.dbe.queryList<Entity>(q).pipe(
                 // tap(data => console.log('getSetFromDB result:', data)),
                 map(result => result?.[0]?.cnt ?? 0));
@@ -227,12 +226,10 @@ export class EntityEngine {
         calc && calc.forEach(c => delete data[c.key]);
 
         if (!reqKeys.every(r => !!data[r.key])) {
-            console.log('не полные данные в запросе');
             return Promise.reject('не полные данные в запросе');
         }
 
         if (!Object.keys(data).every(r => !!fields.find(f => f.key === r))) {
-            console.log('в запросе присутствут неизвестные поля');
             return Promise.reject('в запросе присутствут неизвестные поля');
         }
 
@@ -263,7 +260,6 @@ export class EntityEngine {
     }
 
     async createEntityHandler(req, res) {
-        console.log('createEntity body:', req.body);
         const data = req.body;
         const name = req.params.id;
 
