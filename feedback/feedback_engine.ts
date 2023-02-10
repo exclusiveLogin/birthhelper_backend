@@ -180,7 +180,7 @@ export class FeedbackEngine {
         // feedback/stats BODY: entities: {key, id}[]
         this.feedback.post('/stats', jsonparser, async (req, res) => {
             try {
-                const targets = req.body?.['targets'] as Array<{ key: string, id: number }>;
+                const targets = req.body as Array<{ key: string, id: number }>;
                 if (!targets?.length) this.sendError(res, 'Передан не валиднй targets');
 
                 const summary = await Promise.all(targets.map(({key, id}) =>
