@@ -70,7 +70,7 @@ export class FeedbackEngine {
     getFeedbackListWithData(targetKey: string, targetId: number): Observable<FeedbackResponse[]> {
         return this.getFeedbackListByTarget(targetKey, targetId).pipe(
             tap(list => console.log('List:', list)),
-            switchMap(list => forkJoin(list.map(fb => this.getFeedbackWithData(fb.id))))
+            switchMap(list => forkJoin([...list.map(fb => this.getFeedbackWithData(fb.id))]))
         )
     }
     getFeedbackWithData(id: number): Observable<FeedbackResponse> {
@@ -157,6 +157,23 @@ export class FeedbackEngine {
             }
         });
 
+        // feedback/stats BODY: entities: {key, id}[]
+        this.feedback.post('/stats', jsonparser, async (req, res) => {
+            try {
+                const targets = req.body?.['targets'] as Array<{ key: string, id: number }>;
+                if (!targets?.length) this.sendError(res, 'Передан не валиднй targets');
+
+                const summary = await Promise.all(targets.map(({key, id}) =>
+                    this.getAllStatsByTarget(key, id)
+                        .pipe(map(r => ({...r, target_entity_key: key, target_entity_id: id})))
+                        .toPromise()));
+
+                res.send(summary);
+            } catch (e) {
+                this.sendError(res, e);
+            }
+        });
+
         this.feedback.get('/list', async (req, res) => {
             try {
                 const targetKey: string = req.query?.['key'] as string;
@@ -187,20 +204,22 @@ export class FeedbackEngine {
             }
         });
 
-
-
-        // feedback/stats BODY: entities: {key, id}[]
-        this.feedback.post('/stats', jsonparser, async (req, res) => {
+        this.feedback.post('/', jsonparser, async (req, res) => {
             try {
-                const targets = req.body?.['targets'] as Array<{ key: string, id: number }>;
-                if (!targets?.length) this.sendError(res, 'Передан не валиднй targets');
+                // get userID
 
-                const summary = await Promise.all(targets.map(({key, id}) =>
-                    this.getAllStatsByTarget(key, id)
-                        .pipe(map(r => ({...r, target_entity_key: key, target_entity_id: id})))
-                        .toPromise()));
 
-                res.send(summary);
+                // get body and typing to DTO
+
+
+                const feedbackId = Number(req.params.id);
+                if (Number.isNaN(feedbackId)) this.sendError(res, 'Передан не валиднй feedback id');
+                const feedback = await this.getFeedbackWithData(feedbackId).toPromise();
+                if(!feedback) {
+                    this.sendError(res, 'Отзыв не найден');
+                    return;
+                }
+                res.send(feedback);
             } catch (e) {
                 this.sendError(res, e);
             }

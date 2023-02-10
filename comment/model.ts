@@ -2,8 +2,7 @@ export interface Comment {
     id?: number;
     feedback_id: number
     user_id: number
-    title: string;
-    description?: string;
+    text: string;
     comment_id?: number;
     replies: number;
     datetime_update?: string;

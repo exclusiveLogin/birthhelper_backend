@@ -43,15 +43,14 @@ export class CommentEngine {
                     (
                         feedback_id, 
                         user_id,
-                        title, 
+                        text,
                         description, 
                         comment_id
                     )
                     VALUES (
                         ${escape(feedbackID)}, 
                         ${escape(userId)},
-                        ${escape(comment.title)}, 
-                        ${escape(comment.description ?? '')},
+                        ${escape(comment.text)},
                         ${escape(parent ?? null)}, 
                     )`;
 
