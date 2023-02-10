@@ -27,7 +27,7 @@ export class FeedbackEngine {
     sendError = (res: Response, err): void => {
         console.log('FEEDBACK error: ', err.message);
         res.status(500);
-        res.end(JSON.stringify({error: err.message ?? 'unknown error'}));
+        res.end(JSON.stringify({error: (err.message ? err.message : err) ?? 'unknown error'}));
     }
 
     userCatcher = async (req: Request, res: Response, next: NextFunction) => {
