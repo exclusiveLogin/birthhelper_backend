@@ -3,13 +3,14 @@ import {NextFunction, Request, Response, Router} from "express";
 import {Context} from "../search/config";
 import {forkJoin, from, Observable, of} from "rxjs";
 import {Feedback, FeedbackResponse, RateByVote, SummaryRateByTargetResponse, SummaryVotes} from "./models";
-import {escape} from "mysql";
+import {escape, OkPacket} from "mysql";
 import {Comment} from "../comment/model";
 import {Vote} from "../vote/model";
 import {Like} from "../like/model";
 import {map, switchMap, tap} from "rxjs/operators";
 import bodyparser from "body-parser";
 import {User} from "../models/user.interface";
+import {FeedbackDTO} from "./dto";
 
 const jsonparser = bodyparser.json();
 
@@ -24,16 +25,15 @@ export class FeedbackEngine {
     }
 
     sendError = (res: Response, err): void => {
-        console.log('FEEDBACK error: ', err);
+        console.log('FEEDBACK error: ', err.message);
         res.status(500);
-        res.end(JSON.stringify({error: err}));
+        res.end(JSON.stringify({error: err.message ?? 'unknown error'}));
     }
 
     userCatcher = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const token = await this.context.authorizationEngine.getToken(req);
             res.locals.userId = await this.context.authorizationEngine.getUserIdByToken(token);
-
             next();
         } catch (e) {
             this.sendError(res, e);
@@ -140,6 +140,26 @@ export class FeedbackEngine {
         );
     }
 
+    validateDTO(feedbackDTO: FeedbackDTO): void {
+        if(!feedbackDTO.action) {
+            throw new Error('Request not valid non action');
+        }
+
+        if(feedbackDTO.action === "CREATE" && !feedbackDTO?.votes?.length) {
+            throw new Error('Request not valid non votes');
+        }
+    }
+
+    createFeedback(feedback: FeedbackDTO, userId: number): Promise<OkPacket> {
+        const q = `INSERT INTO \`feedback\` 
+                   (target_entity_key, target_entity_id, user_id) VALUES (
+                    ${escape(feedback.target_entity_key)}, 
+                    ${escape(feedback.target_entity_id)}, 
+                    ${escape(userId)}
+                   )`;
+        return this.context.dbe.query<OkPacket>(q).toPromise();
+    }
+
     getRouter(): Router {
         // feedback/stats?key=consultation&id=1
         this.feedback.get('/stats', async (req, res) => {
@@ -207,19 +227,18 @@ export class FeedbackEngine {
         this.feedback.post('/', jsonparser, async (req, res) => {
             try {
                 // get userID
-
-
+                const userId = res.locals?.userId;
                 // get body and typing to DTO
+                const feedback: FeedbackDTO = req.body;
+                this.validateDTO(feedback);
 
+                const createResult = await this.createFeedback(feedback, userId);
+                const feedbackId = createResult.insertId;
 
-                const feedbackId = Number(req.params.id);
-                if (Number.isNaN(feedbackId)) this.sendError(res, 'Передан не валиднй feedback id');
-                const feedback = await this.getFeedbackWithData(feedbackId).toPromise();
-                if(!feedback) {
-                    this.sendError(res, 'Отзыв не найден');
-                    return;
-                }
-                res.send(feedback);
+                if (feedback?.comment) await this.context.commentEngine.addCommentToFeedback(feedbackId, feedback.comment, userId);
+                if (feedback?.votes?.length) await this.context.voteEngine.saveVoteList(feedback.votes, feedbackId);
+
+                res.send({result: 'ok', feedbackId});
             } catch (e) {
                 this.sendError(res, e);
             }

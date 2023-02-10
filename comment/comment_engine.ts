@@ -38,19 +38,18 @@ export class CommentEngine {
         return this.context.dbe.queryList<Comment>(q).pipe(map(result => result?.[0] ?? null));
     }
 
-    addCommentToFeedback(feedbackID: number, comment: Partial<Comment>, userId: number, parent?: number): Observable<Comment> {
+    addCommentToFeedback(feedbackID: number, comment: string, userId: number, parent?: number): Observable<Comment> {
         const q = `INSERT INTO comments 
                     (
                         feedback_id, 
                         user_id,
                         text,
-                        description, 
                         comment_id
                     )
                     VALUES (
                         ${escape(feedbackID)}, 
                         ${escape(userId)},
-                        ${escape(comment.text)},
+                        ${escape(comment)},
                         ${escape(parent ?? null)}, 
                     )`;
 
