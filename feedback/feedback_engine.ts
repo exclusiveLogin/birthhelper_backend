@@ -5,7 +5,7 @@ import {forkJoin, from, Observable, of} from "rxjs";
 import {
     Feedback,
     FeedbackResponse,
-    FeedbackResponseByContragent,
+    FeedbackResponseByContragent, FeedbackStatus,
     RateByVote,
     SummaryRateByTargetResponse,
     SummaryVotes
@@ -61,23 +61,24 @@ export class FeedbackEngine {
         return this.context.dbe.queryList<Feedback>(q);
     }
 
-    getFeedbackListByContragent(targetId: number, section?: SectionKeys): Observable<{core: Feedback[], slot: Feedback[]}> {
+    getFeedbackListByContragent(targetId: number, section?: SectionKeys, status?: FeedbackStatus): Observable<{core: Feedback[], slot: Feedback[]}> {
         return forkJoin([
-            this.getCoreFeedbackListByContragent(targetId),
-            this.getSlotsFeedbackListByContragent(targetId)
+            this.getCoreFeedbackListByContragent(targetId, section, status),
+            this.getSlotsFeedbackListByContragent(targetId, section, status)
         ]).pipe(map(([core, slot]) => ({core, slot})))
     }
 
-    getCoreFeedbackListByContragent(targetId: number, section?: SectionKeys): Observable<Feedback[]> {
+    getCoreFeedbackListByContragent(targetId: number, section?: SectionKeys, status?: FeedbackStatus): Observable<Feedback[]> {
         const q = `SELECT * FROM \`feedback\`
                     WHERE 1 AND
                     ${section === 'clinic' ? ' target_entity_key = "ent_clinic_contragents" AND ' : ''}
                     ${section === 'consultation' ? ' target_entity_key = "ent_consultation_contragents" AND ' : ''}
+                    ${status ? ` status = ${escape(status)}  AND ` : ''}
                     target_entity_id = ${escape(targetId)}`;
         return this.context.dbe.queryList<Feedback>(q);
     }
 
-    getSlotsFeedbackListByContragent(contragentId: number, section?: SectionKeys): Observable<Feedback[]> {
+    getSlotsFeedbackListByContragent(contragentId: number, section?: SectionKeys, status?: FeedbackStatus): Observable<Feedback[]> {
         const q = `SELECT \`feedback\`.* 
                     FROM \`feedback\`
                     INNER JOIN \`service_slot\` 
@@ -90,7 +91,8 @@ export class FeedbackEngine {
                         WHERE \`contragent_id\` = ${contragentId}
                         ${section === 'clinic' ? 'AND section = "clinic"' : ""}
                         ${section === 'consultation' ? 'AND section = "consultation"' : ""}
-                        );`
+                        )
+                    ${status ? ` AND status = ${escape(status)}` : ''};`
         return this.context.dbe.queryList<Feedback>(q);
     }
 
@@ -212,6 +214,19 @@ export class FeedbackEngine {
         return SMap[key];
     }
 
+    statusKeyMapper(key: string): FeedbackStatus | null {
+        const SMap: { [key: string]: FeedbackStatus } = {
+            "pending": "pending",
+            "approved": "approved",
+            "verified": "verified",
+            "blocked": "blocked",
+            "reject": "reject",
+            "official": "official",
+        }
+
+        return SMap[key];
+    }
+
     getRouter(): Router {
         // feedback/stats?key=consultation&id=1
         this.feedback.get('/stats', async (req, res) => {
@@ -263,15 +278,16 @@ export class FeedbackEngine {
 
         this.feedback.get('/listbycontragent/:contragentID', async (req, res) => {
             try {
-                const sectionKey: SectionKeys = this.sectionKeyMapper(req.query?.['key'] as string);
+                const sectionKey: SectionKeys = this.sectionKeyMapper(req.query?.['section'] as string);
+                const statusKey: FeedbackStatus = this.statusKeyMapper(req.query?.['status'] as string);
                 const contragentId = Number(req.params?.['contragentID']);
 
                 if (Number.isNaN(contragentId)) this.sendError(res, 'Передан не валиднй contragent');
 
-                const summary: {core: FeedbackResponse[], slot: FeedbackResponse[]} = await this.getFeedbackListByContragent(contragentId, sectionKey).pipe(
+                const summary: {core: FeedbackResponse[], slot: FeedbackResponse[]} = await this.getFeedbackListByContragent(contragentId, sectionKey, statusKey).pipe(
                     mergeMap(fb => forkJoin([
-                        forkJoin([...(fb.core?.length ? fb.core?.map(cfb => this.getFeedbackWithData(cfb.id)) : [])]),
-                        forkJoin([...(fb.slot?.length ? fb.slot?.map(sfb => this.getFeedbackWithData(sfb.id)) : [])]),
+                            (fb.core?.length ? forkJoin(fb.core?.map(cfb => this.getFeedbackWithData(cfb.id))) : of([])),
+                            (fb.slot?.length ? forkJoin(fb.slot?.map(cfb => this.getFeedbackWithData(cfb.id))) : of([])),
                     ]).pipe(map(([core, slot]) => ({core, slot})))
                     )
                 ).toPromise();
