@@ -3,7 +3,7 @@ import {Context, SectionKeys} from "../search/config";
 import {Request, Response, Router} from "express";
 import {Slot, slots} from "../slot/slot_repo";
 import {Entity, FilterParams} from "../entity/entity_engine";
-import {forkJoin} from "rxjs";
+import {forkJoin, Observable} from "rxjs";
 import {ContragentSlots, SectionedContragentSlots, uniq} from "../models/common";
 import {map, tap} from "rxjs/operators";
 import {config} from "../config/config_repo";
@@ -32,6 +32,14 @@ export class SlotEngine {
         res.send(Object.keys(slots).map(k => slots[k]));
     }
 
+    getContragentById(contragentID: number | string): Observable<Entity> {
+        return  this.context.entityEngine.getEntitiesByIds([+contragentID], "ent_contragents").pipe(
+            map(list => list?.[0]),
+        );
+    }
+
+    getSectionedSlotsByContragent(){}
+
     async getSlotsByContragent(contragentID: number | string): Promise<SectionedContragentSlots> {
         if (!contragentID) { throw new Error('Не передан ID контрагента'); }
         const filters: FilterParams = {contragent_id: contragentID.toString(), active: '1'};
@@ -44,18 +52,18 @@ export class SlotEngine {
 
         try {
             // get ContragentEntity
-            await this.context.entityEngine.getEntitiesByIds([+contragentID], "ent_contragents").pipe(
-                map(list => list?.[0]),
-                tap(contragent => {
-                    if (!!contragent?.['section_clinic']) {
-                        sections.push('clinic');
+            await this.getContragentById(contragentID).pipe(
+                tap(
+                    contragent => {
+                        if (!!contragent?.['section_clinic']) {
+                            sections.push('clinic');
+                        }
+                        if (!!contragent?.['section_consultation']) {
+                            sections.push('consultation');
+                        }
                     }
-                    if (!!contragent?.['section_consultation']) {
-                        sections.push('consultation');
-                    }
-                }),
+                )
             ).toPromise();
-
             // получение слотов из конфигуратора уникальных ent_name
             const slotsKeys = sections
                 .map(key => config[key].providers)

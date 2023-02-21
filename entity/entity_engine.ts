@@ -221,7 +221,8 @@ export class EntityEngine {
         const reqKeys = config.fields.filter(f => !!f.required);
         const fields = config.fields;
         const calc = config.calculated;
-
+        const isSlot = !!config.slot;
+        if(isSlot) data['entity_key'] = name;
         //убираем пересечения
         calc && calc.forEach(c => delete data[c.key]);
 
@@ -229,11 +230,12 @@ export class EntityEngine {
             return Promise.reject('не полные данные в запросе');
         }
 
-        if (!Object.keys(data).every(r => !!fields.find(f => f.key === r))) {
+        if (!Object.keys(data).every(r => !!fields.find(f => f.key === r || r === 'entity_key'))) {
             return Promise.reject('в запросе присутствут неизвестные поля');
         }
 
         let valArr = Object.keys(data).map(datakey => {
+            if (isSlot && datakey === 'entity_key') return `"${sanitizer(name)}"`
             const targetReq = fields.find(r => r.key === datakey);
             if (targetReq.type === 'id') {
                 data[datakey] = data[datakey] !== null && +data[datakey];
