@@ -519,7 +519,7 @@ export class EntityEngine {
         const contragentIDKey = config.contragent_id_key;
         const entityIDKey = config.entity_id_key;
         const entityKey = config.entity_key;
-        const contragentEntity = config?.contragent_entity_key ?? 'ent_contragents';
+        const contragentEntity = 'ent_contragents';
         const containerName = config.container_name;
         const section = config.section;
 
@@ -530,7 +530,7 @@ export class EntityEngine {
                     const contragentID = ent?.[contragentIDKey];
                     // console.log('contragentProviders', ent, contragentID);
                     return contragentID ?
-                        this.getEntities(contragentEntity, null, null, contragentID).pipe(map(data => data[0]), filter(d => !!d)) :
+                        this.getEntities(contragentEntity, null, null, contragentID).pipe(map(data => data[0])) :
                         null;
                 });
 

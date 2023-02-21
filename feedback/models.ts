@@ -4,6 +4,7 @@ import {Like} from "../like/model";
 import {User} from "../models/user.interface";
 
 export type FeedbackAction = 'CREATE' | 'ANSWER' | 'LIKE' | 'DISLIKE' | 'ISSUES';
+export type FeedbackStatus = 'pending' | 'approved' | 'verified' | 'blocked' | 'reject' | 'official';
 export interface FeedbackResponse {
     id: number;
     target_entity_key: string;
@@ -13,7 +14,15 @@ export interface FeedbackResponse {
     votes: Array<Vote>;
     likes: Array<Like>;
     dislikes: Array<Like>;
+    status: FeedbackStatus;
     user: User;
+}
+
+export interface FeedbackResponseByContragent {
+    contragentId: number;
+    byCore: FeedbackResponse[];
+    bySlots: FeedbackResponse[];
+    total: number;
 }
 
 export interface Feedback {
@@ -21,6 +30,7 @@ export interface Feedback {
     target_entity_key: string;
     target_entity_id: number;
     user_id: number;
+    status: FeedbackStatus;
     datetime_create: string;
     datetime_update: string;
 }

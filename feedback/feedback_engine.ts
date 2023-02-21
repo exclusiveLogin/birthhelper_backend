@@ -1,6 +1,6 @@
 import * as express from "express";
 import {NextFunction, Request, Response, Router} from "express";
-import {Context} from "../search/config";
+import {Context, SectionKeys} from "../search/config";
 import {forkJoin, from, Observable, of} from "rxjs";
 import {Feedback, FeedbackResponse, RateByVote, SummaryRateByTargetResponse, SummaryVotes} from "./models";
 import {escape, OkPacket} from "mysql";
@@ -54,6 +54,26 @@ export class FeedbackEngine {
         return this.context.dbe.queryList<Feedback>(q);
     }
 
+    getFeedbackListByContragent(targetId: number, section?: SectionKeys): Observable<{core: Feedback[], slot: Feedback[]}> {
+        return forkJoin([
+            this.getCoreFeedbackListByContragent(targetId),
+            this.getSlotsFeedbackListByContragent(targetId)
+        ]).pipe(map(([core, slot]) => ({core, slot})))
+    }
+
+    getCoreFeedbackListByContragent(targetId: number, section?: SectionKeys): Observable<Feedback[]> {
+        const q = `SELECT * FROM \`feedback\`
+                    ${section === 'clinic' ? 'WHERE target_entity_key = "ent_clinic_contragents" AND' : ''}
+                    ${section === 'consultation' ? 'WHERE target_entity_key = "ent_consultation_contragents" AND' : ''}
+                    target_entity_id = ${escape(targetId)}`;
+        return this.context.dbe.queryList<Feedback>(q);
+    }
+
+    // todo реализовать получение slotsByCtg => fbByEverySlots 
+    getSlotsFeedbackListByContragent(targetId: number): Observable<Feedback[]> {
+        return of([]);
+    }
+
     getCommentByFeedback(id: number): Observable<Comment> {
         return this.context.commentEngine.getMasterCommentByFeedbackId(id);
     }
@@ -96,6 +116,7 @@ export class FeedbackEngine {
                     user,
                     likes,
                     dislikes,
+                    status: feedback.status,
                     action: 'ANSWER',
                     comment,
                     target_entity_id: feedback?.target_entity_id,
@@ -162,6 +183,15 @@ export class FeedbackEngine {
         return this.context.dbe.query<OkPacket>(q).toPromise();
     }
 
+    sectionKeyMapper(key: string): SectionKeys | null {
+        const SMap: { [key: string]: SectionKeys } = {
+            "clinic": "clinic",
+            "consultation": "consultation",
+        }
+
+        return SMap[key] ?? null;
+    }
+
     getRouter(): Router {
         // feedback/stats?key=consultation&id=1
         this.feedback.get('/stats', async (req, res) => {
@@ -210,6 +240,22 @@ export class FeedbackEngine {
                 this.sendError(res, e);
             }
         });
+
+        // this.feedback.get('/listbycontragent/:contragentID', async (req, res) => {
+        //     try {
+        //         const sectionKey: SectionKeys = this.sectionKeyMapper(req.query?.['key'] as string);
+        //         const targetId = Number(req.params?.['contragentID']);
+
+        //         if (Number.isNaN(targetId) || !sectionKey) this.sendError(res, 'Передан не валиднй contragent');
+
+        //         const summary = await this.getFeedbackListWithData(targetKey, targetId).toPromise();
+
+        //         res.send(summary);
+        //     } catch (e) {
+        //         this.sendError(res, e);
+        //     }
+        // });
+
 
         this.feedback.get('/:id', async (req, res) => {
             try {

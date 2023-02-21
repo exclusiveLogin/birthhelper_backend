@@ -50,6 +50,9 @@ export class SlotEngine {
                     if (!!contragent?.['section_clinic']) {
                         sections.push('clinic');
                     }
+                    if (!!contragent?.['section_consultation']) {
+                        sections.push('consultation');
+                    }
                 }),
             ).toPromise();
 
