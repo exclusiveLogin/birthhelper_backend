@@ -5,16 +5,12 @@ import {User} from "../models/user.interface";
 
 export type FeedbackAction = 'CREATE' | 'ANSWER' | 'LIKE' | 'DISLIKE' | 'ISSUES';
 export type FeedbackStatus = 'pending' | 'approved' | 'verified' | 'blocked' | 'reject' | 'official';
-export interface FeedbackResponse {
-    id: number;
-    target_entity_key: string;
-    target_entity_id: number;
+export interface FeedbackResponse extends Feedback{
     action: FeedbackAction;
     comment: Comment;
     votes: Array<Vote>;
     likes: Array<Like>;
     dislikes: Array<Like>;
-    status: FeedbackStatus;
     user: User;
 }
 

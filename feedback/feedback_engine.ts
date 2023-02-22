@@ -133,16 +133,13 @@ export class FeedbackEngine {
                 [
                     feedback, votes, comment, {likes, dislikes}, user
                 ]) => feedback ? ({
-                    id: feedback.id,
+                    ...feedback,
                     votes,
                     user,
                     likes,
                     dislikes,
-                    status: feedback.status,
                     action: 'ANSWER',
                     comment,
-                    target_entity_id: feedback?.target_entity_id,
-                    target_entity_key: feedback?.target_entity_key
                 }) : null)
         );
     }
