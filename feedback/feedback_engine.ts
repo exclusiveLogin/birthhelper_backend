@@ -69,12 +69,13 @@ export class FeedbackEngine {
     }
 
     getCoreFeedbackListByContragent(targetId: number, section?: SectionKeys, status?: FeedbackStatus): Observable<Feedback[]> {
+        const sectionStr = (section ? ` section = "${section}" AND ` : '');
         const q = `SELECT * FROM \`feedback\`
                     WHERE 1 AND
-                    ${section === 'clinic' ? ' target_entity_key = "ent_clinic_contragents" AND ' : ''}
-                    ${section === 'consultation' ? ' target_entity_key = "ent_consultation_contragents" AND ' : ''}
+                    ${sectionStr}
                     ${status ? ` status = ${escape(status)}  AND ` : ''}
                     target_entity_id = ${escape(targetId)}`;
+        console.log('getCoreFeedbackListByContragent:', q);
         return this.context.dbe.queryList<Feedback>(q);
     }
 
