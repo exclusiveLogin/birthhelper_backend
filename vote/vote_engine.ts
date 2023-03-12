@@ -22,7 +22,12 @@ export class VoteEngine {
     }
 
     getVotesByFeedback(id: number): Observable<Vote[]> {
-        const q = `SELECT * FROM \`votes\` WHERE feedback_id=${escape(id)}`;
+        const q = `SELECT \`votes\`.*, \`vote_type\`.title 
+                    FROM \`votes\` 
+                    JOIN \`vote_type\` 
+                    ON \`votes\`.vote_slug = \`vote_type\`.slug 
+                    WHERE feedback_id=${escape(id)}`;
+
         return this.context.dbe.queryList<Vote>(q);
     }
 
