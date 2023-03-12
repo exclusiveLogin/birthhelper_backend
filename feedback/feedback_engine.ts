@@ -75,7 +75,6 @@ export class FeedbackEngine {
                     ${sectionStr}
                     ${status ? ` status = ${escape(status)}  AND ` : ''}
                     target_entity_id = ${escape(targetId)}`;
-        console.log('getCoreFeedbackListByContragent:', q);
         return this.context.dbe.queryList<Feedback>(q);
     }
 
