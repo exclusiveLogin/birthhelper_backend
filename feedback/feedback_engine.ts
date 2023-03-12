@@ -273,6 +273,20 @@ export class FeedbackEngine {
             }
         });
 
+        this.feedback.get('/replies/:commentID', async (req, res) => {
+            try {
+                const commentID = Number(req.params?.['commentID']);
+
+                if (Number.isNaN(commentID) || !commentID) this.sendError(res, 'Передан не валиднй commentID');
+
+                const comments = await this.getCommentsByMasterComment(commentID).toPromise();
+
+                res.send(comments);
+            } catch (e) {
+                this.sendError(res, e);
+            }
+        });
+
         this.feedback.get('/listbycontragent/:contragentID', async (req, res) => {
             try {
                 const sectionKey: SectionKeys = this.sectionKeyMapper(req.query?.['section'] as string);
