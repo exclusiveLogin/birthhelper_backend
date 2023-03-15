@@ -3,7 +3,7 @@ import {Vote} from "../vote/model";
 import {Like} from "../like/model";
 import {User} from "../models/user.interface";
 
-export type FeedbackAction = 'CREATE' | 'ANSWER' | 'LIKE' | 'DISLIKE' | 'ISSUES';
+export type FeedbackAction = 'CREATE' | 'ANSWER' | 'LIKE' | 'DISLIKE' | 'ISSUES' | 'STATUS_CHANGE';
 export type FeedbackStatus = 'pending' | 'approved' | 'verified' | 'blocked' | 'reject' | 'official';
 export interface FeedbackResponse extends Feedback{
     action: FeedbackAction;

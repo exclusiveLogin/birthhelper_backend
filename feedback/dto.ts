@@ -1,4 +1,4 @@
-import {FeedbackAction} from "./models";
+import {FeedbackAction, FeedbackStatus} from "./models";
 
 export interface FeedbackVoteDTO {
     rate: number;
@@ -13,9 +13,16 @@ export interface FeedbackLikeDTO {
 export interface FeedbackDTO {
     id?: number;
     action: FeedbackAction;
-    target_entity_key: string;
-    target_entity_id: number;
-    comment: string;
-    votes: Array<FeedbackVoteDTO>;
+    status: FeedbackStatus
+    target_entity_key?: string;
+    target_entity_id?: number;
+    comment?: string;
+    votes?: Array<FeedbackVoteDTO>;
     tags?: number[];
+}
+
+export interface  FeedbackChangeStatus {
+    result: 'ok';
+    id: number;
+    status: FeedbackStatus
 }

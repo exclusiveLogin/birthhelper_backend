@@ -17,7 +17,7 @@ import {Like} from "../like/model";
 import {map, mergeMap, switchMap, tap} from "rxjs/operators";
 import bodyparser from "body-parser";
 import {User} from "../models/user.interface";
-import {FeedbackDTO} from "./dto";
+import {FeedbackChangeStatus, FeedbackDTO} from "./dto";
 
 const jsonparser = bodyparser.json();
 
@@ -190,6 +190,14 @@ export class FeedbackEngine {
         if(feedbackDTO.action === "CREATE" && !feedbackDTO?.votes?.length) {
             throw new Error('Request not valid non votes');
         }
+
+        if (feedbackDTO.action === 'STATUS_CHANGE' && !feedbackDTO.status) {
+            throw new Error('Request not valid status data');
+        }
+
+        if (feedbackDTO.action === 'STATUS_CHANGE' && !feedbackDTO.id) {
+            throw new Error('Request not valid, not id of modified feedback');
+        }
     }
 
     createFeedback(feedback: FeedbackDTO, userId: number): Promise<OkPacket> {
@@ -222,6 +230,11 @@ export class FeedbackEngine {
         }
 
         return SMap[key];
+    }
+
+    changeStatusByFeedbackID(id: number, status: FeedbackStatus): Observable<FeedbackChangeStatus> {
+       const q = `UPDATE feedback SET status = ${escape(status)} WHERE id = ${escape(id)}`;
+       return this.context.dbe.query(q).pipe(map( _ => ({status, id, result: 'ok'})));
     }
 
     getRouter(): Router {
@@ -347,6 +360,20 @@ export class FeedbackEngine {
                 if (feedback?.votes?.length) await this.context.voteEngine.saveVoteList(feedback.votes, feedbackId);
 
                 res.send({result: 'ok', feedbackId});
+            } catch (e) {
+                this.sendError(res, e);
+            }
+        });
+
+        // change status only
+        this.feedback.put('/', jsonparser, this.context.authorizationEngine.checkAccess.bind(this.context.authorizationEngine, 7), async (req, res) => {
+            try {
+                // get body and typing to DTO
+                const feedback: FeedbackDTO = req.body;
+                const newStatus: FeedbackStatus = this.statusKeyMapper(feedback.status) ?? 'pending';
+                this.validateDTO(feedback);
+                const result = await this.changeStatusByFeedbackID(feedback.id, newStatus).toPromise();
+                res.send(result);
             } catch (e) {
                 this.sendError(res, e);
             }
