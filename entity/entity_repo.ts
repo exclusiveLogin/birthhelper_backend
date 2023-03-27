@@ -1382,4 +1382,17 @@ export const entityRepo: EntityRepo = {
         ]
     },
 
+    ent_comments: {
+        db_name: 'comments',
+        filters: [],
+        container: null,
+        fields: [
+            { key: 'id', title: 'ID', type: 'id', readonly: true, showOnTable: true },
+            { key: 'text', type: 'string', title: 'Название', readonly: true, showOnTable: true },
+            { key: 'feedback_id', type: 'id', title: 'Путь файла в облаке', readonly: true, showOnTable: true },
+            { key: 'comment_id', title: 'Тип файла MIME', type: 'id', readonly: true, showOnTable: true },
+            { key: 'user_id', title: 'Имя файлсервера', type: 'id', readonly: true, showOnTable: true },
+        ]
+    }
+
 };
