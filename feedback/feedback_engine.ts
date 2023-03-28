@@ -237,6 +237,16 @@ export class FeedbackEngine {
        return this.context.dbe.query(q).pipe(map( _ => ({status, id, result: 'ok'})));
     }
 
+    async feedbackCreateAction(feedback: FeedbackDTO, userId: number): Promise<number> {
+        const createResult = await this.createFeedback(feedback, userId);
+        const feedbackId = createResult.insertId;
+
+        if (feedback?.comment) await this.context.commentEngine.addCommentToFeedback(feedbackId, feedback.comment, userId);
+        if (feedback?.votes?.length) await this.context.voteEngine.saveVoteList(feedback.votes, feedbackId);
+
+        return feedbackId
+    }
+
     getRouter(): Router {
         // feedback/stats?key=consultation&id=1
         this.feedback.get('/stats', async (req, res) => {
@@ -353,13 +363,24 @@ export class FeedbackEngine {
                 const feedback: FeedbackDTO = req.body;
                 this.validateDTO(feedback);
 
-                const createResult = await this.createFeedback(feedback, userId);
-                const feedbackId = createResult.insertId;
+                let feedbackId: number = null;
+                let result = 'nope'
+                switch (feedback.action) {
+                    case "CREATE":
+                        feedbackId = await this.feedbackCreateAction(feedback, userId);
+                        result = 'ok';
+                        break;
+                    case "LIKE":
+                        this.context.likeEngine.insertLike('feedback', userId, feedback.id);
+                        result = 'ok';
+                        break;
+                    case "DISLIKE":
+                        this.context.likeEngine.insertDislike('feedback', userId, feedback.id);
+                        result = 'ok';
+                        break;
+                }
 
-                if (feedback?.comment) await this.context.commentEngine.addCommentToFeedback(feedbackId, feedback.comment, userId);
-                if (feedback?.votes?.length) await this.context.voteEngine.saveVoteList(feedback.votes, feedbackId);
-
-                res.send({result: 'ok', feedbackId});
+                res.send({result, feedbackId});
             } catch (e) {
                 this.sendError(res, e);
             }

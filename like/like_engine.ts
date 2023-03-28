@@ -1,5 +1,5 @@
 import {Context} from "../search/config";
-import {Observable, zip} from "rxjs";
+import {Observable, throwError, zip} from "rxjs";
 import {Like, LikeType} from "./model";
 import {map, mapTo, tap} from "rxjs/operators";
 import {escape} from "mysql";
@@ -11,11 +11,17 @@ export class LikeEngine {
     }
 
     removeAllReactionOfUserByEntity(userId: number, entityId: number, targetType: LikeType): Observable<unknown> {
-        const q = `DELETE FROM \`dislikes\`
+        const like_q = `DELETE FROM \`dislikes\`
                     WHERE user_id=${escape(userId)} 
                     AND target_type=${escape(targetType)} 
                     AND target_id=${escape(entityId)}`;
-        return this.context.dbe.query(q);
+
+        const dislike_q = `DELETE FROM \`likes\`
+                    WHERE user_id=${escape(userId)} 
+                    AND target_type=${escape(targetType)} 
+                    AND target_id=${escape(entityId)}`;
+
+        return zip(this.context.dbe.query(like_q), this.context.dbe.query(dislike_q));
     }
     getStatsByFeedback(id: number, type: LikeType): Observable<{likes: Like[], dislikes: Like[]}> {
         const likeRequest = this.getBiRateByEntity(type, 'like', id);
@@ -31,6 +37,7 @@ export class LikeEngine {
     }
 
     setLikeToFeedback(id: number, userId: number): Observable<unknown> {
+        if(!id || !userId) return throwError('not valid existing data');
         const targetType: LikeType = 'feedback';
         const q = `INSERT INTO \`likes\` 
                    (target_id, target_type, user_id) VALUES (
@@ -42,6 +49,7 @@ export class LikeEngine {
     }
 
     setDislikeToFeedback(id: number, userId: number): Observable<unknown> {
+        if(!id || !userId) return throwError('not valid existing data');
         const targetType: LikeType = 'feedback';
         const q = `INSERT INTO \`dislikes\` 
                    (target_id, target_type, user_id) VALUES (
@@ -53,6 +61,7 @@ export class LikeEngine {
     }
 
     setLikeToComment(id: number, userId: number): Observable<unknown> {
+        if(!id || !userId) return throwError('not valid existing data');
         const targetType: LikeType = 'comment';
         const q = `INSERT INTO \`likes\` 
                    (target_id, target_type, user_id) VALUES (
@@ -64,6 +73,7 @@ export class LikeEngine {
     }
 
     setDislikeToComment(id: number, userId: number): Observable<unknown> {
+        if(!id || !userId) return throwError('not valid existing data');
         const targetType: LikeType = 'comment';
         const q = `INSERT INTO \`dislikes\` 
                    (target_id, target_type, user_id) VALUES (
@@ -85,10 +95,22 @@ export class LikeEngine {
     }
 
     insertLike(type: LikeType, userId: number, targetId: number): Observable<boolean> {
+        if(!targetId || !userId) return throwError('not valid existing data');
         return this.removeAllReactionOfUserByEntity(userId, targetId, type).pipe(
             tap(() => {
                 if (type === 'comment') return this.setLikeToComment(targetId, userId);
                 if (type === 'feedback') return this.setLikeToFeedback(targetId, userId);
+            }),
+            mapTo(true),
+        )
+    }
+
+    insertDislike(type: LikeType, userId: number, targetId: number): Observable<boolean> {
+        if(!targetId || !userId) return throwError('not valid existing data');
+        return this.removeAllReactionOfUserByEntity(userId, targetId, type).pipe(
+            tap(() => {
+                if (type === 'comment') return this.setDislikeToComment(targetId, userId);
+                if (type === 'feedback') return this.setDislikeToFeedback(targetId, userId);
             }),
             mapTo(true),
         )
