@@ -371,12 +371,21 @@ export class FeedbackEngine {
                         result = 'ok';
                         break;
                     case "LIKE":
-                        this.context.likeEngine.insertLike('feedback', userId, feedback.id);
+                        (feedback.comment_id) ?
+                            this.context.likeEngine.insertLike('comment', userId, feedback.comment_id) :
+                            this.context.likeEngine.insertLike('feedback', userId, feedback.id);
                         result = 'ok';
                         break;
                     case "DISLIKE":
-                        this.context.likeEngine.insertDislike('feedback', userId, feedback.id);
+                        (feedback.comment_id) ?
+                            this.context.likeEngine.insertDislike('comment', userId, feedback.comment_id) :
+                            this.context.likeEngine.insertDislike('feedback', userId, feedback.id);
                         result = 'ok';
+                        break;
+                    case "UNLIKE":
+                        (feedback.comment_id) ?
+                            this.context.likeEngine.removeAllReactionOfUserByEntity(userId, feedback.comment_id, 'comment') :
+                            this.context.likeEngine.removeAllReactionOfUserByEntity(userId, feedback.id, 'feedback');
                         break;
                 }
 
