@@ -387,6 +387,10 @@ export class FeedbackEngine {
                             this.context.likeEngine.removeAllReactionOfUserByEntity(userId, feedback.comment_id, 'comment') :
                             this.context.likeEngine.removeAllReactionOfUserByEntity(userId, feedback.id, 'feedback');
                         break;
+                    case "ANSWER":
+                        break;
+                    case "ISSUES":
+                        break;
                 }
 
                 res.send({result, feedbackId});
