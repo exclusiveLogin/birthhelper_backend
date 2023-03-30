@@ -59,7 +59,7 @@ const TE: TagEngine = new TagEngine(context);
 const FBE: FeedbackEngine = new FeedbackEngine(context);
 const VE: VoteEngine = new VoteEngine(context);
 
-let app = express();
+const app = express();
 function jsonHeaders(req, res, next) {
     res.contentType('json');
     next();

@@ -1,7 +1,7 @@
 import * as express from "express";
 import { NextFunction, Request, Response, Router } from "express";
 import { Context, SectionKeys } from "../search/config";
-import { forkJoin, from, Observable, of, throwError } from "rxjs";
+import { forkJoin, from, Observable, of } from "rxjs";
 import {
   Feedback,
   FeedbackResponse,
@@ -19,6 +19,8 @@ import { map, mergeMap, switchMap, tap } from "rxjs/operators";
 import bodyparser from "body-parser";
 import { User } from "../models/user.interface";
 import { FeedbackChangeStatus, FeedbackDTO } from "./dto";
+import { FilterParams } from "entity/entity_engine";
+import { getFiltersByRequest } from "db/sql.helper";
 
 const jsonparser = bodyparser.json();
 
@@ -125,8 +127,11 @@ export class FeedbackEngine {
   getCommentByFeedback(id: number): Observable<Comment> {
     return this.context.commentEngine.getMasterCommentByFeedbackId(id);
   }
-  getCommentsByMasterComment(commentId: number): Observable<Comment[]> {
-    return this.context.commentEngine.getCommentsByParentId(commentId);
+  getCommentsByMasterComment(
+    commentId: number,
+    filters?: FilterParams
+  ): Observable<Comment[]> {
+    return this.context.commentEngine.getCommentsByParentId(commentId, filters);
   }
   getVotesByFeedback(id: number): Observable<Vote[]> {
     return this.context.voteEngine.getVotesByFeedback(id);
@@ -393,7 +398,8 @@ export class FeedbackEngine {
           this.sendError(res, "Передан не валиднй commentID");
 
         const comments = await this.getCommentsByMasterComment(
-          commentID
+          commentID,
+          getFiltersByRequest(req)
         ).toPromise();
 
         res.send(comments);
