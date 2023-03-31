@@ -1,3 +1,5 @@
+import { Like } from "like/model";
+
 export interface Comment {
   id: number;
   feedback_id: number;
@@ -7,4 +9,6 @@ export interface Comment {
   replies: number;
   datetime_update?: string;
   datetime_create?: string;
+  likes: Like[];
+  dislikes: Like[];
 }

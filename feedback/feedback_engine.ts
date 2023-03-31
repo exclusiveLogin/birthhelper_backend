@@ -20,7 +20,7 @@ import bodyparser from "body-parser";
 import { User } from "../models/user.interface";
 import { FeedbackChangeStatus, FeedbackDTO } from "./dto";
 import { FilterParams } from "entity/entity_engine";
-import { getFiltersByRequest } from "db/sql.helper";
+import { getFiltersByRequest } from "../db/sql.helper";
 
 const jsonparser = bodyparser.json();
 
@@ -287,7 +287,7 @@ export class FeedbackEngine {
     )} WHERE id = ${escape(id)}`;
     return this.context.dbe
       .query(q)
-      .pipe(map((_) => ({ status, id, result: "ok" })));
+      .pipe(map(() => ({ status, id, result: "ok" })));
   }
   replyByFeedbackComment(
     commentId: number,
