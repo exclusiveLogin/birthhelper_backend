@@ -15,7 +15,7 @@ import { escape, OkPacket } from "mysql";
 import { Comment } from "../comment/model";
 import { Vote } from "../vote/model";
 import { Like } from "../like/model";
-import { map, mergeMap, switchMap, tap } from "rxjs/operators";
+import { map, mergeMap, switchMap } from "rxjs/operators";
 import bodyparser from "body-parser";
 import { User } from "../models/user.interface";
 import { FeedbackChangeStatus, FeedbackDTO } from "./dto";
