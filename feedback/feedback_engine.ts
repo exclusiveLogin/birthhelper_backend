@@ -233,6 +233,7 @@ export class FeedbackEngine {
       throw new Error("Request not valid non action");
     }
 
+    // todo: validate target
     if (feedbackDTO.action === "CREATE" && !feedbackDTO?.votes?.length) {
       throw new Error("Request not valid non votes");
     }
