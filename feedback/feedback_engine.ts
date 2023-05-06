@@ -15,12 +15,14 @@ import { escape, OkPacket } from "mysql";
 import { Comment } from "../comment/model";
 import { Vote } from "../vote/model";
 import { Like } from "../like/model";
-import { map, mergeMap, switchMap } from "rxjs/operators";
+import { filter, map, mergeMap, switchMap } from "rxjs/operators";
 import bodyparser from "body-parser";
 import { User } from "../models/user.interface";
 import { FeedbackChangeStatus, FeedbackDTO } from "./dto";
 import { FilterParams } from "entity/entity_engine";
 import { getFiltersByRequest } from "../db/sql.helper";
+import { EntityKeys } from "entity/entity_repo.model";
+import { LKPermission, LKPermissionType } from "auth/lk.permissions.model";
 
 const jsonparser = bodyparser.json();
 
@@ -290,19 +292,47 @@ export class FeedbackEngine {
       .query(q)
       .pipe(map(() => ({ status, id, result: "ok" })));
   }
-  replyByFeedbackComment(
+
+  async hasOfficialPermissions(userId: number, feedback: FeedbackResponse): Promise<boolean> {
+    console.log("hasOfficialPermissions:");
+    const {target_entity_id, target_entity_key} =  feedback;
+
+    let contragentId: number;
+
+    if(target_entity_key === "ent_contragents") {
+      contragentId = target_entity_id;
+    } else {
+      contragentId = await this.context.slotEngine.getContragentIdBySlot(target_entity_id, target_entity_key as EntityKeys);
+    }
+    console.log("contragentId:", contragentId);
+
+    const permittionsByUser = await this.context.entityEngine.getEntities<LKPermission>("ent_lk_permissions", null, {user_id: userId.toString()}).toPromise();
+
+    return permittionsByUser?.filter(permittionsByUser => permittionsByUser.contragent_entity_id === contragentId).some(permittionsByUser => permittionsByUser.permission_id === LKPermissionType.FEEDBACK);
+  }
+
+  async replyByFeedbackComment(
     commentId: number,
     text: string,
     feedbackId: number,
-    userId: number
-  ): Promise<Comment> {
-    if (!(commentId || text || feedbackId || userId))
-      throw "not valid request items";
+    userId: number,
+    official?: boolean
+  ): Promise<number> {
+    if (!(commentId || text || feedbackId || userId)) throw "not valid request items";
+    const feedback = await this.getFeedbackWithData(feedbackId).toPromise();
+    if(!feedback) throw "not exist feedback for reply";
+
+    if(official) {
+      const hasOfficialPermission = await this.hasOfficialPermissions(userId, feedback);
+      if(!hasOfficialPermission) throw "not permission fo official";
+    }
+
     return this.context.commentEngine.addCommentToFeedback(
       feedbackId,
       text,
       userId,
-      commentId
+      commentId,
+      official
     );
   }
 
@@ -483,11 +513,11 @@ export class FeedbackEngine {
         const feedback: FeedbackDTO = req.body;
         this.validateDTO(feedback);
 
-        let feedbackId: number = null;
+        let returnedId: number = null;
         let result = "nope";
         switch (feedback.action) {
           case "CREATE":
-            feedbackId = await this.feedbackCreateAction(feedback, userId);
+            returnedId = await this.feedbackCreateAction(feedback, userId);
             result = "ok";
             break;
           case "LIKE":
@@ -537,8 +567,12 @@ export class FeedbackEngine {
             break;
           case "REPLY":
             // eslint-disable-next-line no-case-declarations
-            const { comment_id, comment, id } = feedback;
-            await this.replyByFeedbackComment(comment_id, comment, id, userId);
+            const { comment_id, comment, status } = feedback;
+            const repliedComment = await this.context.commentEngine.getCommentById(comment_id).toPromise();
+            if (!repliedComment) throw "not replyable comment, comment_id not found";
+          
+            console.log("repliedComment:", repliedComment);
+            returnedId =  await this.replyByFeedbackComment(repliedComment.id, comment, repliedComment.feedback_id, userId, status === "official");
             result = "ok";
             break;
           case "REMOVE_FEEDBACK":
@@ -547,7 +581,7 @@ export class FeedbackEngine {
             break;
         }
 
-        res.send({ result, feedbackId });
+        res.send({ result, returnedId });
       } catch (e) {
         this.sendError(res, e);
       }

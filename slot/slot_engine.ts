@@ -159,6 +159,14 @@ export class SlotEngine {
     }
   }
 
+  async getContragentIdBySlot(targetId: number, targetKey: EntityKeys): Promise<number> {
+    return this.context.entityEngine.getEntitiesByIds([targetId], targetKey)
+      .pipe(
+        map(ents => ents[0]),
+        map(slot => slot?.contragent_id)
+        ).toPromise();
+  }
+
   getRouter(): Router {
     this.slot.get(
       "/",
