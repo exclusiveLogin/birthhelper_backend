@@ -30,6 +30,7 @@ import { containers } from "../container/container_repo";
 import { Slot, slots } from "../slot/slot_repo";
 import { dictionaries } from "../dictionary/dictionary_repo";
 import { ContainerRecordSrc } from "../container/container_engine";
+import { hideFields } from "./utils";
 import * as express from "express";
 import path from "path";
 import bodyParser from "body-parser";
@@ -49,6 +50,7 @@ folders.forEach((dir) => {
 const jsonparser = bodyParser.json();
 
 import EasyYandexS3 from "easy-yandex-s3";
+
 const s3 = new EasyYandexS3({
   auth: {
     accessKeyId: "2394_1iRfVPqBmWb254J",
@@ -504,6 +506,7 @@ export class EntityEngine {
     const skip = Number(filters?.skip ?? "0");
     const limit = Number(filters?.limit ?? "20");
     const fields = JSON.parse(JSON.stringify(config?.fields));
+    const hidedFields = config?.hiddenFields;
     const calc = config?.calculated;
     const slotKey = config?.slot;
     const slotConfig = slots[slotKey];
@@ -528,6 +531,10 @@ export class EntityEngine {
 
     if (config.isContragent) {
       fields.push(...entities["ent_contragents"].fields);
+    }
+    // чистим скрытые поля
+    if(hidedFields?.length) {
+      provider = this.hider(provider, hidedFields);
     }
     // ОБОГОЩАЕМ сущности
     provider = this.metanizer(provider, fields, calc);
@@ -763,6 +770,11 @@ export class EntityEngine {
     );
   }
 
+  hider<T extends Entity>(pipeline: Observable<T[]>, hidedFields: string[] = []): Observable<T[]> {
+    return pipeline.pipe(
+      tap(list => list.forEach(entity => hideFields(entity, hidedFields)))
+    );
+  }
   metanizer<T extends Entity>(
     pipeline: Observable<T[]>,
     fields: EntityField[],

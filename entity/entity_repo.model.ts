@@ -24,6 +24,7 @@ export interface Entity extends Cached {
     createAffectionSectionKeys?: SectionKeys[],
     deleteAffectionSectionKeys?: SectionKeys[],
     permissions?: Permissions,
+    hiddenFields?: string[],
 }
 
 export type EntityFilterType = 'number' | 'string' | 'flag' | 'id';
