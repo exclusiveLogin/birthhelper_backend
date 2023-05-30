@@ -15,7 +15,7 @@ import { escape, OkPacket } from "mysql";
 import { Comment } from "../comment/model";
 import { Vote } from "../vote/model";
 import { Like } from "../like/model";
-import { filter, map, mergeMap, switchMap } from "rxjs/operators";
+import { filter, map, mergeMap, switchMap, tap } from "rxjs/operators";
 import bodyparser from "body-parser";
 import { User } from "../models/user.interface";
 import { FeedbackChangeStatus, FeedbackDTO } from "./dto";
@@ -23,6 +23,7 @@ import { FilterParams } from "entity/entity_engine";
 import { getFiltersByRequest } from "../db/sql.helper";
 import { EntityKeys } from "entity/entity_repo.model";
 import { LKPermission, LKPermissionType } from "auth/lk.permissions.model";
+import {cacheKeyGenerator} from 'search/sections.handler';
 
 const jsonparser = bodyparser.json();
 
@@ -64,6 +65,21 @@ export class FeedbackEngine {
   }
   getUserById(id: number): Observable<User> {
     return from(this.context.authorizationEngine.getUserById(id));
+  }
+
+  getByUserId(userId: number, skip = 0, limit = 20): Observable<Feedback[]>{
+    const limStr = `${
+      skip ? " LIMIT " + limit + " OFFSET " + skip : " LIMIT " + limit
+    }`;
+
+    const q = `SELECT * FROM \`feedback\` 
+                WHERE user_id=${escape(userId)}
+                ${limStr}`;
+
+    return this.context.dbe
+      .queryList<Feedback>(q).pipe(
+        switchMap((list) => forkJoin([...list.map((fb) => this.getFeedbackWithData(fb.id))]))
+      );
   }
   getFeedbackListByTarget(
     targetEntityKey: string,
@@ -143,6 +159,7 @@ export class FeedbackEngine {
   ): Observable<{ likes: Like[]; dislikes: Like[] }> {
     return this.context.likeEngine.getStatsByFeedback(id, "feedback");
   }
+
   getFeedbackListWithData(
     targetKey: string,
     targetId: number
@@ -153,6 +170,7 @@ export class FeedbackEngine {
       )
     );
   }
+
   getFeedbackWithData(id: number): Observable<FeedbackResponse> {
     const feedbackRequest = this.getFeedbackById(id);
     const feedbackVotesRequest = this.getVotesByFeedback(id);
@@ -421,6 +439,36 @@ export class FeedbackEngine {
       }
     });
 
+    this.feedback.get("/listbyuser", async (req, res) => {
+      try {
+        // get userID
+        const userId = res.locals?.userId;
+
+        const skip =  req.query?.["skip"] ? 
+                      Number(req.query?.["skip"]) : 
+                      undefined;
+
+        const limit = req.query?.["limit"] ? 
+                      Number(req.query?.["limit"]) : 
+                      undefined;
+
+        if (!userId)
+          this.sendError(res, "User ID is not required");
+
+        const cacheKey = `feedback_by_user_${userId}.skip_${skip}.limit_${limit}`;
+
+        const summary: Feedback[] = this.context.cacheEngine.checkCache(cacheKey) ?
+          await this.context.cacheEngine.getCachedByKey<Feedback[]>(cacheKey).toPromise() :
+          await this.getByUserId(userId, skip, limit).pipe(
+            tap(data => this.context.cacheEngine.saveCacheData(cacheKey, data))).toPromise();
+
+        res.send(summary);
+
+      } catch (e) {
+        this.sendError(res, e);
+      }
+    });
+
     this.feedback.get("/replies/:commentID", async (req, res) => {
       try {
         const commentID = Number(req.params?.["commentID"]);
@@ -510,6 +558,10 @@ export class FeedbackEngine {
         // get userID
         const userId = res.locals?.userId;
         // get body and typing to DTO
+
+        const cacheKey = `feedback_by_user_${userId}`;
+        this.context.cacheEngine.softClearByKey(cacheKey);
+        
         const feedback: FeedbackDTO = req.body;
         this.validateDTO(feedback);
 
