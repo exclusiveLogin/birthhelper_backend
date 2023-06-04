@@ -64,7 +64,7 @@ export class FeedbackEngine {
       .pipe(map(([feedback]) => feedback ?? null));
   }
   getUserById(id: number): Observable<User> {
-    return from(this.context.authorizationEngine.getUserById(id));
+    return from(this.context.authorizationEngine.getUserByIdSafetly(id));
   }
 
   getByUserId(userId: number, skip = 0, limit = 20): Observable<Feedback[]>{

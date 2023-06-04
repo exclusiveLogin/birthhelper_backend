@@ -123,6 +123,12 @@ export class AuthorizationEngine {
         ).toPromise();
     }
 
+    async getUserByIdSafetly(id: number): Promise<User> {
+        return this.context.entityEngine.getEntities('ent_users', null, null, id).pipe(
+            map(([user]) => new User(user as UserSrc)),
+        ).toPromise();
+    }
+
     async getUserIdByToken(token: string): Promise<number> {
         const q = `SELECT * FROM \`sessions\` WHERE \`token\` = "${token}"`;
 
