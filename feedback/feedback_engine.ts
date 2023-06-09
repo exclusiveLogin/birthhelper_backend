@@ -37,7 +37,7 @@ export class FeedbackEngine {
   }
 
   sendError = (res: Response, err): void => {
-    console.log("FEEDBACK error: ", err.message);
+    console.log("FEEDBACK error: ", (err.message ? err.message : err) ?? "unknown error");
     res.status(500);
     res.end(
       JSON.stringify({
@@ -224,14 +224,15 @@ export class FeedbackEngine {
     targetKey: string,
     targetId: number
   ): Observable<RateByVote[]> {
-    const q = `SELECT COUNT(*) as total,  vote_slug as slug, MAX(rate) as max, MIN(rate) as min, AVG(rate) as avr 
-                    FROM votes 
-                    WHERE feedback_id 
-                    IN (
-                        SELECT id FROM feedback 
-                        WHERE target_entity_key = "${targetKey}" 
-                        AND target_entity_id = ${targetId}
-                    ) GROUP BY vote_slug;`;
+    const q = `SELECT COUNT(*) as total,  vote_slug as slug, vote_type.title, MAX(rate) as max, MIN(rate) as min, AVG(rate) as avr 
+                FROM votes
+                JOIN vote_type ON vote_type.slug = votes.vote_slug
+                WHERE feedback_id 
+                IN (
+                    SELECT id FROM feedback 
+                    WHERE target_entity_key = ${escape(targetKey)} 
+                    AND target_entity_id = ${escape(targetId)} 
+                ) GROUP BY vote_slug, title;`;
 
     return this.context.dbe.queryList<RateByVote>(q);
   }

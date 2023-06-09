@@ -2,7 +2,6 @@ import {Context} from "../search/config";
 import {forkJoin, Observable, of} from "rxjs";
 import {Vote} from "./model";
 import {escape, OkPacket} from "mysql";
-import {Comment} from "../comment/model";
 import {FeedbackVoteDTO} from "../feedback/dto";
 import {mapTo} from "rxjs/operators";
 
