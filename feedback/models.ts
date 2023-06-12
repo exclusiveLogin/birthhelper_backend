@@ -22,7 +22,8 @@ export type FeedbackStatus =
   | "verified"
   | "blocked"
   | "reject"
-  | "official";
+  | "official"
+  | "deleted";
 
 export interface FeedbackResponse extends Feedback {
   action: FeedbackAction;

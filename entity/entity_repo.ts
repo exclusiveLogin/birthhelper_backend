@@ -76,7 +76,6 @@ export const entityRepo: EntityRepo = {
             "has_problems",
             "multi_pregnant",
             "conception_datetime",
-            "login",
             "password",
             "activation",
             "phone",
