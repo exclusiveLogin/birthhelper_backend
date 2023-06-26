@@ -101,14 +101,29 @@ export class CommentEngine {
                         'answer'
                     )`;
 
-    return this.context.dbe.query<OkPacket>(q).pipe(map(result => result.insertId)).toPromise();
+    return this.context.dbe.query<OkPacket>(q)
+    .pipe(
+      map(result => result.insertId))
+      .toPromise();
   }
 
   deleteCommentById(id: number): Observable<unknown> {
     const q = `UPDATE FROM \`comments\`
                     SET status = "deleted"
-                    WHERE id=${escape(id)} 
-                    AND comment_id=${escape(id)}`;
+                    WHERE id=${escape(id)}`;
     return this.context.dbe.query(q);
+  }
+
+  branchCommentByFeedbackId(id: number): Promise<OkPacket> {
+    const q = `UPDATE \`comments\` 
+                SET \`status\` = "branched" 
+                WHERE \`comments\`.\`feedback_id\` = ${escape(id)} 
+                AND \`comments\`.\`comment_id\` IS NULL;`
+    return this.context.dbe.query<OkPacket>(q).toPromise();
+  }
+
+  branchComment(commentId: number): Promise<OkPacket> {
+    const q = `UPDATE \`comments\` SET \`status\` = "branched" WHERE \`comments\`.\`id\` = ${escape(commentId)};`
+    return this.context.dbe.query<OkPacket>(q).toPromise();
   }
 }

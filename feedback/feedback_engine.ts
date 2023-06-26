@@ -74,6 +74,7 @@ export class FeedbackEngine {
 
     const q = `SELECT * FROM \`feedback\` 
                 WHERE user_id=${escape(userId)}
+                AND status NOT IN ("pending", "deleted")
                 ${limStr}`;
 
     return this.context.dbe
@@ -87,7 +88,8 @@ export class FeedbackEngine {
   ): Observable<Feedback[]> {
     const q = `SELECT * FROM \`feedback\`
                     WHERE target_entity_key = ${escape(targetEntityKey)} 
-                    AND target_entity_id = ${escape(targetId)}`;
+                    AND target_entity_id = ${escape(targetId)}
+                    AND status NOT IN ("pending", "deleted")`;
     return this.context.dbe.queryList<Feedback>(q);
   }
 
@@ -165,8 +167,9 @@ export class FeedbackEngine {
     targetId: number
   ): Observable<FeedbackResponse[]> {
     return this.getFeedbackListByTarget(targetKey, targetId).pipe(
-      switchMap((list) =>
-        forkJoin([...list.map((fb) => this.getFeedbackWithData(fb.id))])
+      tap((_) => console.log('getFeedbackListWithData', _)), 
+      switchMap((list) => list.length ? 
+        forkJoin([...list.map((fb) => this.getFeedbackWithData(fb.id))]) : of([])
       )
     );
   }
@@ -207,14 +210,16 @@ export class FeedbackEngine {
     targetKey: string,
     targetId: number
   ): Observable<SummaryVotes> {
-    const q = `SELECT (SELECT COUNT(*) FROM feedback 
-                        WHERE target_entity_key = "${targetKey}" 
-                        AND target_entity_id = ${targetId} ) as total,  MAX(rate) as max, MIN(rate) as min, AVG(rate) as avr 
+    const q = `SELECT COUNT(*) as total,  
+                        MAX(rate) as max, 
+                        MIN(rate) as min, 
+                        AVG(rate) as avr 
                     FROM votes 
                     WHERE feedback_id 
                     IN (SELECT id FROM feedback 
                         WHERE target_entity_key = "${targetKey}" 
                         AND target_entity_id = ${targetId}
+                        AND status NOT IN ("pending", "deleted")
                     )`;
 
     return this.context.dbe.queryList<SummaryVotes>(q).pipe(map((_) => _?.[0]));
@@ -232,6 +237,7 @@ export class FeedbackEngine {
                     SELECT id FROM feedback 
                     WHERE target_entity_key = ${escape(targetKey)} 
                     AND target_entity_id = ${escape(targetId)} 
+                    AND status NOT IN ("pending", "deleted")
                 ) GROUP BY vote_slug, title;`;
 
     return this.context.dbe.queryList<RateByVote>(q);
@@ -275,6 +281,17 @@ export class FeedbackEngine {
                     ${escape(feedback.target_entity_id)}, 
                     ${escape(userId)}
                    )`;
+    return this.context.dbe.query<OkPacket>(q).toPromise();
+  }
+
+  updateFeedback(feedbackId: number): Promise<OkPacket> {
+    const q = `UPDATE \`feedback\` SET \`datetime_update\` = NOW() WHERE \`feedback\`.\`id\` = ${escape(feedbackId)};`
+    return this.context.dbe.query<OkPacket>(q).toPromise();
+  }
+
+  removeFeedback(feedbackId: number): Promise<OkPacket> {
+    const q = `UPDATE \`feedback\` SET \`status\` = "deleted" WHERE \`feedback\`.\`id\` = ${escape(feedbackId)};`
+    console.log(q);
     return this.context.dbe.query<OkPacket>(q).toPromise();
   }
 
@@ -374,6 +391,32 @@ export class FeedbackEngine {
     return feedbackId;
   }
 
+  async feedbackDelete(feedbackId: number): Promise<void> {
+    if(!feedbackId) throw "not id by feedback in request";
+    await this.context.voteEngine.removeVotesByFeedbackId(feedbackId);
+    await this.removeFeedback(feedbackId);
+  }
+
+  async feedbackEdit(feedback: FeedbackDTO): Promise<void> {
+    if(!feedback?.id) throw "not id by feedback in request";
+    const oldFeedback = await this.getFeedbackWithData(feedback?.id).toPromise();
+    if(!oldFeedback) throw "feedback not exist";
+
+    if(JSON.stringify(oldFeedback?.votes) !== JSON.stringify(feedback?.votes)) {
+      await this.context.voteEngine.removeVotesByFeedbackId(feedback.id);
+    }
+
+    if(oldFeedback?.comment?.text !== feedback?.comment && !!oldFeedback?.comment) {
+      await this.context.commentEngine.branchComment(oldFeedback?.comment?.id);
+      // non critical action
+      this.context.likeEngine.removeReactionsByComment(oldFeedback?.comment?.id);
+    }
+
+    // non critical action
+    this.context.likeEngine.removeReactionsByFeedback(oldFeedback.id);
+
+  }
+
   getRouter(): Router {
     // feedback/stats?key=consultation&id=1
     this.feedback.get("/stats", async (req, res) => {
@@ -429,10 +472,9 @@ export class FeedbackEngine {
         if (Number.isNaN(targetId) || !targetKey)
           this.sendError(res, "Передан не валиднй target");
 
-        const summary = await this.getFeedbackListWithData(
-          targetKey,
-          targetId
-        ).toPromise();
+        const summary = await this.getFeedbackListWithData(targetKey, targetId).toPromise();
+
+        console.log('/list', summary);
 
         res.send(summary);
       } catch (e) {
@@ -554,6 +596,23 @@ export class FeedbackEngine {
       }
     });
 
+    this.feedback.delete("/:id",
+      jsonparser,
+      this.context.authorizationEngine.checkAccess.bind(
+        this.context.authorizationEngine,
+        7), 
+    async (req, res) => {
+      try {
+        const feedbackID = Number(req?.params?.id);
+
+        await this.feedbackDelete(feedbackID);
+        res.send({feedbackID, result: 'success'});
+      }
+      catch (e) {
+        this.sendError(res, e);
+      }
+    });
+
     this.feedback.post("/", jsonparser, async (req, res) => {
       try {
         // get userID
@@ -571,6 +630,15 @@ export class FeedbackEngine {
         switch (feedback.action) {
           case "CREATE":
             returnedId = await this.feedbackCreateAction(feedback, userId);
+            result = "ok";
+            break;
+          case "EDIT":
+
+            result = "ok";
+            break;
+          case "REMOVE_FEEDBACK":
+            await this.feedbackDelete(feedback?.id);
+            returnedId = feedback?.id;
             result = "ok";
             break;
           case "LIKE":

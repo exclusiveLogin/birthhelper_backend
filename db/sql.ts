@@ -15,11 +15,11 @@ export class DataBaseService {
   queryList<T>(q: string): Observable<T[]> {
     return new Observable<T[]>((observer) => {
       this.pool.query(q, (err, result) => {
-        // console.log('query raw: ', err, result, q);
+        console.log('query raw: ', err, result, q);
         if (err) {
           observer.error(err);
         }
-        observer.next(result as T[]);
+        observer.next(result as T[] ?? []);
         observer.complete();
       });
     });

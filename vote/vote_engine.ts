@@ -49,4 +49,9 @@ export class VoteEngine {
     saveVoteList(votes: FeedbackVoteDTO[], feedbackId: number): Promise<void> {
         return forkJoin([...votes.map(v => this.saveSingleVote(v, feedbackId))]).pipe(mapTo(void 0)).toPromise()
     }
+
+    removeVotesByFeedbackId(id: number): Promise<OkPacket> {
+        const q = `DELETE FROM \`votes\` WHERE \`feedback_id\` = ${escape(id)};`
+        return this.context.dbe.query<OkPacket>(q).toPromise();
+    }
 }

@@ -2,7 +2,7 @@ import { Context } from "../search/config";
 import { Observable, forkJoin, throwError, zip } from "rxjs";
 import { Like, LikeType } from "./model";
 import { map, mapTo, tap } from "rxjs/operators";
-import { escape } from "mysql";
+import { OkPacket, escape } from "mysql";
 export class LikeEngine {
   context: Context;
   constructor(context: Context) {
@@ -10,17 +10,45 @@ export class LikeEngine {
     this.context = context;
   }
 
+  removeReactionsByFeedback(id: number): Observable<unknown> {
+      const like_q = `DELETE FROM \`likes\`
+                WHERE target_type="feedback" 
+                AND target_id=${escape(id)}`;
+      const dislike_q = `DELETE FROM \`dislikes\`
+                WHERE target_type="feedback" 
+                AND target_id=${escape(id)}`;
+
+      return zip(
+        this.context.dbe.query(like_q),
+        this.context.dbe.query(dislike_q)
+      );   
+  }
+
+  removeReactionsByComment(id: number): Observable<unknown> {
+    const like_q = `DELETE FROM \`likes\`
+              WHERE target_type="comment" 
+              AND target_id=${escape(id)}`;
+    const dislike_q = `DELETE FROM \`dislikes\`
+              WHERE target_type="comment" 
+              AND target_id=${escape(id)}`;
+              
+    return zip(
+      this.context.dbe.query(like_q),
+      this.context.dbe.query(dislike_q)
+    );   
+}
+
   removeAllReactionOfUserByEntity(
     userId: number,
     entityId: number,
     targetType: LikeType
   ): Observable<unknown> {
-    const like_q = `DELETE FROM \`dislikes\`
+    const like_q = `DELETE FROM \`likes\`
                     WHERE user_id=${escape(userId)} 
                     AND target_type=${escape(targetType)} 
                     AND target_id=${escape(entityId)}`;
 
-    const dislike_q = `DELETE FROM \`likes\`
+    const dislike_q = `DELETE FROM \`dislikes\`
                     WHERE user_id=${escape(userId)} 
                     AND target_type=${escape(targetType)} 
                     AND target_id=${escape(entityId)}`;

@@ -8,6 +8,7 @@ export type FeedbackAction =
   | "CREATE"
   | "REMOVE_FEEDBACK"
   | "REMOVE_COMMENT"
+  | "EDIT"
   | "ANSWER"
   | "REPLY"
   | "LIKE"
