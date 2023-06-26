@@ -377,6 +377,9 @@ export class FeedbackEngine {
     feedback: FeedbackDTO,
     userId: number
   ): Promise<number> {
+    if(feedback.target_entity_key === 'ent_clinics' || feedback.target_entity_key === 'ent_consultations') {
+      feedback.target_entity_key = 'ent_contragents';
+    }
     const createResult = await this.createFeedback(feedback, userId);
     const feedbackId = createResult.insertId;
 
