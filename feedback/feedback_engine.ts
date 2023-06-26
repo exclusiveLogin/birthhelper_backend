@@ -276,7 +276,8 @@ export class FeedbackEngine {
 
   createFeedback(feedback: FeedbackDTO, userId: number): Promise<OkPacket> {
     const q = `INSERT INTO \`feedback\` 
-                   (target_entity_key, target_entity_id, user_id) VALUES (
+                   (section, target_entity_key, target_entity_id, user_id) VALUES (
+                    ${escape(feedback.section)}, 
                     ${escape(feedback.target_entity_key)}, 
                     ${escape(feedback.target_entity_id)}, 
                     ${escape(userId)}
