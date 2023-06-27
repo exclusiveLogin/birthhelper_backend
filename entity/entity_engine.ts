@@ -5,7 +5,7 @@ import fs from "fs";
 import multer from "multer";
 import { CacheEngine } from "../cache.engine/cache_engine";
 import { entityRepo } from "./entity_repo";
-import { Entity as EntityConfig, EntityKeys } from "./entity_repo.model";
+import { Entity as EntityConfig, EntityKeys, EntityRepo } from "./entity_repo.model";
 import { SearchEngine, Summary } from "../search/engine";
 import { Context, SectionKeys } from "../search/config";
 import {
@@ -125,6 +125,10 @@ export class EntityEngine {
 
     this.searchEngine = context.searchEngine;
     this.cacheEngine = context.cacheEngine;
+  }
+
+  getEntitiesConfig(): EntityRepo {
+    return entities;
   }
 
   getEntityParams(name: string): EntityConfig {
@@ -1025,6 +1029,15 @@ export class EntityEngine {
       res.status(500);
       res.end({ error: e });
     }
+  }
+
+  async getCoreContragent(contragentId: number, contragentKey: EntityKeys): Promise<Entity & {contragent?: number}> {
+    return this.getEntities(contragentKey, null, null, contragentId).pipe(map(list => list[0])).toPromise();;
+  }
+
+  async getNestesContragent(contragentId: number, section: SectionKeys): Promise<Entity> {
+    const entKey: EntityKeys = section === 'clinic' ? 'ent_clinic_contragents' : 'ent_consultation_contragents';
+    return this.getEntities(entKey, null, {contragent: contragentId.toString()}).pipe(map(list => list[0])).toPromise();
   }
 
   getRouter(): Router {
