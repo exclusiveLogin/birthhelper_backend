@@ -1,7 +1,7 @@
 import * as express from "express";
 import { NextFunction, Request, Response, Router } from "express";
 import { Context, SectionKeys } from "../search/config";
-import { forkJoin, from, Observable, of, Subject } from "rxjs";
+import { forkJoin, from, Observable, of } from "rxjs";
 import {
   Feedback,
   FeedbackResponse,
@@ -15,7 +15,7 @@ import { escape, OkPacket } from "mysql";
 import { Comment } from "../comment/model";
 import { Vote } from "../vote/model";
 import { Like } from "../like/model";
-import { map, mergeMap, switchMap, tap } from "rxjs/operators";
+import { map, switchMap, tap } from "rxjs/operators";
 import bodyparser from "body-parser";
 import { User } from "../models/user.interface";
 import { FeedbackChangeStatus, FeedbackDTO } from "./dto";
@@ -51,6 +51,24 @@ export class FeedbackEngine {
       res.locals.userId =
         await this.context.authorizationEngine.getUserIdByToken(token);
       next();
+    } catch (e) {
+      this.sendError(res, e);
+    }
+  };
+
+  feedbackGrantsCheck = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = res.locals.userId;
+      if(!user) throw new Error('user not found');
+      const feedbackID = Number(req?.params?.id);
+      const existFeedback = await this.getFeedbackById(feedbackID).toPromise();
+      if(!existFeedback) throw new Error('feedback not found');
+      const isGranted = await this.context.authorizationEngine.hasPermissionByUser(user, 5)
+      if(isGranted || existFeedback?.user_id === user) { 
+        next();
+      } else {
+        throw new Error('Remove this Feedback not permited for you');
+      }
     } catch (e) {
       this.sendError(res, e);
     }
@@ -231,7 +249,7 @@ export class FeedbackEngine {
     targetKey: string,
     targetId: number
   ): Observable<SummaryVotes> {
-    const q = `SELECT COUNT(*) as total,  
+    const q = `SELECT COUNT(DISTINCT feedback_id) as total,  
                         MAX(rate) as max, 
                         MIN(rate) as min, 
                         AVG(rate) as avr 
@@ -250,7 +268,13 @@ export class FeedbackEngine {
     targetKey: string,
     targetId: number
   ): Observable<RateByVote[]> {
-    const q = `SELECT COUNT(*) as total,  vote_slug as slug, vote_type.title, MAX(rate) as max, MIN(rate) as min, AVG(rate) as avr 
+    const q = `SELECT 
+                COUNT(DISTINCT feedback_id) as total,  
+                vote_slug as slug, 
+                vote_type.title, 
+                MAX(rate) as max, 
+                MIN(rate) as min, 
+                AVG(rate) as avr 
                 FROM votes
                 JOIN vote_type ON vote_type.slug = votes.vote_slug
                 WHERE feedback_id 
@@ -646,9 +670,7 @@ export class FeedbackEngine {
 
     this.feedback.delete("/:id",
       jsonparser,
-      this.context.authorizationEngine.checkAccess.bind(
-        this.context.authorizationEngine,
-        7), 
+      this.feedbackGrantsCheck,
     async (req, res) => {
       try {
         const feedbackID = Number(req?.params?.id);
@@ -681,6 +703,7 @@ export class FeedbackEngine {
             result = "ok";
             break;
           case "EDIT":
+            await this.feedbackGrantsCheck(req, res,() => {});
 
             result = "ok";
             break;

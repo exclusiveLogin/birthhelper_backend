@@ -170,7 +170,7 @@ export class AuthorizationEngine {
         const role = await this.getRoleByUserId(user_id);
         if (!role) return Promise.reject('Роль не найдена');
 
-        return (target - role.rank) >= 0;
+        return (role.rank - target || 0) >= 0;
     }
 
     async getUserIdByCredential(login: string, password: string): Promise<number> {
