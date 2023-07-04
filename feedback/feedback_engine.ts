@@ -56,7 +56,7 @@ export class FeedbackEngine {
     }
   };
 
-  feedbackGrantsCheck = async (req: Request, res: Response, next: NextFunction) => {
+  feedbackRemoveGrantsCheck = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const user = res.locals.userId;
       if(!user) throw new Error('user not found');
@@ -72,6 +72,14 @@ export class FeedbackEngine {
     } catch (e) {
       this.sendError(res, e);
     }
+  };
+
+  feedbackEditGrantsCheck = async (userId: number, feedbackId: number) => {
+    const user = await this.context.authorizationEngine.getUserById(userId);
+    if(!user) throw new Error('user not found');
+    const existFeedback = await this.getFeedbackById(feedbackId).toPromise();
+    if(!existFeedback) throw new Error('feedback not found');
+    if(existFeedback?.user_id !== user.id) throw new Error('Edit this Feedback not permited for you');
   };
 
   getFeedbackById(id: number): Observable<Feedback> {
@@ -317,6 +325,10 @@ export class FeedbackEngine {
     if (feedbackDTO.action === "STATUS_CHANGE" && !feedbackDTO.id) {
       throw new Error("Request not valid, not id of modified feedback");
     }
+
+    if (feedbackDTO.action === "EDIT" && !feedbackDTO.id) {
+      throw new Error("Request not valid, not id of modified feedback");
+    }
   }
 
   createFeedback(feedback: FeedbackDTO, userId: number): Promise<OkPacket> {
@@ -477,13 +489,15 @@ export class FeedbackEngine {
     await this.removeFeedback(feedbackId);
   }
 
-  async feedbackEdit(feedback: FeedbackDTO): Promise<void> {
+  async feedbackEdit(feedback: FeedbackDTO, userID: number): Promise<void> {
     if(!feedback?.id) throw "not id by feedback in request";
     const oldFeedback = await this.getFeedbackWithData(feedback?.id).toPromise();
     if(!oldFeedback) throw "feedback not exist";
 
-    if(JSON.stringify(oldFeedback?.votes) !== JSON.stringify(feedback?.votes)) {
+    // remove old artifacts from feedback
+    if(JSON.stringify(oldFeedback?.votes ?? []) !== JSON.stringify(feedback?.votes ?? [])) {
       await this.context.voteEngine.removeVotesByFeedbackId(feedback.id);
+      await this.context.voteEngine.saveVoteList(feedback.votes ?? [], oldFeedback.id);
     }
 
     if(oldFeedback?.comment?.text !== feedback?.comment && !!oldFeedback?.comment) {
@@ -494,6 +508,14 @@ export class FeedbackEngine {
 
     // non critical action
     this.context.likeEngine.removeReactionsByFeedback(oldFeedback.id);
+
+    // update fb
+    await this.updateFeedback(oldFeedback.id);
+
+    // add new changes
+    if(!!feedback?.comment){
+      await this.context.commentEngine.addCommentToFeedback(oldFeedback.id, feedback.comment, userID);
+    }
 
   }
 
@@ -670,7 +692,7 @@ export class FeedbackEngine {
 
     this.feedback.delete("/:id",
       jsonparser,
-      this.feedbackGrantsCheck,
+      this.feedbackRemoveGrantsCheck,
     async (req, res) => {
       try {
         const feedbackID = Number(req?.params?.id);
@@ -703,8 +725,8 @@ export class FeedbackEngine {
             result = "ok";
             break;
           case "EDIT":
-            await this.feedbackGrantsCheck(req, res,() => {});
-
+            await this.feedbackEditGrantsCheck(userId, feedback.id);
+            await this.feedbackEdit(feedback, userId);
             result = "ok";
             break;
           case "REMOVE_FEEDBACK":
