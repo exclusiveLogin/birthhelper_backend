@@ -35,9 +35,9 @@ export class FeedbackEngine {
     this.feedback.use(this.userCatcher);
   }
 
-  sendError = (res: Response, err): void => {
+  sendError = (res: Response, err, code?: number): void => {
     console.log("FEEDBACK error: ", (err.message ? err.message : err) ?? "unknown error");
-    res.status(500);
+    res.status(code ?? 500);
     res.end(
       JSON.stringify({
         error: (err.message ? err.message : err) ?? "unknown error",
@@ -56,7 +56,7 @@ export class FeedbackEngine {
     }
   };
 
-  feedbackRemoveGrantsCheck = async (req: Request, res: Response, next: NextFunction) => {
+  feedbackRemoveGrantsCheckHandler = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const user = res.locals.userId;
       if(!user) throw new Error('user not found');
@@ -74,12 +74,19 @@ export class FeedbackEngine {
     }
   };
 
-  feedbackEditGrantsCheck = async (userId: number, feedbackId: number) => {
+  feedbackEditGrantsCheck = async (userId: number, feedbackId: number, res: Response) => {
     const user = await this.context.authorizationEngine.getUserById(userId);
-    if(!user) throw new Error('user not found');
+    if(!user) this.sendError(res, new Error('user not found'));
     const existFeedback = await this.getFeedbackById(feedbackId).toPromise();
-    if(!existFeedback) throw new Error('feedback not found');
-    if(existFeedback?.user_id !== user.id) throw new Error('Edit this Feedback not permited for you');
+    if(!existFeedback) this.sendError(res, new Error('feedback not found'));
+    if(existFeedback?.user_id !== user.id) this.sendError(res, new Error('Edit this Feedback not permited for you'), 401);
+  };
+
+  feedbackCreateGrantsCheck = async (userId: number, res: Response) => {
+    const user = await this.context.authorizationEngine.getUserById(userId);
+    if(!user) this.sendError(res, new Error('user not found'));
+    const isGranted = await this.context.authorizationEngine.hasPermissionByUser(user.id, 3)
+    if(!isGranted) this.sendError(res, new Error('Create Feedback not permited for you'), 401);
   };
 
   getFeedbackById(id: number): Observable<Feedback> {
@@ -331,7 +338,7 @@ export class FeedbackEngine {
     }
   }
 
-  createFeedback(feedback: FeedbackDTO, userId: number): Promise<OkPacket> {
+  createFeedback(feedback: FeedbackDTO, userId: number, toModeration: boolean): Promise<OkPacket> {
 
     // const config = this.context.entityEngine.getEntitiesConfig();
     // let contragentId: number;
@@ -351,11 +358,12 @@ export class FeedbackEngine {
     // }
 
     const q = `INSERT INTO \`feedback\` 
-                   (section, target_entity_key, target_entity_id, user_id) VALUES (
+                   (section, target_entity_key, target_entity_id, user_id, status) VALUES (
                     ${escape(feedback.section)}, 
                     ${escape(feedback.target_entity_key)}, 
                     ${escape(feedback.target_entity_id)}, 
-                    ${escape(userId)}
+                    ${escape(userId)},
+                    ${escape(toModeration ? ' pending' : 'approved')}
                    )`;
     return this.context.dbe.query<OkPacket>(q).toPromise();
   }
@@ -468,7 +476,7 @@ export class FeedbackEngine {
     userId: number
   ): Promise<number> {
 
-    const createResult = await this.createFeedback(feedback, userId);
+    const createResult = await this.createFeedback(feedback, userId, !!feedback.comment);
     const feedbackId = createResult.insertId;
 
     if (feedback?.comment)
@@ -692,7 +700,7 @@ export class FeedbackEngine {
 
     this.feedback.delete("/:id",
       jsonparser,
-      this.feedbackRemoveGrantsCheck,
+      this.feedbackRemoveGrantsCheckHandler,
     async (req, res) => {
       try {
         const feedbackID = Number(req?.params?.id);
@@ -721,59 +729,61 @@ export class FeedbackEngine {
         let result = "nope";
         switch (feedback.action) {
           case "CREATE":
+            await this.feedbackCreateGrantsCheck(userId, res);
             returnedId = await this.feedbackCreateAction(feedback, userId);
             result = "ok";
             break;
           case "EDIT":
-            await this.feedbackEditGrantsCheck(userId, feedback.id);
+            await this.feedbackEditGrantsCheck(userId, feedback.id, res);
             await this.feedbackEdit(feedback, userId);
             result = "ok";
             break;
           case "REMOVE_FEEDBACK":
+            await this.feedbackRemoveGrantsCheckHandler(req, res, ()=> {});
             await this.feedbackDelete(feedback?.id);
             returnedId = feedback?.id;
             result = "ok";
             break;
           case "LIKE":
             feedback.comment_id
-              ? this.context.likeEngine.insertLike(
+              ? await this.context.likeEngine.insertLike(
                   "comment",
                   userId,
                   feedback.comment_id
-                )
-              : this.context.likeEngine.insertLike(
+                ).toPromise()
+              : await this.context.likeEngine.insertLike(
                   "feedback",
                   userId,
                   feedback.id
-                );
+                ).toPromise();
             result = "ok";
             break;
           case "DISLIKE":
             feedback.comment_id
-              ? this.context.likeEngine.insertDislike(
+              ? await this.context.likeEngine.insertDislike(
                   "comment",
                   userId,
                   feedback.comment_id
-                )
-              : this.context.likeEngine.insertDislike(
+                ).toPromise()
+              : await this.context.likeEngine.insertDislike(
                   "feedback",
                   userId,
                   feedback.id
-                );
+                ).toPromise();
             result = "ok";
             break;
           case "UNLIKE":
             feedback.comment_id
-              ? this.context.likeEngine.removeAllReactionOfUserByEntity(
+              ? await this.context.likeEngine.removeAllReactionOfUserByEntity(
                   userId,
                   feedback.comment_id,
                   "comment"
-                )
-              : this.context.likeEngine.removeAllReactionOfUserByEntity(
+                ).toPromise()
+              : await this.context.likeEngine.removeAllReactionOfUserByEntity(
                   userId,
                   feedback.id,
                   "feedback"
-                );
+                ).toPromise();
             break;
           case "ANSWER":
             break;
