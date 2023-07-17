@@ -363,7 +363,7 @@ export class FeedbackEngine {
                     ${escape(feedback.target_entity_key)}, 
                     ${escape(feedback.target_entity_id)}, 
                     ${escape(userId)},
-                    ${escape(toModeration ? ' pending' : 'approved')}
+                    ${escape(toModeration ? 'pending' : 'approved')}
                    )`;
     return this.context.dbe.query<OkPacket>(q).toPromise();
   }
