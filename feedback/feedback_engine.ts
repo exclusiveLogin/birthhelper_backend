@@ -37,10 +37,13 @@ export class FeedbackEngine {
 
   sendError = (res: Response, err, code?: number): void => {
     console.log("FEEDBACK error: ", (err.message ? err.message : err) ?? "unknown error");
-    res.status(code ?? 500);
+    if(res.statusCode === 200) {
+      res.status(code ?? 500);
+    }
+    
     res.end(
       JSON.stringify({
-        error: (err.message ? err.message : err) ?? "unknown error",
+        error: res.statusMessage ?? (err.message ? err.message : err) ?? "unknown error",
       })
     );
   };
@@ -56,37 +59,76 @@ export class FeedbackEngine {
     }
   };
 
-  feedbackRemoveGrantsCheckHandler = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const user = res.locals.userId;
-      if(!user) throw new Error('user not found');
-      const feedbackID = Number(req?.params?.id);
-      const existFeedback = await this.getFeedbackById(feedbackID).toPromise();
-      if(!existFeedback) throw new Error('feedback not found');
-      const isGranted = await this.context.authorizationEngine.hasPermissionByUser(user, 5)
-      if(isGranted || existFeedback?.user_id === user) { 
-        next();
-      } else {
-        throw new Error('Remove this Feedback not permited for you');
-      }
-    } catch (e) {
-      this.sendError(res, e);
+  feedbackRemoveGrantsCheck = async (feedbackId: number, res: Response) => {
+    const userId = res.locals.userId;
+
+    if(!userId) {
+      res.status(401);
+      throw new Error('user not found');
+    } 
+
+    const existFeedback = await this.getFeedbackById(feedbackId).toPromise();
+    if(!existFeedback) {
+      res.status(404);
+      throw new Error('feedback not found');
+    }
+
+    const isGranted = await this.context.authorizationEngine.hasPermissionByUser(userId, 5)
+    if(!(isGranted || existFeedback?.user_id === userId)) { 
+      res.status(401);
+      throw new Error('Remove this Feedback not permited for you');
     }
   };
 
-  feedbackEditGrantsCheck = async (userId: number, feedbackId: number, res: Response) => {
+  feedbackEditGrantsCheck = async (feedbackId: number, res: Response) => {
+    const userId = res.locals.userId;
+    if(!userId) {
+      res.status(401);
+      throw new Error('user not found');
+    } 
     const user = await this.context.authorizationEngine.getUserById(userId);
-    if(!user) this.sendError(res, new Error('user not found'));
+    if(!user) {
+      res.status(401);
+      throw new Error('user not found');
+    } 
     const existFeedback = await this.getFeedbackById(feedbackId).toPromise();
-    if(!existFeedback) this.sendError(res, new Error('feedback not found'));
-    if(existFeedback?.user_id !== user.id) this.sendError(res, new Error('Edit this Feedback not permited for you'), 401);
+    if(!existFeedback) {
+      res.status(401);
+      throw new Error('feedback not found');
+    }
+    if(existFeedback?.user_id !== user.id) {
+      res.status(401);
+      throw new Error('Edit this Feedback not permited for you');
+    }
   };
 
-  feedbackCreateGrantsCheck = async (userId: number, res: Response) => {
+  feedbackCreateGrantsCheck = async (res: Response) => {
+    const userId = res.locals.userId;
+    if(!userId) {
+      res.status(401);
+      throw new Error('user not found');
+    } 
     const user = await this.context.authorizationEngine.getUserById(userId);
-    if(!user) this.sendError(res, new Error('user not found'));
-    const isGranted = await this.context.authorizationEngine.hasPermissionByUser(user.id, 3)
-    if(!isGranted) this.sendError(res, new Error('Create Feedback not permited for you'), 401);
+    if(!user) {
+      res.status(401);
+      throw new Error('user not found');
+    } 
+    
+    const isGranted = await this.context.authorizationEngine.hasPermissionByUser(userId, 3)
+    if(!isGranted) {
+      res.status(401);
+      throw new Error('Create Feedback not permited for you');
+    }
+  };
+
+  feedbackCreateRateLimitCheck = async (userId: number, targetKey: EntityKeys, targetId: number, res: Response) => {
+    const existFeedback = await this.getLastFeedbackByUserAndTarget(targetKey, targetId, userId).toPromise();
+    if(existFeedback){
+      // check dates
+      res.status(429);
+      res.statusMessage = 'too many request of create feedback';
+      throw new Error('429 too many request of create feedback');
+    }
   };
 
   getFeedbackById(id: number): Observable<Feedback> {
@@ -97,6 +139,22 @@ export class FeedbackEngine {
   }
   getUserById(id: number): Observable<User> {
     return from(this.context.authorizationEngine.getUserByIdSafetly(id));
+  }
+
+  getLastFeedbackByUserAndTarget(targetKey: EntityKeys, targetID: number, userID: number): Observable<Feedback> {
+    const addQ = " ORDER BY datetime_create DESC LIMIT 1";
+
+    const q = `SELECT * FROM \`feedback\` 
+                WHERE user_id=${escape(userID)}
+                AND status NOT IN ("deleted")
+                AND target_entity_id=${escape(targetID)}
+                AND target_entity_key=${escape(targetKey)}
+                AND datetime_update >= NOW() - INTERVAL 1 MINUTE
+                ${addQ}`;
+
+                console.log('getLastFeedbackByUserAndTarget: ', q);
+    return this.context.dbe
+      .queryOnceOfList<Feedback>(q).pipe();
   }
 
   getByUserId(userId: number,section?: SectionKeys, status?: FeedbackStatus, skip = 0, limit = 20): Observable<Feedback[]>{
@@ -110,7 +168,8 @@ export class FeedbackEngine {
     const q = `SELECT * FROM \`feedback\` 
                 WHERE user_id=${escape(userId)}
                 AND status NOT IN ("pending", "deleted")
-                ${sectionStr}${statusStr}
+                ${sectionStr}
+                ${statusStr}
                 ${limStr}`;
 
     return this.context.dbe
@@ -118,6 +177,7 @@ export class FeedbackEngine {
         switchMap((list) => list.length ? forkJoin([...list.map((fb) => this.getFeedbackWithData(fb.id))]) : of(list))
       );
   }
+
   getFeedbackListByTarget(
     targetEntityKey: string,
     targetId: number
@@ -700,11 +760,10 @@ export class FeedbackEngine {
 
     this.feedback.delete("/:id",
       jsonparser,
-      this.feedbackRemoveGrantsCheckHandler,
     async (req, res) => {
       try {
         const feedbackID = Number(req?.params?.id);
-
+        await this.feedbackRemoveGrantsCheck(feedbackID, res);
         await this.feedbackDelete(feedbackID);
         res.send({feedbackID, result: 'success'});
       }
@@ -729,17 +788,18 @@ export class FeedbackEngine {
         let result = "nope";
         switch (feedback.action) {
           case "CREATE":
-            await this.feedbackCreateGrantsCheck(userId, res);
+            await this.feedbackCreateGrantsCheck(res);
+            await this.feedbackCreateRateLimitCheck(userId, <EntityKeys>feedback.target_entity_key, feedback.target_entity_id, res);
             returnedId = await this.feedbackCreateAction(feedback, userId);
             result = "ok";
             break;
           case "EDIT":
-            await this.feedbackEditGrantsCheck(userId, feedback.id, res);
+            await this.feedbackEditGrantsCheck(feedback.id, res);
             await this.feedbackEdit(feedback, userId);
             result = "ok";
             break;
           case "REMOVE_FEEDBACK":
-            await this.feedbackRemoveGrantsCheckHandler(req, res, ()=> {});
+            await this.feedbackRemoveGrantsCheck(feedback.id, res);
             await this.feedbackDelete(feedback?.id);
             returnedId = feedback?.id;
             result = "ok";
