@@ -1,8 +1,8 @@
 import { Context } from "../search/config";
 import { Observable, forkJoin, throwError, zip } from "rxjs";
 import { Like, LikeType } from "./model";
-import { map, mapTo, tap } from "rxjs/operators";
-import { OkPacket, escape } from "mysql";
+import { map, mapTo, switchMap, tap } from "rxjs/operators";
+import { escape } from "mysql";
 export class LikeEngine {
   context: Context;
   constructor(context: Context) {
@@ -144,15 +144,13 @@ export class LikeEngine {
     type: LikeType,
     userId: number,
     targetId: number
-  ): Observable<boolean> {
+  ): Observable<unknown> {
     if (!targetId || !userId) return throwError("not valid existing data");
     return this.removeAllReactionOfUserByEntity(userId, targetId, type).pipe(
-      tap(() => {
+      switchMap(() => {
         if (type === "comment") return this.setLikeToComment(targetId, userId);
-        if (type === "feedback")
-          return this.setLikeToFeedback(targetId, userId);
+        if (type === "feedback") return this.setLikeToFeedback(targetId, userId);
       }),
-      mapTo(true)
     );
   }
 

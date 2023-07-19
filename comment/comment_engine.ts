@@ -69,7 +69,10 @@ export class CommentEngine {
                         WHERE comment_id = com.id) as replies
                          FROM \`comments\` as com 
                     WHERE feedback_id = ${escape(id)}
-                    AND comment_id IS NULL`;
+                    AND comment_id IS NULL
+                    AND status NOT IN ('branched', 'pending', 'deleted', 'rejected')
+                    ORDER BY datetime_update DESC 
+                    LIMIT 1`;
     return this.context.dbe.queryList<Comment>(q).pipe(
       this.getReactionPipe,
       map((result) => result?.[0] ?? null)
@@ -98,7 +101,7 @@ export class CommentEngine {
                         ${escape(comment)},
                         ${escape(parent ?? null)},
                         ${escape(offical ? 'official' : 'approved')},
-                        'answer'
+                        ${escape(parent ? 'reply' : 'master')}
                     )`;
 
     return this.context.dbe.query<OkPacket>(q)

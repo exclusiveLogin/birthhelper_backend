@@ -33,6 +33,8 @@ export interface FeedbackResponse extends Feedback {
   likes: Array<Like>;
   dislikes: Array<Like>;
   user: User;
+  canEdit: boolean;
+  canRemove: boolean;
 }
 
 export interface FeedbackResponseByContragent {

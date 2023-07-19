@@ -1,4 +1,5 @@
 import * as express from "express";
+import moment from "moment";
 import { NextFunction, Request, Response, Router } from "express";
 import { Context, SectionKeys } from "../search/config";
 import { forkJoin, from, Observable, of } from "rxjs";
@@ -100,6 +101,10 @@ export class FeedbackEngine {
       res.status(401);
       throw new Error('Edit this Feedback not permited for you');
     }
+    if(moment(existFeedback.datetime_create).isBefore(moment().subtract(5, 'days'))){
+      res.status(401);
+      throw new Error('Edit is not allowed, more than 5 days have passed');
+    }
   };
 
   feedbackCreateGrantsCheck = async (res: Response) => {
@@ -121,12 +126,50 @@ export class FeedbackEngine {
     }
   };
 
+  reactionAddCheck = async (res: Response) => {
+    const userId = res.locals.userId;
+    if(!userId) {
+      res.status(401);
+      throw new Error('user not found');
+    } 
+    const user = await this.context.authorizationEngine.getUserById(userId);
+    if(!user) {
+      res.status(401);
+      throw new Error('user not found');
+    } 
+    
+    const isGranted = await this.context.authorizationEngine.hasPermissionByUser(userId, 3)
+    if(!isGranted) {
+      res.status(401);
+      throw new Error('Add reaction not permited for you');
+    }
+  };
+
+  reactionUnsetCheck = async (res: Response) => {
+    const userId = res.locals.userId;
+    if(!userId) {
+      res.status(401);
+      throw new Error('user not found');
+    } 
+    const user = await this.context.authorizationEngine.getUserById(userId);
+    if(!user) {
+      res.status(401);
+      throw new Error('user not found');
+    } 
+    
+    const isGranted = await this.context.authorizationEngine.hasPermissionByUser(userId, 3)
+    if(!isGranted) {
+      res.status(401);
+      throw new Error('Remove reaction not permited for you');
+    }
+  };
+
   feedbackCreateRateLimitCheck = async (userId: number, targetKey: EntityKeys, targetId: number, res: Response) => {
     const existFeedback = await this.getLastFeedbackByUserAndTarget(targetKey, targetId, userId).toPromise();
     if(existFeedback){
       // check dates
       res.status(429);
-      res.statusMessage = 'too many request of create feedback';
+      res.statusMessage = 'Found review less than 5 days old. Please edit or delete it before posting a new one.';
       throw new Error('429 too many request of create feedback');
     }
   };
@@ -149,7 +192,7 @@ export class FeedbackEngine {
                 AND status NOT IN ("deleted")
                 AND target_entity_id=${escape(targetID)}
                 AND target_entity_key=${escape(targetKey)}
-                AND datetime_update >= NOW() - INTERVAL 1 MINUTE
+                AND datetime_update >= NOW() - INTERVAL 5 DAY
                 ${addQ}`;
 
                 console.log('getLastFeedbackByUserAndTarget: ', q);
@@ -157,7 +200,13 @@ export class FeedbackEngine {
       .queryOnceOfList<Feedback>(q).pipe();
   }
 
-  getByUserId(userId: number,section?: SectionKeys, status?: FeedbackStatus, skip = 0, limit = 20): Observable<Feedback[]>{
+  getByUserId(
+    userId: number,
+    section?: SectionKeys,
+    status?: FeedbackStatus, 
+    skip = 0, 
+    limit = 20
+    ): Observable<Feedback[]>{
     const sectionStr = `${section === "clinic" ? 'AND section = "clinic"' : ""}${section === "consultation" ? 'AND section = "consultation"': ""}`
     const statusStr = status ? ` AND status = ${escape(status)}` : "";
                         
@@ -180,12 +229,23 @@ export class FeedbackEngine {
 
   getFeedbackListByTarget(
     targetEntityKey: string,
-    targetId: number
+    targetId: number,
+    status?: FeedbackStatus,
+    skip = 0, 
+    limit = 20
   ): Observable<Feedback[]> {
+    const statusStr = status ? ` AND status = ${escape(status)}` : "";
+    const limStr = `${
+      skip ? " LIMIT " + limit + " OFFSET " + skip : " LIMIT " + limit
+    }`;
+
     const q = `SELECT * FROM \`feedback\`
-                    WHERE target_entity_key = ${escape(targetEntityKey)} 
-                    AND target_entity_id = ${escape(targetId)}
-                    AND status NOT IN ("pending", "deleted")`;
+                WHERE target_entity_key = ${escape(targetEntityKey)} 
+                AND target_entity_id = ${escape(targetId)}
+                AND status NOT IN ("pending", "deleted")
+                ${statusStr}
+                ${limStr}`;
+
     return this.context.dbe.queryList<Feedback>(q);
   }
 
@@ -262,26 +322,65 @@ export class FeedbackEngine {
   getCommentByFeedback(id: number): Observable<Comment> {
     return this.context.commentEngine.getMasterCommentByFeedbackId(id);
   }
+
   getCommentsByMasterComment(
     commentId: number,
     filters?: FilterParams
   ): Observable<Comment[]> {
     return this.context.commentEngine.getCommentsByParentId(commentId, filters);
   }
+
   getVotesByFeedback(id: number): Observable<Vote[]> {
     return this.context.voteEngine.getVotesByFeedback(id);
   }
+
   getStatsByFeedback(
     id: number
   ): Observable<{ likes: Like[]; dislikes: Like[] }> {
     return this.context.likeEngine.getStatsByFeedback(id, "feedback");
   }
 
-  getFeedbackListWithData(
+  getFeedbackListSetByTarget(
     targetKey: string,
-    targetId: number
+    targetId: number,
+    status?: string,
+  ): Observable<{total: number, perpage: number}> {
+    const statusStr = status ? ` AND status = ${escape(status)}` : "";
+
+    const q = `SELECT COUNT(*) as total, 20 as portion FROM feedback 
+              WHERE target_entity_key = ${escape(targetKey)} 
+              AND target_entity_id = ${escape(targetId)}
+              AND status NOT IN ("pending", "deleted")
+              ${statusStr}`;
+
+    return this.context.dbe.queryOnceOfList(q);
+  }
+
+  getFeedbackListSetByUser(
+    userId: number,
+    status?: string,
+    section?: string,
+  ): Observable<{total: number, perpage: number}> {
+    const statusStr = status ? ` AND status = ${escape(status)}` : "";
+    const sectionStr = `${section === "clinic" ? 'AND section = "clinic"' : ""}${section === "consultation" ? 'AND section = "consultation"': ""}`
+
+    const q = `SELECT COUNT(*) as total, 20 as portion FROM feedback 
+              WHERE user_id = ${escape(userId)}
+              AND status NOT IN ("pending", "deleted")
+              ${statusStr}
+              ${sectionStr}`;
+
+    return this.context.dbe.queryOnceOfList(q);
+  }
+
+  getFeedbackListWithDataByTarget(
+    targetKey: string,
+    targetId: number,
+    status?: FeedbackStatus,
+    skip?: number, 
+    limit?: number,
   ): Observable<FeedbackResponse[]> {
-    return this.getFeedbackListByTarget(targetKey, targetId).pipe(
+    return this.getFeedbackListByTarget(targetKey, targetId, status, skip, limit).pipe(
       switchMap((list) => list.length ? 
         forkJoin([...list.map((fb) => this.getFeedbackWithData(fb.id))]) : of([])
       )
@@ -308,13 +407,15 @@ export class FeedbackEngine {
         feedback
           ? {
               ...feedback,
+              canEdit: moment(feedback.datetime_create).isAfter(moment().subtract(1, 'days')),
+              canRemove: true,
               votes,
               user,
               likes,
               dislikes,
               action: "ANSWER",
               comment,
-            }
+            } as FeedbackResponse
           : null
       )
     );
@@ -563,15 +664,17 @@ export class FeedbackEngine {
     if(!oldFeedback) throw "feedback not exist";
 
     // remove old artifacts from feedback
-    if(JSON.stringify(oldFeedback?.votes ?? []) !== JSON.stringify(feedback?.votes ?? [])) {
-      await this.context.voteEngine.removeVotesByFeedbackId(feedback.id);
-      await this.context.voteEngine.saveVoteList(feedback.votes ?? [], oldFeedback.id);
-    }
-
+    await this.context.voteEngine.removeVotesByFeedbackId(feedback.id);
+    await this.context.voteEngine.saveVoteList(feedback.votes ?? [], oldFeedback.id);
+  
     if(oldFeedback?.comment?.text !== feedback?.comment && !!oldFeedback?.comment) {
       await this.context.commentEngine.branchComment(oldFeedback?.comment?.id);
       // non critical action
       this.context.likeEngine.removeReactionsByComment(oldFeedback?.comment?.id);
+      // add new changes
+      if(!!feedback?.comment){
+        await this.context.commentEngine.addCommentToFeedback(oldFeedback.id, feedback.comment, userID);
+      }
     }
 
     // non critical action
@@ -579,12 +682,6 @@ export class FeedbackEngine {
 
     // update fb
     await this.updateFeedback(oldFeedback.id);
-
-    // add new changes
-    if(!!feedback?.comment){
-      await this.context.commentEngine.addCommentToFeedback(oldFeedback.id, feedback.comment, userID);
-    }
-
   }
 
   getRouter(): Router {
@@ -638,11 +735,41 @@ export class FeedbackEngine {
       try {
         const targetKey: string = req.query?.["key"] as string;
         const targetId = Number(req.query?.["id"]);
+        const statusKey: FeedbackStatus = this.statusKeyMapper(
+          req.query?.["status"] as string
+        );
+
+        const skip =  req.query?.["skip"] ? 
+                      Number(req.query?.["skip"]) : 
+                      undefined;
+
+        const limit = req.query?.["limit"] ? 
+                      Number(req.query?.["limit"]) : 
+                      undefined;
 
         if (Number.isNaN(targetId) || !targetKey)
           this.sendError(res, "Передан не валиднй target");
 
-        const summary = await this.getFeedbackListWithData(targetKey, targetId).toPromise();
+        const summary = await this.getFeedbackListWithDataByTarget(targetKey, targetId, statusKey, skip, limit).toPromise();
+
+        res.send(summary);
+      } catch (e) {
+        this.sendError(res, e);
+      }
+    });
+
+    this.feedback.get("/list/set", async (req, res) => {
+      try {
+        const targetKey: string = req.query?.["key"] as string;
+        const targetId = Number(req.query?.["id"]);
+        const statusKey: FeedbackStatus = this.statusKeyMapper(
+          req.query?.["status"] as string
+        );
+
+        if (Number.isNaN(targetId) || !targetKey)
+          this.sendError(res, "Передан не валиднй target");
+
+        const summary = await this.getFeedbackListSetByTarget(targetKey, targetId, statusKey).toPromise();
 
         res.send(summary);
       } catch (e) {
@@ -679,6 +806,29 @@ export class FeedbackEngine {
           await this.context.cacheEngine.getCachedByKey<Feedback[]>(cacheKey).toPromise() :
           await this.getByUserId(userId, sectionKey, statusKey, skip, limit).pipe(
             tap(data => this.context.cacheEngine.saveCacheData(cacheKey, data))).toPromise();
+
+        res.send(summary);
+
+      } catch (e) {
+        this.sendError(res, e);
+      }
+    });
+
+    this.feedback.get("/listbyuser/set", async (req, res) => {
+      try {
+        // get userID
+        const userId = res.locals?.userId;
+        const sectionKey: SectionKeys = this.sectionKeyMapper(
+          req.query?.["section"] as string
+        );
+        const statusKey: FeedbackStatus = this.statusKeyMapper(
+          req.query?.["status"] as string
+        );
+
+        if (!userId)
+          this.sendError(res, "User ID is not required");
+
+        const summary = await this.getFeedbackListSetByUser(userId, statusKey, sectionKey).toPromise();
 
         res.send(summary);
 
@@ -844,8 +994,6 @@ export class FeedbackEngine {
                   feedback.id,
                   "feedback"
                 ).toPromise();
-            break;
-          case "ANSWER":
             break;
           case "ISSUES":
             break;
