@@ -912,6 +912,13 @@ export class FeedbackEngine {
       jsonparser,
     async (req, res) => {
       try {
+        // get userID
+        const userId = res.locals?.userId;
+        // get body and typing to DTO
+
+        const cacheKey = `feedback_by_user_${userId}`;
+        this.context.cacheEngine.softClearByKey(cacheKey);
+        
         const feedbackID = Number(req?.params?.id);
         await this.feedbackRemoveGrantsCheck(feedbackID, res);
         await this.feedbackDelete(feedbackID);
@@ -953,6 +960,8 @@ export class FeedbackEngine {
             await this.feedbackDelete(feedback?.id);
             returnedId = feedback?.id;
             result = "ok";
+            break;
+          case "REMOVE_COMMENT":
             break;
           case "LIKE":
             feedback.comment_id
@@ -1006,10 +1015,6 @@ export class FeedbackEngine {
             console.log("repliedComment:", repliedComment);
             returnedId =  await this.replyByFeedbackComment(repliedComment.id, comment, repliedComment.feedback_id, userId, status === "official");
             result = "ok";
-            break;
-          case "REMOVE_FEEDBACK":
-            break;
-          case "REMOVE_COMMENT":
             break;
         }
 
