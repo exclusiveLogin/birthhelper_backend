@@ -1,11 +1,10 @@
 import { Context } from "../search/config";
 import { Comment } from "./model";
-import { Observable, UnaryFunction, forkJoin, of, pipe } from "rxjs";
+import { MonoTypeOperatorFunction, Observable, UnaryFunction, forkJoin, of, pipe } from "rxjs";
 import { map, mapTo, switchMap, tap } from "rxjs/operators";
 import { OkPacket, escape } from "mysql";
 import { FilterParams } from "entity/entity_engine";
-import { Like } from "like/model";
-import { Feedback } from "feedback/models";
+import { Like, Reactions } from "like/model";
 
 export class CommentEngine {
   context: Context;
@@ -14,14 +13,13 @@ export class CommentEngine {
     this.context = context;
   }
 
-  getReactionPipe: UnaryFunction<Observable<Comment[]>, Observable<Comment[]>> =
-    pipe(
-      map((_: Comment[]) => _),
+  getReactionPipe(userId: number): MonoTypeOperatorFunction<Comment[]> {
+    return pipe(
       switchMap((comments: Comment[]) =>
         comments?.length
           ? forkJoin(
               comments.map((comment) =>
-                this.getStatsByComment(comment.id).pipe(
+                this.getStatsByComment(comment.id, userId).pipe(
                   map((reactions) => ({ ...comment, ...reactions } as Comment))
                 )
               )
@@ -29,31 +27,35 @@ export class CommentEngine {
           : of([])
       )
     );
-
+  }
+  
   getAllCommentsByFeedback(
     id: number,
-    filters: FilterParams
+    filters: FilterParams,
+    userId: number,
   ): Observable<Comment[]> {
     filters["feedback_id"] = id.toString();
     return this.context.entityEngine
       .getEntities<Comment>("ent_comments", null, filters)
-      .pipe(this.getReactionPipe);
+      .pipe(this.getReactionPipe(userId));
   }
 
   getCommentsByParentId(
     id: number,
-    filters: FilterParams
+    filters: FilterParams,
+    userId: number,
   ): Observable<Comment[]> {
     filters["comment_id"] = id.toString();
     return this.context.entityEngine
       .getEntities<Comment>("ent_comments", null, filters)
-      .pipe(this.getReactionPipe);
+      .pipe(this.getReactionPipe(userId));
   }
 
   getStatsByComment(
-    id: number
-  ): Observable<{ likes: Like[]; dislikes: Like[] }> {
-    return this.context.likeEngine.getStatsByFeedback(id, "comment");
+    id: number,
+    userId: number,
+  ): Observable<Reactions> {
+    return this.context.likeEngine.getStatsByFeedback(id, "comment", userId);
   }
 
   getCommentById(id: number): Observable<Comment> {
@@ -62,7 +64,10 @@ export class CommentEngine {
       .pipe(map((ents) => ents?.[0]));
   }
 
-  getMasterCommentByFeedbackId(id: number): Observable<Comment> {
+  getMasterCommentByFeedbackId(
+    id: number,
+    userId: number,
+    ): Observable<Comment> {
     const q = `SELECT *, 
                     (SELECT COUNT(*) 
                         FROM \`comments\` 
@@ -74,7 +79,7 @@ export class CommentEngine {
                     ORDER BY datetime_update DESC 
                     LIMIT 1`;
     return this.context.dbe.queryList<Comment>(q).pipe(
-      this.getReactionPipe,
+      this.getReactionPipe(userId),
       map((result) => result?.[0] ?? null)
     );
   }

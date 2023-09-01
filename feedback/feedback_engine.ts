@@ -15,7 +15,7 @@ import {
 import { escape, OkPacket } from "mysql";
 import { Comment } from "../comment/model";
 import { Vote } from "../vote/model";
-import { Like } from "../like/model";
+import { Like, Reactions } from "../like/model";
 import { map, switchMap, tap } from "rxjs/operators";
 import bodyparser from "body-parser";
 import { User } from "../models/user.interface";
@@ -319,15 +319,16 @@ export class FeedbackEngine {
     return this.context.dbe.queryList<Feedback>(q).toPromise();
   }
 
-  getCommentByFeedback(id: number): Observable<Comment> {
-    return this.context.commentEngine.getMasterCommentByFeedbackId(id);
+  getCommentByFeedback(id: number, userId: number): Observable<Comment> {
+    return this.context.commentEngine.getMasterCommentByFeedbackId(id, userId);
   }
 
   getCommentsByMasterComment(
     commentId: number,
-    filters?: FilterParams
+    filters?: FilterParams,
+    userId?: number,
   ): Observable<Comment[]> {
-    return this.context.commentEngine.getCommentsByParentId(commentId, filters);
+    return this.context.commentEngine.getCommentsByParentId(commentId, filters, userId);
   }
 
   getVotesByFeedback(id: number): Observable<Vote[]> {
@@ -335,9 +336,10 @@ export class FeedbackEngine {
   }
 
   getStatsByFeedback(
-    id: number
-  ): Observable<{ likes: Like[]; dislikes: Like[] }> {
-    return this.context.likeEngine.getStatsByFeedback(id, "feedback");
+    id: number,
+    userId?: number,
+  ): Observable<Reactions> {
+    return this.context.likeEngine.getStatsByFeedback(id, "feedback", userId);
   }
 
   getFeedbackListSetByTarget(
@@ -379,19 +381,20 @@ export class FeedbackEngine {
     status?: FeedbackStatus,
     skip?: number, 
     limit?: number,
+    userId?: number,
   ): Observable<FeedbackResponse[]> {
     return this.getFeedbackListByTarget(targetKey, targetId, status, skip, limit).pipe(
       switchMap((list) => list.length ? 
-        forkJoin([...list.map((fb) => this.getFeedbackWithData(fb.id))]) : of([])
+        forkJoin([...list.map((fb) => this.getFeedbackWithData(fb.id, userId))]) : of([])
       )
     );
   }
 
-  getFeedbackWithData(id: number): Observable<FeedbackResponse> {
+  getFeedbackWithData(id: number, userId?: number): Observable<FeedbackResponse> {
     const feedbackRequest = this.getFeedbackById(id);
     const feedbackVotesRequest = this.getVotesByFeedback(id);
-    const feedbackCommentsRequest = this.getCommentByFeedback(id);
-    const feedbackLikesRequest = this.getStatsByFeedback(id);
+    const feedbackCommentsRequest = this.getCommentByFeedback(id, userId);
+    const feedbackLikesRequest = this.getStatsByFeedback(id, userId);
 
     return feedbackRequest.pipe(
       switchMap((feedback) =>
@@ -403,7 +406,7 @@ export class FeedbackEngine {
           this.getUserById(feedback.user_id),
         ])
       ),
-      map(([feedback, votes, comment, { likes, dislikes }, user]) =>
+      map(([feedback, votes, comment, { likes, dislikes, likeOwner, dislikeOwner }, user]) =>
         feedback
           ? {
               ...feedback,
@@ -413,6 +416,8 @@ export class FeedbackEngine {
               user,
               likes,
               dislikes,
+              likeOwner,
+              dislikeOwner,
               action: "ANSWER",
               comment,
             } as FeedbackResponse
@@ -733,6 +738,8 @@ export class FeedbackEngine {
 
     this.feedback.get("/list", async (req, res) => {
       try {
+        // get userID
+        const userId = res.locals?.userId;
         const targetKey: string = req.query?.["key"] as string;
         const targetId = Number(req.query?.["id"]);
         const statusKey: FeedbackStatus = this.statusKeyMapper(
@@ -750,7 +757,7 @@ export class FeedbackEngine {
         if (Number.isNaN(targetId) || !targetKey)
           this.sendError(res, "Передан не валиднй target");
 
-        const summary = await this.getFeedbackListWithDataByTarget(targetKey, targetId, statusKey, skip, limit).toPromise();
+        const summary = await this.getFeedbackListWithDataByTarget(targetKey, targetId, statusKey, skip, limit, userId).toPromise();
 
         res.send(summary);
       } catch (e) {

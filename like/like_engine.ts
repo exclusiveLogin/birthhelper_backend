@@ -1,6 +1,6 @@
 import { Context } from "../search/config";
 import { Observable, forkJoin, throwError, zip } from "rxjs";
-import { Like, LikeType } from "./model";
+import { Like, LikeType, Reactions } from "./model";
 import { map, mapTo, switchMap, tap } from "rxjs/operators";
 import { escape } from "mysql";
 export class LikeEngine {
@@ -60,13 +60,16 @@ export class LikeEngine {
   }
   getStatsByFeedback(
     id: number,
-    type: LikeType
-  ): Observable<{ likes: Like[]; dislikes: Like[] }> {
+    type: LikeType,
+    userId: number,
+  ): Observable<Reactions> {
     const likeRequest = this.getBiRateByEntity(type, "like", id);
     const dislikeRequest = this.getBiRateByEntity(type, "dislike", id);
+    const likeRequestOwner = this.getBiRateByEntityOwnership(type, "like", id, userId);
+    const dislikeRequestOwner = this.getBiRateByEntityOwnership(type, "dislike", id, userId);
 
-    return forkJoin([likeRequest, dislikeRequest]).pipe(
-      map(([likes, dislikes]) => ({ likes, dislikes }))
+    return forkJoin([likeRequest, dislikeRequest, likeRequestOwner, dislikeRequestOwner]).pipe(
+      map(([likes, dislikes, likeOwner, dislikeOwner]) => ({ likes, dislikes, likeOwner, dislikeOwner }))
     );
   }
 
@@ -76,10 +79,23 @@ export class LikeEngine {
     entityId: number
   ): Observable<Like[]> {
     const q = `SELECT * FROM \`${rateType + "s"}\` 
-                    WHERE target_id = ${escape(
-                      entityId
-                    )} AND target_type = "${likeType}"`;
+                    WHERE target_id = ${escape(entityId)} 
+                    AND target_type = ${escape(likeType)}`;
     return this.context.dbe.queryList<Like>(q);
+  }
+
+  getBiRateByEntityOwnership(
+    likeType: LikeType,
+    rateType: "like" | "dislike",
+    entityId: number,
+    userId: number,
+  ): Observable<boolean> {
+    const q = `SELECT * FROM \`${rateType + "s"}\` 
+                    WHERE target_id = ${escape(entityId)} 
+                    AND target_type = ${escape(likeType)}
+                    AND user_id = ${escape(userId)}`;
+    return this.context.dbe.queryOnceOfList<Like>(q)
+      .pipe(map(like => !!like));
   }
 
   setLikeToFeedback(id: number, userId: number): Observable<unknown> {

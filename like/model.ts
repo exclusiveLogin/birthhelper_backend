@@ -9,3 +9,10 @@ export interface Like {
 }
 
 export type LikeStatusType = "active" | "deleted";
+
+export type Reactions = { 
+  likes: Like[]; 
+  dislikes: Like[], 
+  likeOwner: boolean, 
+  dislikeOwner: boolean,
+};
