@@ -1,5 +1,5 @@
 import { Context } from "../search/config";
-import { Observable, forkJoin, throwError, zip } from "rxjs";
+import { Observable, forkJoin, of, throwError, zip } from "rxjs";
 import { Like, LikeType, Reactions } from "./model";
 import { map, mapTo, switchMap, tap } from "rxjs/operators";
 import { escape } from "mysql";
@@ -105,7 +105,7 @@ export class LikeEngine {
                    (target_id, target_type, user_id) VALUES (
                     ${escape(id)}, 
                     "${targetType}",
-                    ${escape(userId)}, 
+                    ${escape(userId)}
                    )`;
     return this.context.dbe.query(q);
   }
@@ -117,8 +117,9 @@ export class LikeEngine {
                    (target_id, target_type, user_id) VALUES (
                     ${escape(id)}, 
                     "${targetType}",
-                    ${escape(userId)}, 
+                    ${escape(userId)}
                    )`;
+                   console.log(q);
     return this.context.dbe.query(q);
   }
 
@@ -129,7 +130,7 @@ export class LikeEngine {
                    (target_id, target_type, user_id) VALUES (
                     ${escape(id)}, 
                     "${targetType}",
-                    ${escape(userId)}, 
+                    ${escape(userId)}
                    )`;
     return this.context.dbe.query(q);
   }
@@ -141,7 +142,7 @@ export class LikeEngine {
                    (target_id, target_type, user_id) VALUES (
                     ${escape(id)}, 
                     "${targetType}",
-                    ${escape(userId)}, 
+                    ${escape(userId)}
                    )`;
     return this.context.dbe.query(q);
   }
@@ -162,8 +163,10 @@ export class LikeEngine {
     targetId: number
   ): Observable<unknown> {
     if (!targetId || !userId) return throwError("not valid existing data");
-    return this.removeAllReactionOfUserByEntity(userId, targetId, type).pipe(
-      switchMap(() => {
+    return this.getBiRateByEntityOwnership(type, 'like', targetId, userId).pipe(
+      switchMap((exist) => this.removeAllReactionOfUserByEntity(userId, targetId, type).pipe(mapTo(exist))),
+      switchMap((exist) => {
+        if (exist) return of(null);
         if (type === "comment") return this.setLikeToComment(targetId, userId);
         if (type === "feedback") return this.setLikeToFeedback(targetId, userId);
       }),
@@ -174,16 +177,15 @@ export class LikeEngine {
     type: LikeType,
     userId: number,
     targetId: number
-  ): Observable<boolean> {
+  ): Observable<unknown> {
     if (!targetId || !userId) return throwError("not valid existing data");
-    return this.removeAllReactionOfUserByEntity(userId, targetId, type).pipe(
-      tap(() => {
-        if (type === "comment")
-          return this.setDislikeToComment(targetId, userId);
-        if (type === "feedback")
-          return this.setDislikeToFeedback(targetId, userId);
+    return this.getBiRateByEntityOwnership(type, 'dislike', targetId, userId).pipe(
+      switchMap((exist) => this.removeAllReactionOfUserByEntity(userId, targetId, type).pipe(mapTo(exist))),
+      switchMap((exist) => {
+        if (exist) return of(null);
+        if (type === "comment") return this.setDislikeToComment(targetId, userId);
+        if (type === "feedback") return this.setDislikeToFeedback(targetId, userId);
       }),
-      mapTo(true)
     );
   }
 }

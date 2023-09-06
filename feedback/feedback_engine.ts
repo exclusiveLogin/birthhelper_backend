@@ -223,7 +223,7 @@ export class FeedbackEngine {
 
     return this.context.dbe
       .queryList<Feedback>(q).pipe(
-        switchMap((list) => list.length ? forkJoin([...list.map((fb) => this.getFeedbackWithData(fb.id))]) : of(list))
+        switchMap((list) => list.length ? forkJoin([...list.map((fb) => this.getFeedbackWithData(fb.id, userId))]) : of(list))
       );
   }
 
@@ -390,7 +390,7 @@ export class FeedbackEngine {
     );
   }
 
-  getFeedbackWithData(id: number, userId?: number): Observable<FeedbackResponse> {
+  getFeedbackWithData(id: number, userId: number): Observable<FeedbackResponse> {
     const feedbackRequest = this.getFeedbackById(id);
     const feedbackVotesRequest = this.getVotesByFeedback(id);
     const feedbackCommentsRequest = this.getCommentByFeedback(id, userId);
@@ -620,7 +620,7 @@ export class FeedbackEngine {
     official?: boolean
   ): Promise<number> {
     if (!(commentId || text || feedbackId || userId)) throw "not valid request items";
-    const feedback = await this.getFeedbackWithData(feedbackId).toPromise();
+    const feedback = await this.getFeedbackWithData(feedbackId, userId).toPromise();
     if(!feedback) throw "not exist feedback for reply";
 
     if(official) {
@@ -665,7 +665,7 @@ export class FeedbackEngine {
 
   async feedbackEdit(feedback: FeedbackDTO, userID: number): Promise<void> {
     if(!feedback?.id) throw "not id by feedback in request";
-    const oldFeedback = await this.getFeedbackWithData(feedback?.id).toPromise();
+    const oldFeedback = await this.getFeedbackWithData(feedback?.id, userID).toPromise();
     if(!oldFeedback) throw "feedback not exist";
 
     // remove old artifacts from feedback
@@ -864,6 +864,9 @@ export class FeedbackEngine {
 
     this.feedback.get("/listbycontragent/:contragentID", async (req, res) => {
       try {
+        // get userID
+        const userId = res.locals?.userId;
+
         const sectionKey: SectionKeys = this.sectionKeyMapper(
           req.query?.["section"] as string
         );
@@ -883,8 +886,8 @@ export class FeedbackEngine {
 
         const summary: { core: Feedback[]; slot: Feedback[] } = await this.getFeedbackListByContragent(contragentId, targetKey, sectionKey, statusKey);
 
-        const core = await Promise.all(summary?.core.map((cfb) => this.getFeedbackWithData(cfb.id).toPromise()) ?? []);
-        const slot = await Promise.all(summary?.slot.map((cfb) => this.getFeedbackWithData(cfb.id).toPromise()) ?? []);
+        const core = await Promise.all(summary?.core.map((cfb) => this.getFeedbackWithData(cfb.id, userId).toPromise()) ?? []);
+        const slot = await Promise.all(summary?.slot.map((cfb) => this.getFeedbackWithData(cfb.id, userId).toPromise()) ?? []);
 
         const result: FeedbackResponseByContragent = {
           total: (summary?.core?.length ?? 0) + (summary?.slot?.length ?? 0),
@@ -901,10 +904,13 @@ export class FeedbackEngine {
 
     this.feedback.get("/:id", async (req, res) => {
       try {
+        // get userID
+        const userId = res.locals?.userId;
+
         const feedbackId = Number(req.params.id);
         if (Number.isNaN(feedbackId))
           this.sendError(res, "Передан не валиднй feedback id");
-        const feedback = await this.getFeedbackWithData(feedbackId).toPromise();
+        const feedback = await this.getFeedbackWithData(feedbackId, userId).toPromise();
         if (!feedback) {
           this.sendError(res, "Отзыв не найден");
           return;
