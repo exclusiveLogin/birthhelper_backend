@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import express from "express";
 import cors from 'cors';
 import fs from 'fs';
@@ -19,7 +21,6 @@ import {LikeEngine} from "./like/like_engine";
 import {TagEngine} from "./tag/tag_engine";
 import {FeedbackEngine} from "./feedback/feedback_engine";
 import {VoteEngine} from "./vote/vote_engine";
-
 
 // context
 const context: Context = {
