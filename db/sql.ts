@@ -1,8 +1,8 @@
 import { sqlConfig } from "./sql.config";
-import { Observable, of, pipe } from "rxjs";
+import { Observable, of } from "rxjs";
 import { Context } from "../search/config";
 import { createPool } from "mysql";
-import { map, switchMap, tap } from "rxjs/operators";
+import { switchMap, tap } from "rxjs/operators";
 import { Entity } from "../entity/entity_engine";
 
 export class DataBaseService {

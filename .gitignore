@@ -3,3 +3,8 @@
 /.idea
 /uploads
 /dist
+
+.env*
+.flaskenv*
+!.env.project
+!.env.vault
