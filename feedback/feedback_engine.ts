@@ -55,6 +55,9 @@ export class FeedbackEngine {
             const token = await this.context.authorizationEngine.getToken(req);
             res.locals.userId =
                 await this.context.authorizationEngine.getUserIdByToken(token);
+
+            if(!res.locals.userId) throw 'user not defined by token' + token;
+            console.log('userCatcher: ', res.locals.userId, ' -> by token: ', token);
             next();
         } catch (e) {
             this.sendError(res, e);
