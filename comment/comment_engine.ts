@@ -28,7 +28,7 @@ export class CommentEngine {
       )
     );
   }
-  
+
   getAllCommentsByFeedback(
     id: number,
     filters: FilterParams,
@@ -113,6 +113,21 @@ export class CommentEngine {
     .pipe(
       map(result => result.insertId))
       .toPromise();
+  }
+
+  async editComment(commentId: number, newText: string, userId: number) {
+      //get exist comment by id
+      const existComment = await this.getCommentById(commentId).toPromise();
+      if (!existComment) throw "not exixt comment for edit";
+      if (existComment.user_id !== userId ) throw "author not permitted fo edit comment";
+      await this.branchComment(commentId);
+
+      return await this.addCommentToFeedback(
+          existComment.feedback_id,
+          newText, existComment.user_id,
+          existComment.comment_id,
+          existComment.status === 'official'
+      );
   }
 
   deleteCommentById(id: number): Observable<unknown> {

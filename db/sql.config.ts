@@ -1,7 +1,7 @@
 import { PoolConfig } from "mysql";
 
 const host = process.env.HOST || 'localhost';
-const user = process.env.USER;
+const user = process.env.DBUSER;
 const database = process.env.DB;
 const password = process.env.PASSWORD;
 const acquireTimeout: number = process.env.QUERY_TIMEOUT ? parseInt(process.env.QUERY_TIMEOUT) : 30000;

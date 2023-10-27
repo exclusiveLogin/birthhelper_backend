@@ -3,11 +3,13 @@ import { Like } from "like/model";
 export type FeedbackCommentStatus =
     | "pending"
     | "approved"
-    | "rejected";
+    | "rejected"
+    | "deleted"
+    | "branched"
+    | "official";
 
 export type FeedbackCommentType =
     | "master"
-    | "answer"
     | "reply";
 
 export interface Comment {
