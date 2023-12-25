@@ -1,7 +1,6 @@
 FROM node:18.17.1
 COPY . /usr/src/app
 WORKDIR /usr/src/app
-RUN npm install -g npm@latest
 RUN rm dist/ -rf
 RUN mkdir dist && cd dist && mkdir upload
 
