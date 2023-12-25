@@ -13,6 +13,7 @@ export interface FeedbackLikeDTO {
 
 export interface FeedbackDTO {
     id?: number;
+    feedback_id?: number;
     section?: SectionKeys;
     action: FeedbackAction;
     status: FeedbackStatus

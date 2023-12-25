@@ -644,12 +644,12 @@ export class FeedbackEngine {
 
     async replyByFeedbackComment(
         commentId: number,
-        text: string,
+        comment: string,
         feedbackId: number,
         userId: number,
         official?: boolean
     ): Promise<number> {
-        if (!(commentId || text || feedbackId || userId)) throw "not valid request items";
+        if (!(commentId || comment || feedbackId || userId)) throw "not valid request items";
         const feedback = await this.getFeedbackWithData(feedbackId, userId).toPromise();
         if (!feedback) throw "not exist feedback for reply";
 
@@ -660,7 +660,7 @@ export class FeedbackEngine {
 
         return this.context.commentEngine.addCommentToFeedback(
             feedbackId,
-            text,
+            comment,
             userId,
             commentId,
             official
@@ -1001,7 +1001,7 @@ export class FeedbackEngine {
                 switch (feedback.action) {
                     case "CREATE":
                         await this.feedbackCreateGrantsCheck(res);
-                        await this.feedbackCreateRateLimitCheck(userId, <EntityKeys>feedback.target_entity_key, feedback.target_entity_id, res);
+                        // await this.feedbackCreateRateLimitCheck(userId, <EntityKeys>feedback.target_entity_key, feedback.target_entity_id, res);
                         returnedId = await this.feedbackCreateAction(feedback, userId);
                         result = "ok";
                         break;
@@ -1062,19 +1062,16 @@ export class FeedbackEngine {
                     case "ISSUES":
                         break;
                     case "REPLY":
-                        const {id, comment_id, comment, status} = feedback;
-                        const editReplyMode = !!id;
+                        const {comment_id, comment, status} = feedback;
                         const replyOfficiailMode = status === "official";
 
                         const repliedComment = await this.context.commentEngine.getCommentById(comment_id).toPromise();
                         if (!repliedComment) throw "not replyable comment, comment_id not found";
 
-                        // проверка рейтлимита только если это не ответ КА и не редактирование
-                        if (!editReplyMode && !replyOfficiailMode) await this.feedbackReplyRateLimitCheck(userId, comment_id, res);
+                        // проверка рейтлимита
+                        // if()await this.feedbackReplyRateLimitCheck(userId, comment_id, res);
 
-                        returnedId = editReplyMode ?
-                            await this.context.commentEngine.editComment(id, comment, userId) :
-                            await this.replyByFeedbackComment(repliedComment.id, comment, repliedComment.feedback_id, userId, replyOfficiailMode);
+                        await this.replyByFeedbackComment(repliedComment.id, comment, repliedComment.feedback_id, userId, replyOfficiailMode);
                         result = "ok";
                         console.log("repliedComment:", repliedComment, 'result: ',  result, 'returnedId: ', returnedId);
                         break;

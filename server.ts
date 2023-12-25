@@ -1,5 +1,8 @@
 import dotenv from 'dotenv';
-dotenv.config();
+const cfg = dotenv.config();
+
+console.log('dotenv:', cfg);
+
 import express from "express";
 import cors from 'cors';
 import fs from 'fs';
