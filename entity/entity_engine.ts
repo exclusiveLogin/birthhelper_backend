@@ -5,7 +5,11 @@ import fs from "fs";
 import multer from "multer";
 import { CacheEngine } from "../cache.engine/cache_engine";
 import { entityRepo } from "./entity_repo";
-import { Entity as EntityConfig, EntityKeys, EntityRepo } from "./entity_repo.model";
+import {
+  Entity as EntityConfig,
+  EntityKeys,
+  EntityRepo,
+} from "./entity_repo.model";
 import { SearchEngine, Summary } from "../search/engine";
 import { Context, SectionKeys } from "../search/config";
 import {
@@ -336,7 +340,7 @@ export class EntityEngine {
     } catch (e) {
       res.status(500);
       res.send({ error: e });
-      console.log(e);
+      // console.log(e);
     }
   }
 
@@ -537,7 +541,7 @@ export class EntityEngine {
       fields.push(...entities["ent_contragents"].fields);
     }
     // чистим скрытые поля
-    if(hidedFields?.length) {
+    if (hidedFields?.length) {
       provider = this.hider(provider, hidedFields);
     }
     // ОБОГОЩАЕМ сущности
@@ -774,9 +778,12 @@ export class EntityEngine {
     );
   }
 
-  hider<T extends Entity>(pipeline: Observable<T[]>, hidedFields: string[] = []): Observable<T[]> {
+  hider<T extends Entity>(
+    pipeline: Observable<T[]>,
+    hidedFields: string[] = []
+  ): Observable<T[]> {
     return pipeline.pipe(
-      tap(list => list.forEach(entity => hideFields(entity, hidedFields)))
+      tap((list) => list.forEach((entity) => hideFields(entity, hidedFields)))
     );
   }
   metanizer<T extends Entity>(
@@ -1031,13 +1038,28 @@ export class EntityEngine {
     }
   }
 
-  async getCoreContragent(contragentId: number, contragentKey: EntityKeys): Promise<Entity & {contragent?: number}> {
-    return this.getEntities(contragentKey, null, null, contragentId).pipe(map(list => list[0])).toPromise();;
+  async getCoreContragent(
+    contragentId: number,
+    contragentKey: EntityKeys
+  ): Promise<Entity & { contragent?: number }> {
+    return this.getEntities(contragentKey, null, null, contragentId)
+      .pipe(map((list) => list[0]))
+      .toPromise();
   }
 
-  async getNestesContragent(contragentId: number, section: SectionKeys): Promise<Entity> {
-    const entKey: EntityKeys = section === 'clinic' ? 'ent_clinic_contragents' : 'ent_consultation_contragents';
-    return this.getEntities(entKey, null, {contragent: contragentId.toString()}).pipe(map(list => list[0])).toPromise();
+  async getNestesContragent(
+    contragentId: number,
+    section: SectionKeys
+  ): Promise<Entity> {
+    const entKey: EntityKeys =
+      section === "clinic"
+        ? "ent_clinic_contragents"
+        : "ent_consultation_contragents";
+    return this.getEntities(entKey, null, {
+      contragent: contragentId.toString(),
+    })
+      .pipe(map((list) => list[0]))
+      .toPromise();
   }
 
   getRouter(): Router {

@@ -26,9 +26,9 @@ type TypeSection<T = any> = {
   [k in SectionKeys]: Hashed<T>;
 };
 
-export interface SearchStore extends TypeSection<string> {}
-export interface SummaryStore extends TypeSection<Summary[]> {}
-export interface FilterStore extends TypeSection<FilterSection> {}
+export type SearchStore = TypeSection<string>;
+export type SummaryStore = TypeSection<Summary[]>;
+export type FilterStore = TypeSection<FilterSection>;
 
 // при сильных различиях расширить условным generic
 export type Summary = Partial<SummaryPrice & SummaryRate> & { id: number };

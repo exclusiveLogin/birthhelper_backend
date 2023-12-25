@@ -1,10 +1,10 @@
 import { Context } from "../search/config";
 import { Comment } from "./model";
-import { MonoTypeOperatorFunction, Observable, UnaryFunction, forkJoin, of, pipe } from "rxjs";
-import { map, mapTo, switchMap, tap } from "rxjs/operators";
+import { MonoTypeOperatorFunction, Observable, forkJoin, of, pipe } from "rxjs";
+import { map, switchMap } from "rxjs/operators";
 import { OkPacket, escape } from "mysql";
 import { FilterParams } from "entity/entity_engine";
-import { Like, Reactions } from "like/model";
+import { Reactions } from "like/model";
 
 export class CommentEngine {
   context: Context;
@@ -32,7 +32,7 @@ export class CommentEngine {
   getAllCommentsByFeedback(
     id: number,
     filters: FilterParams,
-    userId: number,
+    userId: number
   ): Observable<Comment[]> {
     filters["feedback_id"] = id.toString();
     return this.context.entityEngine
@@ -40,21 +40,18 @@ export class CommentEngine {
       .pipe(this.getReactionPipe(userId));
   }
 
-  getCommentsByParentId(
-    id: number,
-    filters: FilterParams,
-    userId: number,
-  ): Observable<Comment[]> {
-    filters["comment_id"] = id.toString();
-    return this.context.entityEngine
-      .getEntities<Comment>("ent_comments", null, filters)
+  getCommentsByParentId(id: number, userId: number): Observable<Comment[]> {
+    const q = `SELECT * 
+    FROM \`comments\`
+    WHERE comment_id = ${escape(id)}
+    AND status NOT IN ('branched', 'pending', 'deleted', 'rejected')`;
+
+    return this.context.dbe
+      .queryList<Comment>(q)
       .pipe(this.getReactionPipe(userId));
   }
 
-  getStatsByComment(
-    id: number,
-    userId: number,
-  ): Observable<Reactions> {
+  getStatsByComment(id: number, userId: number): Observable<Reactions> {
     return this.context.likeEngine.getStatsByFeedback(id, "comment", userId);
   }
 
@@ -66,13 +63,15 @@ export class CommentEngine {
 
   getMasterCommentByFeedbackId(
     id: number,
-    userId: number,
-    ): Observable<Comment> {
+    userId: number
+  ): Observable<Comment> {
     const q = `SELECT *, 
                     (SELECT COUNT(*) 
                         FROM \`comments\` 
-                        WHERE comment_id = com.id) as replies
-                         FROM \`comments\` as com 
+                        WHERE comment_id = com.id
+                        AND status NOT IN ('branched', 'pending', 'deleted', 'rejected')
+                        ) as replies
+                    FROM \`comments\` as com 
                     WHERE feedback_id = ${escape(id)}
                     AND comment_id IS NULL
                     AND status NOT IN ('branched', 'pending', 'deleted', 'rejected')
@@ -89,7 +88,7 @@ export class CommentEngine {
     comment: string,
     userId: number,
     parent?: number,
-    offical?: boolean,
+    offical?: boolean
   ): Promise<number> {
     const q = `INSERT INTO comments 
                     (
@@ -105,29 +104,31 @@ export class CommentEngine {
                         ${escape(userId)},
                         ${escape(comment)},
                         ${escape(parent ?? null)},
-                        ${escape(offical ? 'official' : 'approved')},
-                        ${escape(parent ? 'reply' : 'master')}
+                        ${escape(offical ? "official" : "approved")},
+                        ${escape(parent ? "reply" : "master")}
                     )`;
 
-    return this.context.dbe.query<OkPacket>(q)
-    .pipe(
-      map(result => result.insertId))
+    return this.context.dbe
+      .query<OkPacket>(q)
+      .pipe(map((result) => result.insertId))
       .toPromise();
   }
 
   async editComment(commentId: number, newText: string, userId: number) {
-      //get exist comment by id
-      const existComment = await this.getCommentById(commentId).toPromise();
-      if (!existComment) throw "not exixt comment for edit";
-      if (existComment.user_id !== userId ) throw "author not permitted fo edit comment";
-      await this.branchComment(commentId);
+    //get exist comment by id
+    const existComment = await this.getCommentById(commentId).toPromise();
+    if (!existComment) throw "not exixt comment for edit";
+    if (existComment.user_id !== userId)
+      throw "author not permitted fo edit comment";
+    await this.branchComment(commentId);
 
-      return await this.addCommentToFeedback(
-          existComment.feedback_id,
-          newText, existComment.user_id,
-          existComment.comment_id,
-          existComment.status === 'official'
-      );
+    return await this.addCommentToFeedback(
+      existComment.feedback_id,
+      newText,
+      existComment.user_id,
+      existComment.comment_id,
+      existComment.status === "official"
+    );
   }
 
   deleteCommentById(id: number): Observable<unknown> {
@@ -141,12 +142,14 @@ export class CommentEngine {
     const q = `UPDATE \`comments\` 
                 SET \`status\` = "branched" 
                 WHERE \`comments\`.\`feedback_id\` = ${escape(id)} 
-                AND \`comments\`.\`comment_id\` IS NULL;`
+                AND \`comments\`.\`comment_id\` IS NULL;`;
     return this.context.dbe.query<OkPacket>(q).toPromise();
   }
 
   branchComment(commentId: number): Promise<OkPacket> {
-    const q = `UPDATE \`comments\` SET \`status\` = "branched" WHERE \`comments\`.\`id\` = ${escape(commentId)};`
+    const q = `UPDATE \`comments\` SET \`status\` = "branched" WHERE \`comments\`.\`id\` = ${escape(
+      commentId
+    )};`;
     return this.context.dbe.query<OkPacket>(q).toPromise();
   }
 }

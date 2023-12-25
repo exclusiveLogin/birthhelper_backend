@@ -11,17 +11,17 @@ export class LikeEngine {
   }
 
   removeReactionsByFeedback(id: number): Observable<unknown> {
-      const like_q = `DELETE FROM \`likes\`
+    const like_q = `DELETE FROM \`likes\`
                 WHERE target_type="feedback" 
                 AND target_id=${escape(id)}`;
-      const dislike_q = `DELETE FROM \`dislikes\`
+    const dislike_q = `DELETE FROM \`dislikes\`
                 WHERE target_type="feedback" 
                 AND target_id=${escape(id)}`;
 
-      return zip(
-        this.context.dbe.query(like_q),
-        this.context.dbe.query(dislike_q)
-      );   
+    return zip(
+      this.context.dbe.query(like_q),
+      this.context.dbe.query(dislike_q)
+    );
   }
 
   removeReactionsByComment(id: number): Observable<unknown> {
@@ -31,12 +31,12 @@ export class LikeEngine {
     const dislike_q = `DELETE FROM \`dislikes\`
               WHERE target_type="comment" 
               AND target_id=${escape(id)}`;
-              
+
     return zip(
       this.context.dbe.query(like_q),
       this.context.dbe.query(dislike_q)
-    );   
-}
+    );
+  }
 
   removeAllReactionOfUserByEntity(
     userId: number,
@@ -61,15 +61,35 @@ export class LikeEngine {
   getStatsByFeedback(
     id: number,
     type: LikeType,
-    userId: number,
+    userId: number
   ): Observable<Reactions> {
     const likeRequest = this.getBiRateByEntity(type, "like", id);
     const dislikeRequest = this.getBiRateByEntity(type, "dislike", id);
-    const likeRequestOwner = this.getBiRateByEntityOwnership(type, "like", id, userId);
-    const dislikeRequestOwner = this.getBiRateByEntityOwnership(type, "dislike", id, userId);
+    const likeRequestOwner = this.getBiRateByEntityOwnership(
+      type,
+      "like",
+      id,
+      userId
+    );
+    const dislikeRequestOwner = this.getBiRateByEntityOwnership(
+      type,
+      "dislike",
+      id,
+      userId
+    );
 
-    return forkJoin([likeRequest, dislikeRequest, likeRequestOwner, dislikeRequestOwner]).pipe(
-      map(([likes, dislikes, likeOwner, dislikeOwner]) => ({ likes, dislikes, likeOwner, dislikeOwner }))
+    return forkJoin([
+      likeRequest,
+      dislikeRequest,
+      likeRequestOwner,
+      dislikeRequestOwner,
+    ]).pipe(
+      map(([likes, dislikes, likeOwner, dislikeOwner]) => ({
+        likes,
+        dislikes,
+        likeOwner,
+        dislikeOwner,
+      }))
     );
   }
 
@@ -88,14 +108,15 @@ export class LikeEngine {
     likeType: LikeType,
     rateType: "like" | "dislike",
     entityId: number,
-    userId: number,
+    userId: number
   ): Observable<boolean> {
     const q = `SELECT * FROM \`${rateType + "s"}\` 
                     WHERE target_id = ${escape(entityId)} 
                     AND target_type = ${escape(likeType)}
                     AND user_id = ${escape(userId)}`;
-    return this.context.dbe.queryOnceOfList<Like>(q)
-      .pipe(map(like => !!like));
+    return this.context.dbe
+      .queryOnceOfList<Like>(q)
+      .pipe(map((like) => !!like));
   }
 
   setLikeToFeedback(id: number, userId: number): Observable<unknown> {
@@ -119,7 +140,7 @@ export class LikeEngine {
                     "${targetType}",
                     ${escape(userId)}
                    )`;
-                   console.log(q);
+
     return this.context.dbe.query(q);
   }
 
@@ -163,13 +184,18 @@ export class LikeEngine {
     targetId: number
   ): Observable<unknown> {
     if (!targetId || !userId) return throwError("not valid existing data");
-    return this.getBiRateByEntityOwnership(type, 'like', targetId, userId).pipe(
-      switchMap((exist) => this.removeAllReactionOfUserByEntity(userId, targetId, type).pipe(mapTo(exist))),
+    return this.getBiRateByEntityOwnership(type, "like", targetId, userId).pipe(
+      switchMap((exist) =>
+        this.removeAllReactionOfUserByEntity(userId, targetId, type).pipe(
+          mapTo(exist)
+        )
+      ),
       switchMap((exist) => {
         if (exist) return of(null);
         if (type === "comment") return this.setLikeToComment(targetId, userId);
-        if (type === "feedback") return this.setLikeToFeedback(targetId, userId);
-      }),
+        if (type === "feedback")
+          return this.setLikeToFeedback(targetId, userId);
+      })
     );
   }
 
@@ -179,13 +205,24 @@ export class LikeEngine {
     targetId: number
   ): Observable<unknown> {
     if (!targetId || !userId) return throwError("not valid existing data");
-    return this.getBiRateByEntityOwnership(type, 'dislike', targetId, userId).pipe(
-      switchMap((exist) => this.removeAllReactionOfUserByEntity(userId, targetId, type).pipe(mapTo(exist))),
+    return this.getBiRateByEntityOwnership(
+      type,
+      "dislike",
+      targetId,
+      userId
+    ).pipe(
+      switchMap((exist) =>
+        this.removeAllReactionOfUserByEntity(userId, targetId, type).pipe(
+          mapTo(exist)
+        )
+      ),
       switchMap((exist) => {
         if (exist) return of(null);
-        if (type === "comment") return this.setDislikeToComment(targetId, userId);
-        if (type === "feedback") return this.setDislikeToFeedback(targetId, userId);
-      }),
+        if (type === "comment")
+          return this.setDislikeToComment(targetId, userId);
+        if (type === "feedback")
+          return this.setDislikeToFeedback(targetId, userId);
+      })
     );
   }
 }
