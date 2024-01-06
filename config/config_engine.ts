@@ -46,7 +46,7 @@ export class ConfigEngine {
     }
 
     sendError = (res: Response, err): void => {
-        console.log('Congif error: ', err);
+        console.log('Config error: ', err);
         res.status(500);
         res.end(JSON.stringify({ error: err}));
     }

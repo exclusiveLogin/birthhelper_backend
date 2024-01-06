@@ -45,7 +45,6 @@ export class CacheEngine {
     softClearByKey(key: string): void {
         const keys = Object.keys(this.store);
         const delKeys = keys.filter(k => k.includes(key));
-        console.log('softClearBykey keys', keys, delKeys);
         delKeys.forEach(k => delete this.store[k]);
     }
 

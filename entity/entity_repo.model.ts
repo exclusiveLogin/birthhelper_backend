@@ -24,6 +24,7 @@ export interface Entity extends Cached {
     createAffectionSectionKeys?: SectionKeys[],
     deleteAffectionSectionKeys?: SectionKeys[],
     permissions?: Permissions,
+    hiddenFields?: string[],
 }
 
 export type EntityFilterType = 'number' | 'string' | 'flag' | 'id';
@@ -94,6 +95,8 @@ export const EntityRepoKeys = [
     'ent_orders',
     'ent_lk_permission_type',
     'ent_lk_permissions',
+    'ent_vote_type',
+    'ent_comments',
 ] as const;
 
 export type EntityKeys = typeof EntityRepoKeys[number]
