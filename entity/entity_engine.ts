@@ -537,7 +537,9 @@ export class EntityEngine {
 
     provider = provider ?? this.getEntityPortion<T>(key, filters, skip, limit);
 
-    if (config.isContragent) {
+    provider = this.attributeEnricher(provider, key);
+
+    if (config.isContragent && !masterContragent) {
       fields.push(...entities["ent_contragents"].fields);
     }
     // чистим скрытые поля
@@ -786,6 +788,17 @@ export class EntityEngine {
       tap((list) => list.forEach((entity) => hideFields(entity, hidedFields)))
     );
   }
+
+  attributeEnricher<T extends Entity>(
+    pipeline: Observable<T[]>,
+    entKey: EntityKeys,
+  ): Observable<T[]> {
+    const config = entities[entKey];
+    return pipeline.pipe(
+      map((list) => list.map((entity) => ({...entity, isContragent: !!config?.isContragent, entityName: entKey})))
+    );
+  }
+
   metanizer<T extends Entity>(
     pipeline: Observable<T[]>,
     fields: EntityField[],

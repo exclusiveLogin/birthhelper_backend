@@ -2356,7 +2356,7 @@ export const entityRepo: EntityRepo = {
       },
     ],
   },
-  // Dicts
+
   ent_birthtype: {
     db_name: "birthtype",
     deleteAffectionSectionKeys: ["clinic"],
