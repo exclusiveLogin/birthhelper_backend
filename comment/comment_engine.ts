@@ -132,7 +132,7 @@ export class CommentEngine {
   }
 
   deleteCommentById(id: number): Observable<unknown> {
-    const q = `UPDATE FROM \`comments\`
+    const q = `UPDATE \`comments\`
                     SET status = "deleted"
                     WHERE id=${escape(id)}`;
     return this.context.dbe.query(q);

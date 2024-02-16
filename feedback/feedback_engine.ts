@@ -85,10 +85,38 @@ export class FeedbackEngine {
     }
 
     const isGranted =
-      await this.context.authorizationEngine.hasPermissionByUser(userId, 5);
+      await this.context.authorizationEngine.hasPermissionByUser(userId, 3);
     if (!(isGranted || existFeedback?.user_id === userId)) {
       res.status(401);
       throw new Error("Remove this Feedback not permited for you");
+    }
+  };
+
+  replyGrantsCheck = async (feedbackId: number, replyId: number, res: Response) => {
+    const userId = res.locals.userId;
+
+    if (!userId) {
+      res.status(401);
+      throw new Error("user not found");
+    }
+
+    const existFeedback = await this.getFeedbackById(feedbackId).toPromise();
+    if (!existFeedback) {
+      res.status(404);
+      throw new Error("feedback not found");
+    }
+
+    const existReply = await this.context.commentEngine.getCommentById(replyId).toPromise();
+    if (!existReply) {
+      res.status(404);
+      throw new Error("reply not found");
+    }
+
+    const isGranted =
+      await this.context.authorizationEngine.hasPermissionByUser(userId,3);
+    if (!(isGranted || existReply?.user_id === userId)) {
+      res.status(401);
+      throw new Error("Remove this Reply not permited for you");
     }
   };
 
@@ -819,6 +847,11 @@ export class FeedbackEngine {
     await this.removeFeedback(feedbackId);
   }
 
+  async replyDelete(replyId: number) {
+    if (!replyId) throw "not id by reply or comment in request";
+    return this.context.commentEngine.deleteCommentById(replyId).toPromise();
+  }
+
   async feedbackEdit(feedback: FeedbackDTO, userID: number): Promise<void> {
     if (!feedback?.id) throw "not id by feedback in request";
     const oldFeedback = await this.getFeedbackWithData(
@@ -1154,15 +1187,19 @@ export class FeedbackEngine {
         const userId = res.locals?.userId;
         // get body and typing to DTO
 
+        
+
         const cacheKey = `feedback_by_user_${userId}`;
         this.context.cacheEngine.softClearByKey(cacheKey);
 
         const feedback: FeedbackDTO = req.body;
         this.validateDTO(feedback);
 
+        const { id, comment_id, comment, status, action } = feedback;
+
         let returnedId: number = null;
         let result = "nope";
-        switch (feedback.action) {
+        switch (action) {
           case "CREATE":
             await this.feedbackCreateGrantsCheck(res);
             // await this.feedbackCreateRateLimitCheck(userId, <EntityKeys>feedback.target_entity_key, feedback.target_entity_id, res);
@@ -1177,10 +1214,13 @@ export class FeedbackEngine {
           case "REMOVE_FEEDBACK":
             await this.feedbackRemoveGrantsCheck(feedback.id, res);
             await this.feedbackDelete(feedback?.id);
-            returnedId = feedback?.id;
+            returnedId = id;
             result = "ok";
             break;
           case "REMOVE_COMMENT":
+            await this.replyGrantsCheck(id, comment_id, res);
+            await this.replyDelete(comment_id);
+            result = "ok";
             break;
           case "LIKE":
             feedback.comment_id
@@ -1222,8 +1262,6 @@ export class FeedbackEngine {
           case "ISSUES":
             break;
           case "REPLY":
-            // eslint-disable-next-line no-case-declarations
-            const { comment_id, comment, status } = feedback;
             // eslint-disable-next-line no-case-declarations
             const replyOfficiailMode = status === "official";
 
