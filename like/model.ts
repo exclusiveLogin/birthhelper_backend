@@ -1,9 +1,11 @@
-export type LikeType = "comment" | "feedback";
+export type LikeSource = "comment" | "feedback";
+export type LikeType = 'like' | 'dislike';
+
 export interface Like {
   id: number;
   status: LikeStatusType;
   target_id: number;
-  target_type: LikeType;
+  target_type: LikeSource;
   user_id: number;
   datetime_create: string;
 }

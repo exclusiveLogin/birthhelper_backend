@@ -15,13 +15,11 @@ import {
 import { escape, OkPacket } from "mysql";
 import { Comment } from "../comment/model";
 import { Vote } from "../vote/model";
-import { Like, Reactions } from "../like/model";
+import { Reactions } from "../like/model";
 import { map, switchMap, tap } from "rxjs/operators";
 import bodyparser from "body-parser";
 import { User } from "../models/user.interface";
 import { FeedbackChangeStatus, FeedbackDTO } from "./dto";
-import { FilterParams } from "entity/entity_engine";
-import { getFiltersByRequest } from "../db/sql.helper";
 import { EntityKeys } from "entity/entity_repo.model";
 import { LKPermission, LKPermissionType } from "auth/lk.permissions.model";
 
@@ -249,7 +247,7 @@ export class FeedbackEngine {
   };
 
   getFeedbackById(id: number): Observable<Feedback> {
-    const q = `SELECT * FROM \`feedback\` WHERE id=${escape(id)}`;
+    const q = `SELECT * FROM \`feedbacks\` WHERE id=${escape(id)}`;
     return this.context.dbe
       .queryList<Feedback>(q)
       .pipe(map(([feedback]) => feedback ?? null));
@@ -266,7 +264,7 @@ export class FeedbackEngine {
   ): Observable<Feedback> {
     const addQ = " ORDER BY datetime_create DESC LIMIT 1";
 
-    const q = `SELECT * FROM \`feedback\` 
+    const q = `SELECT * FROM \`feedbacks\` 
                 WHERE user_id=${escape(userID)}
                 AND status NOT IN ("deleted")
                 AND target_entity_id=${escape(targetID)}
@@ -311,7 +309,7 @@ export class FeedbackEngine {
       skip ? " LIMIT " + limit + " OFFSET " + skip : " LIMIT " + limit
     }`;
 
-    const q = `SELECT * FROM \`feedback\` 
+    const q = `SELECT * FROM \`feedbacks\` 
                 WHERE user_id=${escape(userId)}
                 AND status NOT IN ("pending", "deleted")
                 ${sectionStr}
@@ -343,7 +341,7 @@ export class FeedbackEngine {
       skip ? " LIMIT " + limit + " OFFSET " + skip : " LIMIT " + limit
     }`;
 
-    const q = `SELECT * FROM \`feedback\`
+    const q = `SELECT * FROM \`feedbacks\`
                 WHERE target_entity_key = ${escape(targetEntityKey)} 
                 AND target_entity_id = ${escape(targetId)}
                 AND status NOT IN ("pending", "deleted")
@@ -400,7 +398,7 @@ export class FeedbackEngine {
     const statusStr = status ? ` AND status = ${escape(status)}` : "";
     const contragentStr = ` AND target_entity_key = ${escape(targetKey)} `;
 
-    const q = `SELECT * FROM \`feedback\`
+    const q = `SELECT * FROM \`feedbacks\`
                     WHERE 1
                     ${statusStr}
                     ${contragentStr}
@@ -414,11 +412,11 @@ export class FeedbackEngine {
     section?: SectionKeys,
     status?: FeedbackStatus
   ): Promise<Feedback[]> {
-    const q = `SELECT \`feedback\`.* 
-                    FROM \`feedback\`
+    const q = `SELECT \`feedbacks\`.* 
+                    FROM \`feedbacks\`
                     INNER JOIN \`service_slot\` 
-                    ON \`feedback\`.\`target_entity_id\` = \`service_slot\`.\`id\`
-                    AND \`feedback\`.\`target_entity_key\` = \`service_slot\`.\`entity_key\` 
+                    ON \`feedbacks\`.\`target_entity_id\` = \`service_slot\`.\`id\`
+                    AND \`feedbacks\`.\`target_entity_key\` = \`service_slot\`.\`entity_key\` 
                     WHERE \`service_slot\`.\`id\` 
                     IN (
                         SELECT \`id\` 
@@ -461,7 +459,7 @@ export class FeedbackEngine {
   ): Observable<{ total: number; perpage: number }> {
     const statusStr = status ? ` AND status = ${escape(status)}` : "";
 
-    const q = `SELECT COUNT(*) as total, 20 as portion FROM feedback 
+    const q = `SELECT COUNT(*) as total, 20 as portion FROM feedbacks 
               WHERE target_entity_key = ${escape(targetKey)} 
               AND target_entity_id = ${escape(targetId)}
               AND status NOT IN ("pending", "deleted")
@@ -480,7 +478,7 @@ export class FeedbackEngine {
       section === "clinic" ? 'AND section = "clinic"' : ""
     }${section === "consultation" ? 'AND section = "consultation"' : ""}`;
 
-    const q = `SELECT COUNT(*) as total, 20 as portion FROM feedback 
+    const q = `SELECT COUNT(*) as total, 20 as portion FROM feedbacks 
               WHERE user_id = ${escape(userId)}
               AND status NOT IN ("pending", "deleted")
               ${statusStr}
@@ -572,7 +570,7 @@ export class FeedbackEngine {
                         AVG(rate) as avr 
                     FROM votes 
                     WHERE feedback_id 
-                    IN (SELECT id FROM feedback 
+                    IN (SELECT id FROM feedbacks 
                         WHERE target_entity_key = "${targetKey}" 
                         AND target_entity_id = ${targetId}
                         AND status NOT IN ("pending", "deleted")
@@ -596,7 +594,7 @@ export class FeedbackEngine {
                 JOIN vote_type ON vote_type.slug = votes.vote_slug
                 WHERE feedback_id 
                 IN (
-                    SELECT id FROM feedback 
+                    SELECT id FROM feedbacks 
                     WHERE target_entity_key = ${escape(targetKey)} 
                     AND target_entity_id = ${escape(targetId)} 
                     AND status NOT IN ("pending", "deleted")
@@ -662,7 +660,7 @@ export class FeedbackEngine {
     //   contragentId = await this.context.slotEngine.getContragentIdBySlot(target_entity_id, target_entity_key as EntityKeys);
     // }
 
-    const q = `INSERT INTO \`feedback\` 
+    const q = `INSERT INTO \`feedbacks\` 
                    (section, target_entity_key, target_entity_id, user_id, status) VALUES (
                     ${escape(feedback.section)}, 
                     ${escape(feedback.target_entity_key)}, 
@@ -674,14 +672,14 @@ export class FeedbackEngine {
   }
 
   updateFeedback(feedbackId: number): Promise<OkPacket> {
-    const q = `UPDATE \`feedback\` SET \`datetime_update\` = NOW() WHERE \`feedback\`.\`id\` = ${escape(
+    const q = `UPDATE \`feedbacks\` SET \`datetime_update\` = NOW() WHERE \`feedbacks\`.\`id\` = ${escape(
       feedbackId
     )};`;
     return this.context.dbe.query<OkPacket>(q).toPromise();
   }
 
   removeFeedback(feedbackId: number): Promise<OkPacket> {
-    const q = `UPDATE \`feedback\` SET \`status\` = "deleted" WHERE \`feedback\`.\`id\` = ${escape(
+    const q = `UPDATE \`feedbacks\` SET \`status\` = "deleted" WHERE \`feedbacks\`.\`id\` = ${escape(
       feedbackId
     )};`;
     return this.context.dbe.query<OkPacket>(q).toPromise();
@@ -722,7 +720,7 @@ export class FeedbackEngine {
     id: number,
     status: FeedbackStatus
   ): Observable<FeedbackChangeStatus> {
-    const q = `UPDATE feedback SET status = ${escape(
+    const q = `UPDATE feedbacks SET status = ${escape(
       status
     )} WHERE id = ${escape(id)}`;
     return this.context.dbe
@@ -1071,12 +1069,13 @@ export class FeedbackEngine {
     this.feedback.get("/replies/:commentID", async (req, res) => {
       try {
         const commentID = Number(req.params?.["commentID"]);
+        const userId = res.locals?.userId;
 
         if (Number.isNaN(commentID) || !commentID)
           this.sendError(res, "Передан не валиднй commentID");
 
         const comments = await this.getCommentsByMasterComment(
-          commentID
+          commentID, userId
         ).toPromise();
 
         res.send(comments);
