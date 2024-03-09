@@ -1,7 +1,7 @@
 import { Context } from "../search/config";
 import { Observable, forkJoin, of, throwError, zip } from "rxjs";
-import { Like, LikeType, Reactions } from "./model";
-import { map, mapTo, switchMap, tap } from "rxjs/operators";
+import {Like, LikeSource, LikeType, Reactions} from "./model";
+import { map, mapTo, switchMap } from "rxjs/operators";
 import { escape } from "mysql";
 export class LikeEngine {
   context: Context;
@@ -41,7 +41,7 @@ export class LikeEngine {
   removeAllReactionOfUserByEntity(
     userId: number,
     entityId: number,
-    targetType: LikeType
+    targetType: LikeSource
   ): Observable<unknown> {
     const like_q = `DELETE FROM \`likes\`
                     WHERE user_id=${escape(userId)} 
@@ -60,7 +60,7 @@ export class LikeEngine {
   }
   getStatsByFeedback(
     id: number,
-    type: LikeType,
+    type: LikeSource,
     userId: number
   ): Observable<Reactions> {
     const likeRequest = this.getBiRateByEntity(type, "like", id);
@@ -94,26 +94,28 @@ export class LikeEngine {
   }
 
   getBiRateByEntity(
+    likeSource: LikeSource,
     likeType: LikeType,
-    rateType: "like" | "dislike",
     entityId: number
   ): Observable<Like[]> {
-    const q = `SELECT * FROM \`${rateType + "s"}\` 
+    const q = `SELECT * FROM \`${likeType + "s"}\` 
                     WHERE target_id = ${escape(entityId)} 
-                    AND target_type = ${escape(likeType)}`;
+                    AND target_type = ${escape(likeSource)}`;
+
     return this.context.dbe.queryList<Like>(q);
   }
 
   getBiRateByEntityOwnership(
+    likeSource: LikeSource,
     likeType: LikeType,
-    rateType: "like" | "dislike",
     entityId: number,
     userId: number
   ): Observable<boolean> {
-    const q = `SELECT * FROM \`${rateType + "s"}\` 
+    const q = `SELECT * FROM \`${likeType + "s"}\` 
                     WHERE target_id = ${escape(entityId)} 
-                    AND target_type = ${escape(likeType)}
+                    AND target_type = ${escape(likeSource)}
                     AND user_id = ${escape(userId)}`;
+
     return this.context.dbe
       .queryOnceOfList<Like>(q)
       .pipe(map((like) => !!like));
@@ -121,7 +123,7 @@ export class LikeEngine {
 
   setLikeToFeedback(id: number, userId: number): Observable<unknown> {
     if (!id || !userId) return throwError("not valid existing data");
-    const targetType: LikeType = "feedback";
+    const targetType: LikeSource = "feedback";
     const q = `INSERT INTO \`likes\` 
                    (target_id, target_type, user_id) VALUES (
                     ${escape(id)}, 
@@ -133,7 +135,7 @@ export class LikeEngine {
 
   setDislikeToFeedback(id: number, userId: number): Observable<unknown> {
     if (!id || !userId) return throwError("not valid existing data");
-    const targetType: LikeType = "feedback";
+    const targetType: LikeSource = "feedback";
     const q = `INSERT INTO \`dislikes\` 
                    (target_id, target_type, user_id) VALUES (
                     ${escape(id)}, 
@@ -146,7 +148,7 @@ export class LikeEngine {
 
   setLikeToComment(id: number, userId: number): Observable<unknown> {
     if (!id || !userId) return throwError("not valid existing data");
-    const targetType: LikeType = "comment";
+    const targetType: LikeSource = "comment";
     const q = `INSERT INTO \`likes\` 
                    (target_id, target_type, user_id) VALUES (
                     ${escape(id)}, 
@@ -158,7 +160,7 @@ export class LikeEngine {
 
   setDislikeToComment(id: number, userId: number): Observable<unknown> {
     if (!id || !userId) return throwError("not valid existing data");
-    const targetType: LikeType = "comment";
+    const targetType: LikeSource = "comment";
     const q = `INSERT INTO \`dislikes\` 
                    (target_id, target_type, user_id) VALUES (
                     ${escape(id)}, 
@@ -179,7 +181,7 @@ export class LikeEngine {
   }
 
   insertLike(
-    type: LikeType,
+    type: LikeSource,
     userId: number,
     targetId: number
   ): Observable<unknown> {
@@ -200,7 +202,7 @@ export class LikeEngine {
   }
 
   insertDislike(
-    type: LikeType,
+    type: LikeSource,
     userId: number,
     targetId: number
   ): Observable<unknown> {

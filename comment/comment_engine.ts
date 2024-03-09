@@ -4,7 +4,7 @@ import { MonoTypeOperatorFunction, Observable, forkJoin, of, pipe } from "rxjs";
 import { map, switchMap } from "rxjs/operators";
 import { OkPacket, escape } from "mysql";
 import { FilterParams } from "entity/entity_engine";
-import { Reactions } from "like/model";
+import {LikeSource, Reactions} from "like/model";
 
 export class CommentEngine {
   context: Context;
@@ -13,13 +13,13 @@ export class CommentEngine {
     this.context = context;
   }
 
-  getReactionPipe(userId: number): MonoTypeOperatorFunction<Comment[]> {
+  getReactionPipe(userId: number, likeSource: LikeSource): MonoTypeOperatorFunction<Comment[]> {
     return pipe(
       switchMap((comments: Comment[]) =>
         comments?.length
           ? forkJoin(
               comments.map((comment) =>
-                this.getStatsByComment(comment.id, userId).pipe(
+                this.getStatsByComment(comment.id, userId, likeSource).pipe(
                   map((reactions) => ({ ...comment, ...reactions } as Comment))
                 )
               )
@@ -37,7 +37,7 @@ export class CommentEngine {
     filters["feedback_id"] = id.toString();
     return this.context.entityEngine
       .getEntities<Comment>("ent_comments", null, filters)
-      .pipe(this.getReactionPipe(userId));
+      .pipe(this.getReactionPipe(userId, 'comment'));
   }
 
   getCommentsByParentId(id: number, userId: number): Observable<Comment[]> {
@@ -48,11 +48,11 @@ export class CommentEngine {
 
     return this.context.dbe
       .queryList<Comment>(q)
-      .pipe(this.getReactionPipe(userId));
+      .pipe(this.getReactionPipe(userId, 'comment'));
   }
 
-  getStatsByComment(id: number, userId: number): Observable<Reactions> {
-    return this.context.likeEngine.getStatsByFeedback(id, "comment", userId);
+  getStatsByComment(id: number, userId: number, likeSource: LikeSource): Observable<Reactions> {
+    return this.context.likeEngine.getStatsByFeedback(id, likeSource, userId);
   }
 
   getCommentById(id: number): Observable<Comment> {
@@ -78,7 +78,7 @@ export class CommentEngine {
                     ORDER BY datetime_update DESC 
                     LIMIT 1`;
     return this.context.dbe.queryList<Comment>(q).pipe(
-      this.getReactionPipe(userId),
+      this.getReactionPipe(userId, 'comment'),
       map((result) => result?.[0] ?? null)
     );
   }
@@ -132,7 +132,7 @@ export class CommentEngine {
   }
 
   deleteCommentById(id: number): Observable<unknown> {
-    const q = `UPDATE FROM \`comments\`
+    const q = `UPDATE \`comments\`
                     SET status = "deleted"
                     WHERE id=${escape(id)}`;
     return this.context.dbe.query(q);
