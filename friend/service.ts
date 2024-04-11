@@ -8,7 +8,6 @@ import {userCatcher, } from "../common/user-catcher";
 export class FriendEngine {
     private router = express.Router();
 
-
     sendError(res: Response, err, code?: number)  {
         console.log(
             "FRIEND SERVICE error: ",
@@ -65,8 +64,8 @@ export class FriendEngine {
 
     async getFriendsHandler(req: express.Request, res: express.Response) {
         try {
-            const userId = parseInt(res.locals.userId);
-            const pageNumber = parseInt(req.params.page);
+            const userId = parseInt(req.params['id'] ?? res.locals.userId);
+            const pageNumber = parseInt(req.query['page'] as string) || 1;
 
             const dto: FriendsRequestDTO = {
                 active: await this.#getActives(userId,pageNumber)
@@ -105,7 +104,7 @@ export class FriendEngine {
         this.router.get('/', this.getFriendsHandler.bind(this));
 
         // запрос друзей для userID
-        this.router.get('/:id');
+        this.router.get('/:id', this.getFriendsHandler.bind(this));
 
         // создание заявки...
         this.router.post('/');
@@ -119,8 +118,6 @@ export class FriendEngine {
         // Добавление юзера в блеклист
         this.router.put('/block/:id');
     }
-
-
 
     getRouter(): Router{
         return this.router;
