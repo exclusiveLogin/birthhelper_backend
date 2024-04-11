@@ -24,6 +24,7 @@ import {LikeEngine} from "./like/like_engine";
 import {TagEngine} from "./tag/tag_engine";
 import {FeedbackEngine} from "./feedback/feedback_engine";
 import {VoteEngine} from "./vote/vote_engine";
+import {FriendEngine} from "./friend/service";
 
 // context
 const context: Context = {
@@ -43,25 +44,28 @@ const context: Context = {
     tagEngine: null,
     feedbackEngine: null,
     voteEngine: null,
+    friendEngine: null,
 }
 
+/*** @todo поменять на static */
 // providers
 const CE = new CacheEngine(context);
 const DBE = new DataBaseService(context);
 const DE = new DictionaryEngine(context);
 const SE = new SearchEngine(context);
 const AE = new AuthorizationEngine(context);
-const EE: EntityEngine = new EntityEngine(context);
-const EEA: EntityEngine = new EntityEngine(context, true);
-const CNE: ContainerEngine = new ContainerEngine(context);
-const SLE: SlotEngine = new SlotEngine(context);
-const CFGE: ConfigEngine = new ConfigEngine(context);
-const OE: OrderEngine = new OrderEngine(context);
-const COME: CommentEngine = new CommentEngine(context);
-const LE: LikeEngine = new LikeEngine(context);
-const TE: TagEngine = new TagEngine(context);
-const FBE: FeedbackEngine = new FeedbackEngine(context);
-const VE: VoteEngine = new VoteEngine(context);
+const EE = new EntityEngine(context);
+const EEA = new EntityEngine(context, true);
+const CNE = new ContainerEngine(context);
+const SLE = new SlotEngine(context);
+const CFGE = new ConfigEngine(context);
+const OE = new OrderEngine(context);
+const COME = new CommentEngine(context);
+const LE = new LikeEngine(context);
+const TE = new TagEngine(context);
+const FBE = new FeedbackEngine(context);
+const VE = new VoteEngine(context);
+const FE = new FriendEngine(context);
 
 const app = express();
 function jsonHeaders(req, res, next) {

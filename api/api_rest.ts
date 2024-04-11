@@ -3,7 +3,7 @@ import * as express from "express";
 
 import {Context} from "../search/config";
 
-let api = express.Router();
+const api = express.Router();
 api.get('/', apiRootHandler);
 
 function apiRootHandler(req, res){
@@ -17,6 +17,7 @@ export function getAPIMiddleware(context: Context): Router {
     api.use('/containers', context.containerEngine.getRouter());
     api.use('/configurator', context.configEngine.getRouter());
     api.use('/cache', context.cacheEngine.getRouter());
+    api.use('/friends', context.friendEngine.getRouter());
     api.use('/', context.entityEngine.getRouter());
     return api;
 }

@@ -1,7 +1,6 @@
 import {SectionKeys} from "../search/config";
 import {Entity} from "../entity/entity_engine";
-import {Config, EntityType} from "../config/config_repo";
-import {EntityKeys} from "../entity/entity_repo.model";
+import {EntityType} from "../config/config_repo";
 
 export interface TitledList<T> {
     title: string;

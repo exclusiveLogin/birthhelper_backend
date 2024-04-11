@@ -1,6 +1,6 @@
 import * as express from "express";
 import moment from "moment";
-import { NextFunction, Request, Response, Router } from "express";
+import { Response, Router } from "express";
 import { Context, SectionKeys } from "../search/config";
 import { forkJoin, from, Observable, of } from "rxjs";
 import {
@@ -22,6 +22,7 @@ import { User } from "../models/user.interface";
 import { FeedbackChangeStatus, FeedbackDTO } from "./dto";
 import { EntityKeys } from "entity/entity_repo.model";
 import { LKPermission, LKPermissionType } from "auth/lk.permissions.model";
+import {userCatcher} from "../common/user-catcher";
 
 const jsonparser = bodyparser.json();
 
@@ -32,7 +33,7 @@ export class FeedbackEngine {
   constructor(context: Context) {
     context.feedbackEngine = this;
     this.context = context;
-    this.feedback.use(this.userCatcher);
+    this.feedback.use(userCatcher.bind(this, context));
   }
 
   sendError = (res: Response, err, code?: number): void => {
@@ -52,20 +53,6 @@ export class FeedbackEngine {
           "unknown error",
       })
     );
-  };
-
-  userCatcher = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const token = await this.context.authorizationEngine.getToken(req);
-      res.locals.userId =
-        await this.context.authorizationEngine.getUserIdByToken(token);
-
-      if (!res.locals.userId) throw "user not defined by token" + token;
-      // console.log("userCatcher: ", res.locals.userId, " -> by token: ", token);
-      next();
-    } catch (e) {
-      this.sendError(res, e);
-    }
   };
 
   feedbackRemoveGrantsCheck = async (feedbackId: number, res: Response) => {

@@ -9,12 +9,13 @@ import {ContainerEngine} from "../container/container_engine";
 import {SlotEngine} from "../slot/slot_engine";
 import { ConfigEngine } from "../config/config_engine";
 import { OrderEngine } from "../orders/orders_engine";
-import {SearchEngine} from "../search/engine";
+import {SearchEngine} from "./engine";
 import {FeedbackEngine} from "../feedback/feedback_engine";
 import {LikeEngine} from "../like/like_engine";
 import {CommentEngine} from "../comment/comment_engine";
 import {TagEngine} from "../tag/tag_engine";
 import {VoteEngine} from "../vote/vote_engine";
+import {FriendEngine} from "../friend/service";
 
 export type SearchConfig = {
     [section in SectionKeys]: { [key in typeof sectionConfig[section][number]]?: SearchSectionConfig};
@@ -87,6 +88,7 @@ export interface Context {
     commentEngine: CommentEngine;
     tagEngine: TagEngine;
     voteEngine: VoteEngine;
+    friendEngine: FriendEngine;
 }
 export const getSearchConfig = (context: Context): SearchConfig => {
     const searchConfig: SearchConfig = {
