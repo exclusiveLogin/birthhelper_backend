@@ -64,6 +64,7 @@ export class FriendEngine {
 
     async getFriendsHandler(req: express.Request, res: express.Response) {
         try {
+            const selfFriendsMode = !req.params?.['id'];
             const userId = parseInt(req.params['id'] ?? res.locals.userId);
             const pageNumber = parseInt(req.query['page'] as string) || 1;
 
@@ -71,12 +72,13 @@ export class FriendEngine {
                 active: await this.#getActives(userId,pageNumber)
                     .then((list) => Promise.all(list.map(item => new Friend(item, this.ctx).ready())))
                     .then(list => list.map(item => item.getSnapshot())),
-                banned: await this.#getBlocked(userId,pageNumber)
+                banned: selfFriendsMode ?
+                    await this.#getBlocked(userId,pageNumber)
                     .then((list) => Promise.all(list.map(item => new Banned(item, this.ctx).ready())))
-                    .then(list => list.map(item => item.getSnapshot())),
-                offered: await this.#getOffers(userId,pageNumber)
+                    .then(list => list.map(item => item.getSnapshot())) : null,
+                offered: selfFriendsMode ? await this.#getOffers(userId,pageNumber)
                     .then((list) => Promise.all(list.map(item => new Friend(item, this.ctx).ready())))
-                    .then(list => list.map(item => item.getSnapshot())),
+                    .then(list => list.map(item => item.getSnapshot())) : null,
             };
 
             res.send(dto);
