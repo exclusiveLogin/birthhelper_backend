@@ -14,9 +14,12 @@ export interface FriendModel {
 }
 
 export type BannedModel = Omit<FriendModel, 'status'> & {status: BlockedStatus};
-export type FriendStatus = 'approved' | 'blocked' | 'declined' | 'offered' | 'pending' | 'deleted';
-export type BlockedStatus = 'blocked' | 'unblocked';
+export type FriendStatus = 'approved' | 'blocked' | 'declined' | 'pending' | 'deleted';
+export type BlockedStatus = 'blocked';
 
+export interface EditFriendRequest {
+    status: FriendStatus;
+}
 
 export interface FriendMeta {
     active: {
@@ -28,6 +31,7 @@ export interface FriendMeta {
 export interface FriendsRequestDTO {
     active: ReturnType<Friend['getSnapshot']>[];
     offered: ReturnType<Friend['getSnapshot']>[];
+    pending: ReturnType<Friend['getSnapshot']>[];
     banned: ReturnType<Banned['getSnapshot']>[];
     meta?: {
         active: FriendMeta;

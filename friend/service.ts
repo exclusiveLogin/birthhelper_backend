@@ -1,7 +1,15 @@
 import {Context} from "../search/config";
 import * as express from "express";
 import {Response, Router} from "express";
-import {Banned, BannedModel, BlockedStatus, Friend, FriendModel, FriendsRequestDTO, FriendStatus} from "./models";
+import {
+    Banned,
+    BannedModel,
+    EditFriendRequest,
+    Friend,
+    FriendModel,
+    FriendsRequestDTO,
+    FriendStatus
+} from "./models";
 import { escape } from "mysql";
 import {userCatcher, } from "../common/user-catcher";
 import {EntityKeys} from "../entity/entity_repo.model";
@@ -31,34 +39,40 @@ export class FriendEngine {
     }
 
     async checkOwnership(id: number, userId: number) {
-        const record = await this.#getFriendRecordById(id);
+        const record = await this.#getFriendRecordById(id).then(result => result?.[0]);
         if(!record) throw 'Record is not exist';
-        const valid = record.user_id === userId || (record.target_key === 'ent_users' && record.target_id === userId);
 
+        const valid = record.user_id === userId || (record.target_key === 'ent_users' && record.target_id === userId);
         if (!valid) throw 'You not owner by record.user_id';
         return null;
     }
 
-    #getFriendRecordById(id: number): Promise<FriendModel> {
-        const q =
-            `SELECT * FROM \`friend_list\`
-            WHERE id=${escape(id)}
-            AND datetime_delete IS NULL`;
-
-        console.log(' getFriendRecordById q: ', q);
-
-        return this.ctx.dbe.queryOnceOfList<FriendModel>(q).toPromise();
-    }
-
-    #getFriendsByUserId(userId: number, status: FriendStatus = 'approved',  page = 1): Promise<FriendModel[]> {
+    #getFriendRecordById(id: number, status?: FriendStatus, page = 1): Promise<FriendModel[]> {
         const offset = page > 1 ? page * 20 : 0;
         const limit = 20;
         const q =
             `SELECT * FROM \`friend_list\`
-            WHERE (
-                user_id=${escape(userId)} 
-                OR (target_key="ent_users" AND target_id=${escape(userId)})
-                ) 
+            WHERE id=${escape(id)}
+            ${status ? ` AND status = ${escape(status)}` : ""}
+            AND datetime_delete IS NULL
+            LIMIT ${limit}
+            OFFSET ${offset}`;
+
+        console.log(' getFriendRecordById q: ', q);
+
+        return this.ctx.dbe.queryList<FriendModel>(q).toPromise();
+    }
+
+    #getFriendsByUserId(userId: number, status: FriendStatus = 'approved', self = true,  page = 1): Promise<FriendModel[]> {
+        const offset = page > 1 ? page * 20 : 0;
+        const limit = 20;
+        const target = status === 'pending' ?
+        self ? `user_id=${escape(userId)} ` : `target_key="ent_users" AND target_id=${escape(userId)}`
+            : `user_id=${escape(userId)} 
+               OR (target_key="ent_users" AND target_id=${escape(userId)})`;
+        const q =
+            `SELECT * FROM \`friend_list\`
+            WHERE ( ${target} ) 
             AND status=${escape(status)}
             AND datetime_delete IS NULL
             LIMIT ${limit}
@@ -69,49 +83,46 @@ export class FriendEngine {
         return this.ctx.dbe.queryList<FriendModel>(q).toPromise();
     }
 
-    async #getBlockedByUserId(userId: number, status: BlockedStatus = 'blocked', page = 1): Promise<BannedModel[]> {
-        const offset = page > 1 ? page * 20 : 0;
-        const limit = 20;
-        const q =
-            `SELECT *  FROM \`black_list\` 
-            WHERE user_id=${escape(userId)}
-            AND status=${escape(status)}
-            AND datetime_delete IS NULL
-            LIMIT ${limit}
-            OFFSET ${offset}`;
-
-        console.log(' getBlockedByUserId q: ', q);
-
-        return this.ctx.dbe.queryList<BannedModel>(q).toPromise();
-    }
-
     async #addFriend(userId: number, friendId: number, friendType: EntityKeys = 'ent_users') {
 
-        const exist = Boolean(await this.#getFriendsByUserId(friendId));
+        const _ = await this.#getFriendsByUserId(friendId);
+        const exist = Boolean(_?.length);
         if(exist) throw 'Friend record is exist';
 
-        const q = `INSERT INTO \`friend_list\` (user_id, target_key, target_id) VALUES (${userId}, ${friendId}, ${friendType})`;
+        const q = `INSERT INTO \`friend_list\` 
+                        (user_id, target_key, target_id) 
+                        VALUES (${escape(userId)}, ${escape(friendType)}, ${escape(friendId)})`;
+
         return this.ctx.dbe.query(q).toPromise();
     }
 
     async #editFriendRecord(id: number, newstatus: FriendStatus) {
-        const exist = Boolean(await this.#getFriendsByUserId(id));
-        if(exist) throw 'Friend record is not exist';
+        const exist = Boolean(await this.#getFriendRecordById(id));
+        if(!exist) throw 'Friend record is not exist';
 
         const q = `UPDATE \`friend_list\` SET status = ${escape(newstatus)} WHERE id = ${escape(id)}`;
         return this.ctx.dbe.query(q).toPromise();
     }
 
-    #getOffers(userId: number,  page = 1): Promise<FriendModel[]> {
-        return this.#getFriendsByUserId(userId, 'offered');
+    async #deleteFriendRecord(id: number) {
+        const exist = Boolean(await this.#getFriendRecordById(id));
+        if(!exist) throw 'Friend record is not exist';
+
+        const q = `UPDATE \`friend_list\` SET datetime_delete = NOW() WHERE id = ${escape(id)}`;
+        console.log('deleteFriendRecord q:', q);
+        return this.ctx.dbe.query(q).toPromise();
+    }
+
+    #getOffers(userId: number, self = true,  page = 1): Promise<FriendModel[]> {
+        return this.#getFriendsByUserId(userId, 'pending', self, page);
     }
 
     #getActives(userId: number,  page = 1): Promise<FriendModel[]> {
-        return this.#getFriendsByUserId(userId);
+        return this.#getFriendsByUserId(userId, 'approved', null, page);
     }
 
     #getBlocked(userId: number,  page = 1): Promise<BannedModel[]> {
-        return this.#getBlockedByUserId(userId);
+        return this.#getFriendRecordById(userId, 'blocked', page) as Promise<BannedModel[]>;
     }
 
     async getFriendsHandler(req: express.Request, res: express.Response) {
@@ -128,7 +139,10 @@ export class FriendEngine {
                     await this.#getBlocked(userId,pageNumber)
                     .then((list) => Promise.all(list.map(item => new Banned(item, this.ctx).ready())))
                     .then(list => list.map(item => item.getSnapshot())) : null,
-                offered: selfFriendsMode ? await this.#getOffers(userId,pageNumber)
+                offered: selfFriendsMode ? await this.#getOffers(userId, false, pageNumber)
+                    .then((list) => Promise.all(list.map(item => new Friend(item, this.ctx).ready())))
+                    .then(list => list.map(item => item.getSnapshot())) : null,
+                pending: selfFriendsMode ? await this.#getOffers(userId, true, pageNumber)
                     .then((list) => Promise.all(list.map(item => new Friend(item, this.ctx).ready())))
                     .then(list => list.map(item => item.getSnapshot())) : null,
             };
@@ -155,12 +169,27 @@ export class FriendEngine {
         try {
             const userId = parseInt(res.locals.userId);
             const friendRecordId = parseInt(req.params['id']);
-            const status = req.params['status'] as FriendStatus;
+            const {status} = req.body as EditFriendRequest;
 
             if(!status) throw 'new status is required';
 
-            await this.checkOwnership(userId, friendRecordId);
+            await this.checkOwnership(friendRecordId, userId);
             const result = await this.#editFriendRecord(friendRecordId, status);
+
+
+            res.send({success: true, result });
+        } catch (e) {
+            this.sendError(res, e.message || e);
+        }
+    }
+
+    async deleteFriendHandler(req: express.Request, res: express.Response) {
+        try {
+            const userId = parseInt(res.locals.userId);
+            const friendRecordId = parseInt(req.params['id']);
+
+            await this.checkOwnership(friendRecordId, userId);
+            const result = await this.#deleteFriendRecord(friendRecordId);
 
 
             res.send({success: true, result });
@@ -186,7 +215,7 @@ export class FriendEngine {
         this.router.patch('/:id', this.editFriendHandler.bind(this));
 
         // Удаление заявки или друга
-        this.router.delete('/:id');
+        this.router.delete('/:id', this.deleteFriendHandler.bind(this));
 
         // Добавление юзера в блеклист
         this.router.post('/block/:id');
