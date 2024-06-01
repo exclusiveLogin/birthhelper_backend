@@ -66,10 +66,13 @@ export class FriendEngine {
     #getFriendsByUserId(userId: number, status: FriendStatus = 'approved', self = true,  page = 1): Promise<FriendModel[]> {
         const offset = page > 1 ? page * 20 : 0;
         const limit = 20;
+
         const target = status === 'pending' ?
-        self ? `user_id=${escape(userId)} ` : `target_key="ent_users" AND target_id=${escape(userId)}`
-            : `user_id=${escape(userId)} 
-               OR (target_key="ent_users" AND target_id=${escape(userId)})`;
+            self ? `user_id=${escape(userId)} ` : `target_key="ent_users" 
+                    AND target_id=${escape(userId)}`
+                :   `user_id=${escape(userId)} 
+                    OR (target_key="ent_users" 
+                    AND target_id=${escape(userId)})`;
         const q =
             `SELECT * FROM \`friend_list\`
             WHERE ( ${target} ) 
@@ -97,7 +100,8 @@ export class FriendEngine {
     }
 
     async #editFriendRecord(id: number, newstatus: FriendStatus) {
-        const exist = Boolean(await this.#getFriendRecordById(id));
+        const _ = await this.#getFriendRecordById(id);
+        const exist = Boolean(_?.length);
         if(!exist) throw 'Friend record is not exist';
 
         const q = `UPDATE \`friend_list\` SET status = ${escape(newstatus)} WHERE id = ${escape(id)}`;
@@ -111,6 +115,43 @@ export class FriendEngine {
         const q = `UPDATE \`friend_list\` SET datetime_delete = NOW() WHERE id = ${escape(id)}`;
         console.log('deleteFriendRecord q:', q);
         return this.ctx.dbe.query(q).toPromise();
+    }
+
+    // Blockers
+    #getBlackRecordById(id: number): Promise<BannedModel> {
+        const q =
+            `SELECT * FROM \`black_list\`
+            WHERE id=${escape(id)}
+            AND datetime_delete IS NULL`;
+
+        console.log(' getFriendRecordById q: ', q);
+
+        return this.ctx.dbe.queryOnceOfList<BannedModel>(q).toPromise();
+    }
+
+    #getBlackListByUser(userId: number, page = 1): Promise<BannedModel[]> {
+        const offset = page > 1 ? page * 20 : 0;
+        const limit = 20;
+
+        const q =
+            `SELECT * FROM \`black_list\`
+            WHERE ( user_id=${escape(userId)} 
+               OR (target_key="ent_users" AND target_id=${escape(userId)}) )
+            AND datetime_delete IS NULL
+            LIMIT ${limit}
+            OFFSET ${offset}`;
+
+        console.log('getBlackListRecordByUser q: ', q);
+
+        return this.ctx.dbe.queryList<BannedModel>(q).toPromise();
+    }
+
+    async #blockRecord(id: number)  {
+        const exist = Boolean(await this.#getFriendRecordById(id));
+        if(exist) throw 'Friend record is not exist';
+
+        const black_exist = Boolean(await this.#getFriendRecordById(id));
+        if(black_exist) throw 'Friend record is not exist';
     }
 
     #getOffers(userId: number, self = true,  page = 1): Promise<FriendModel[]> {
@@ -198,6 +239,21 @@ export class FriendEngine {
         }
     }
 
+    async getBlackListHandler(req: express.Request, res: express.Response) {
+        try {
+            const selfFriendsMode = !(req.params?.['id']);
+
+            console.log('selfFriendsMode: ', selfFriendsMode, (req.params?.['id']), res.locals.userId);
+            const userId = parseInt(!selfFriendsMode ? req.params['id'] : res.locals.userId);
+            const pageNumber = parseInt(req.query['page'] as string) || 1;
+
+
+            res.send({success: true, selfFriendsMode, userId, pageNumber});
+        } catch (e) {
+            this.sendError(res, e.message || e);
+        }
+    }
+
     constructor(private ctx: Context) {
         ctx.friendEngine = this;
         this.router.use(userCatcher.bind(this, this.ctx));
@@ -216,6 +272,9 @@ export class FriendEngine {
 
         // Удаление заявки или друга
         this.router.delete('/:id', this.deleteFriendHandler.bind(this));
+
+        // Получить блеклист юзера
+        this.router.get('/block/:id', this.getBlackListHandler.bind(this));
 
         // Добавление юзера в блеклист
         this.router.post('/block/:id');
