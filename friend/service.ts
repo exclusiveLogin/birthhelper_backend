@@ -258,14 +258,18 @@ export class FriendEngine {
         ctx.friendEngine = this;
         this.router.use(userCatcher.bind(this, this.ctx));
         this.router.use(json())
-        // запрос друзей для текущего пользака
-        this.router.get('/', this.getFriendsHandler.bind(this));
 
-        // запрос друзей для userID
-        this.router.get('/:id', this.getFriendsHandler.bind(this));
+        // Получить блеклист юзера
+        this.router.get('/block', this.getBlackListHandler.bind(this));
+        // Получить блеклист юзера
 
-        // создание заявки...
-        this.router.post('/', this.createFriendHandler.bind(this));
+        this.router.get('/block/:id', this.getBlackListHandler.bind(this));
+        // Добавление юзера в блеклист
+
+        this.router.post('/block/:id');
+        // Удаление юзера из блеклиста
+
+        this.router.delete('/block/:id');
 
         // Изменение статуса заявки
         this.router.patch('/:id', this.editFriendHandler.bind(this));
@@ -273,14 +277,14 @@ export class FriendEngine {
         // Удаление заявки или друга
         this.router.delete('/:id', this.deleteFriendHandler.bind(this));
 
-        // Получить блеклист юзера
-        this.router.get('/block/:id', this.getBlackListHandler.bind(this));
 
-        // Добавление юзера в блеклист
-        this.router.post('/block/:id');
+        this.router.get('/', this.getFriendsHandler.bind(this));
 
-        // Удаление юзера из блеклиста
-        this.router.delete('/block/:id');
+        // запрос друзей для userID
+        this.router.get('/:id', this.getFriendsHandler.bind(this));
+
+        // создание заявки...
+        this.router.post('/', this.createFriendHandler.bind(this));
     }
 
     getRouter(): Router{
