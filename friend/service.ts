@@ -7,7 +7,7 @@ import {
     EditFriendRequest,
     Friend,
     FriendModel,
-    FriendsRequestDTO,
+    FriendsRequestDTO, FriendStateDTO,
     FriendStatus
 } from "./models";
 import { escape } from "mysql";
@@ -44,6 +44,15 @@ export class FriendEngine {
 
         const valid = record.user_id === userId || (record.target_key === 'ent_users' && record.target_id === userId);
         if (!valid) throw 'You not owner by record.user_id';
+        return null;
+    }
+
+    async checkBlackListRecordOwnership(id: number, userId: number) {
+        const record = await this.#getBlackRecordById(id).then(result => result?.[0]);
+        if(!record) throw 'Record is not exist';
+
+        const valid = record.user_id === userId;
+        if (!valid) throw 'You not owner by black list record';
         return null;
     }
 
@@ -109,11 +118,14 @@ export class FriendEngine {
     }
 
     async #deleteFriendRecord(id: number) {
-        const exist = Boolean(await this.#getFriendRecordById(id));
-        if(!exist) throw 'Friend record is not exist';
-
         const q = `UPDATE \`friend_list\` SET datetime_delete = NOW() WHERE id = ${escape(id)}`;
         console.log('deleteFriendRecord q:', q);
+        return this.ctx.dbe.query(q).toPromise();
+    }
+
+    async #deleteBlockRecord(id: number) {
+        const q = `UPDATE \`black_list\` SET datetime_delete = NOW() WHERE id = ${escape(id)}`;
+        console.log('deleteFriendBlackRecord q:', q);
         return this.ctx.dbe.query(q).toPromise();
     }
 
@@ -146,12 +158,25 @@ export class FriendEngine {
         return this.ctx.dbe.queryList<BannedModel>(q).toPromise();
     }
 
-    async #blockRecord(id: number)  {
-        const exist = Boolean(await this.#getFriendRecordById(id));
+    async #blockRecord(blackUserId: number, userId: number) {
+        // check user is friend
+        const records = await this.#getFriendRecordById(blackUserId)
+        const exist = Boolean(records?.length);
         if(exist) throw 'Friend record is not exist';
 
-        const black_exist = Boolean(await this.#getFriendRecordById(id));
+
+        // check user is not in black list
+        const black_records = await this.#getBlackListByUser(blackUserId) // rebuild
+        const black_exist = Boolean(black_records?.length);
         if(black_exist) throw 'Friend record is not exist';
+
+        const friendType = 'ent_users';
+
+        const q = `INSERT INTO \`black_list\` 
+                        (user_id, target_key, target_id) 
+                        VALUES (${escape(userId)}, ${escape(friendType)}, ${escape(blackUserId)})`;
+
+        return this.ctx.dbe.query(q).toPromise();
     }
 
     #getOffers(userId: number, self = true,  page = 1): Promise<FriendModel[]> {
@@ -189,6 +214,21 @@ export class FriendEngine {
             };
 
             res.send(dto);
+        } catch (e) {
+            this.sendError(res, e.message || e);
+        }
+    }
+
+    async getFriendStateHandler(req: express.Request, res: express.Response) {
+        try {
+            const userId = parseInt(res.locals.userId);
+
+
+            const dto: FriendStateDTO = {
+                isFriend: true,
+                canFriendOffer: true,
+                isBlocked: true,
+            }
         } catch (e) {
             this.sendError(res, e.message || e);
         }
@@ -239,12 +279,19 @@ export class FriendEngine {
         }
     }
 
+    /** fixme
+     *
+     * @param req
+     * @param res
+     */
     async getBlackListHandler(req: express.Request, res: express.Response) {
         try {
             const selfFriendsMode = !(req.params?.['id']);
 
             console.log('selfFriendsMode: ', selfFriendsMode, (req.params?.['id']), res.locals.userId);
             const userId = parseInt(!selfFriendsMode ? req.params['id'] : res.locals.userId);
+
+            if (userId) throw 'User cant self blocked';
             const pageNumber = parseInt(req.query['page'] as string) || 1;
 
 
@@ -254,22 +301,67 @@ export class FriendEngine {
         }
     }
 
+    async postBlackRecordHandler(req: express.Request, res: express.Response) {
+        try {
+            const id = parseInt(req.params['id']);
+            const userId = parseInt(res.locals.userId);
+
+            if(id === userId) throw 'User cant self blocked';
+
+            await this.#blockRecord(id, userId);
+
+            res.send({success: true, id, userId});
+        } catch (e) {
+            this.sendError(res, e.message || e);
+        }
+    }
+
+    async deleteBlackRecordHandler(req: express.Request, res: express.Response) {
+        try {
+            const id = parseInt(req.params['id']);
+            const userId = parseInt(res.locals.userId);
+
+            await this.checkBlackListRecordOwnership(id, userId);
+            await this.#deleteBlockRecord(id);
+
+            res.send({success: true, id, userId});
+        } catch (e) {
+            this.sendError(res, e.message || e);
+        }
+    }
+
+    async checkFriendRecordHandler(req: express.Request, res: express.Response) {
+        try {
+            const id = parseInt(req.params['id']);
+            const userId = parseInt(res.locals.userId);
+
+
+            res.send({success: true, id, userId});
+        } catch (e) {
+            this.sendError(res, e.message || e);
+        }
+    }
+
     constructor(private ctx: Context) {
         ctx.friendEngine = this;
         this.router.use(userCatcher.bind(this, this.ctx));
+        this.router.use(this.ctx.authorizationEngine.checkAccess.bind(ctx.authorizationEngine, 3))
         this.router.use(json())
 
         // Получить блеклист юзера
         this.router.get('/block', this.getBlackListHandler.bind(this));
+
         // Получить блеклист юзера
-
         this.router.get('/block/:id', this.getBlackListHandler.bind(this));
+
         // Добавление юзера в блеклист
+        this.router.post('/block/:id', this.postBlackRecordHandler.bind(this));
 
-        this.router.post('/block/:id');
         // Удаление юзера из блеклиста
+        this.router.delete('/block/:id', this.deleteBlackRecordHandler.bind(this));
 
-        this.router.delete('/block/:id');
+        // проверка Польака на статус дружбы
+        this.router.get('/check/:userid', this.checkFriendRecordHandler.bind(this));
 
         // Изменение статуса заявки
         this.router.patch('/:id', this.editFriendHandler.bind(this));
@@ -277,13 +369,13 @@ export class FriendEngine {
         // Удаление заявки или друга
         this.router.delete('/:id', this.deleteFriendHandler.bind(this));
 
-
+        // получение друзей
         this.router.get('/', this.getFriendsHandler.bind(this));
 
         // запрос друзей для userID
         this.router.get('/:id', this.getFriendsHandler.bind(this));
 
-        // создание заявки...
+        // создание заявки в друзья
         this.router.post('/', this.createFriendHandler.bind(this));
     }
 

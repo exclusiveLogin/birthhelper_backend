@@ -1,9 +1,8 @@
 import {NextFunction, Request, Response} from "express";
-import {Context} from "../search/config"
-
+import {Context} from "../search/config";
 const sendError = (res: Response, err: Error, code?: number): void => {
     console.log(
-        "userCatcher error: ",
+        "guestGuard error: ",
         (err.message ? err.message : err) ?? "unknown error"
     );
     if (res.statusCode === 200) {
@@ -20,17 +19,18 @@ const sendError = (res: Response, err: Error, code?: number): void => {
     );
 };
 
-const userCatcher = async (ctx: Context, req: Request, res: Response, next: NextFunction) => {
+const guestGuard = async (ctx: Context, req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = await ctx.authorizationEngine.getToken(req);
-        res.locals.userId = await ctx.authorizationEngine.getUserIdByToken(token);
+        const userID = parseInt(res.locals.userId);
 
-        if (!res.locals.userId) throw "user not defined by token" + token;
-        // console.log("userCatcher: ", res.locals.userId, " -> by token: ", token);
+        if (!userID) throw "guestGuard: user not defined by token";
+        const isGuest = await ctx.authorizationEngine.isGuest(userID);
+        if (isGuest) throw "guestGuard: user is guest, not allow access to this section";
+
         next();
     } catch (e) {
         sendError(res, e);
     }
 };
 
-export {userCatcher};
+export {guestGuard};

@@ -40,6 +40,12 @@ export interface FriendsRequestDTO {
     }
 }
 
+export interface FriendStateDTO {
+    isFriend: boolean;
+    isBlocked: boolean;
+    canFriendOffer: boolean;
+}
+
 export class Friend implements FriendModel{
     id: number;
     status: FriendStatus;

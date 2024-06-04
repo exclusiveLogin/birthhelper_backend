@@ -171,6 +171,10 @@ export class AuthorizationEngine {
       .toPromise();
   }
 
+  async isGuest(user_id: number): Promise<boolean> {
+    return this.getRoleByUserId(user_id).then(role => role.rank <= 1);
+  }
+
   async hasPermissionByToken(token: string, target: number): Promise<boolean> {
     const role = await this.getRoleByToken(token);
     return (role.rank - target || 0) >= 0;
