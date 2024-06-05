@@ -56,47 +56,47 @@ export class FriendEngine {
         return null;
     }
 
-    #checkIsFriend(userId: number, targetId: number): Promise<boolean> {
-        return Promise.all([
+    async #checkIsFriend(userId: number, targetId: number): Promise<boolean> {
+        const list = await Promise.all([
             this.#getFriendRecordByUserIdAndTargetId(userId, targetId),
             this.#getFriendRecordByUserIdAndTargetId(targetId, userId),
-        ])
-            .then(list => list.flat())
-            .then(list => list.filter(record => record.status === 'approved'))
-            .then(list => Boolean(list.length));
+        ]);
+        const list_1 = list.flat();
+        const list_2 = list_1.filter(record => record.status === 'approved');
+        return Boolean(list_2.length);
     }
 
-    #checkIsOffered(userId: number, targetId: number): Promise<boolean> {
-        return Promise.all([
+    async #checkIsOffered(userId: number, targetId: number): Promise<boolean> {
+        const list = await Promise.all([
             this.#getFriendRecordByUserIdAndTargetId(userId, targetId),
-        ])
-            .then(list => list.flat())
-            .then(list => list.filter(record => record.status === 'pending'))
-            .then(list => Boolean(list.length));
+        ]);
+        const list_1 = list.flat();
+        const list_2 = list_1.filter(record => record.status === 'pending');
+        return Boolean(list_2.length);
     }
 
-    #checkCanFriendOffer(userId: number, targetId: number): Promise<boolean> {
-        return Promise.all(
+    async #checkCanFriendOffer(userId: number, targetId: number): Promise<boolean> {
+        const [b1, b2, isFriend] = await Promise.all(
             [
                 this.#getBlackRecordsById(userId, targetId),
                 this.#getBlackRecordsById(targetId, userId),
                 this.#checkIsFriend(userId, targetId)
-            ])
-            .then(([b1, b2, isFriend]) => ({blackRecords: Array.of(...b1, ...b2), isFriend}))
-            .then(({blackRecords, isFriend}) => !(blackRecords?.length || isFriend));
+            ]);
+        const {blackRecords, isFriend: isFriend_1} = ({blackRecords: Array.of(...b1, ...b2), isFriend});
+        return !(blackRecords?.length || isFriend_1);
     }
 
-    #checkIsBanned(userId: number, targetId: number): Promise<boolean> {
-        return this.#getBlackRecordsById(userId, targetId)
-            .then(result => Boolean(result.length));
+    async #checkIsBanned(userId: number, targetId: number): Promise<boolean> {
+        const result = await this.#getBlackRecordsById(userId, targetId);
+        return Boolean(result.length);
     }
 
-    #checkYourIsBanned(userId: number, targetId: number): Promise<boolean> {
-        return this.#getBlackRecordsById(targetId, userId)
-            .then(result => Boolean(result.length));
+    async #checkYourIsBanned(userId: number, targetId: number): Promise<boolean> {
+        const result = await this.#getBlackRecordsById(targetId, userId);
+        return Boolean(result.length);
     }
 
-    #getFriendRecordByUserIdAndTargetId(userId: number, targetId: number) {
+    async #getFriendRecordByUserIdAndTargetId(userId: number, targetId: number) {
         const q1 =
             `SELECT * FROM \`friend_list\`
                 WHERE ( user_id=${escape(userId)}
@@ -106,7 +106,7 @@ export class FriendEngine {
         return this.ctx.dbe.queryList<FriendModel>(q1).toPromise();
     }
 
-    #getBlackRecordsById(userId: number, targetId: number) {
+    async #getBlackRecordsById(userId: number, targetId: number) {
         const q =
             `SELECT * FROM \`black_list\`
                 WHERE ( user_id=${escape(userId)}
@@ -116,7 +116,7 @@ export class FriendEngine {
         return this.ctx.dbe.queryList<BannedModel>(q).toPromise();
     }
 
-    #getFriendRecordListById(id: number, status?: FriendStatus, page = 1): Promise<FriendModel[]> {
+    async #getFriendRecordListById(id: number, status?: FriendStatus, page = 1): Promise<FriendModel[]> {
         const offset = page > 1 ? page * 20 : 0;
         const limit = 20;
         const q =
@@ -132,7 +132,7 @@ export class FriendEngine {
         return this.ctx.dbe.queryList<FriendModel>(q).toPromise();
     }
 
-    #getFriendsByUserId(userId: number, status: FriendStatus = 'approved', self = true,  page = 1): Promise<FriendModel[]> {
+    async #getFriendsByUserId(userId: number, status: FriendStatus = 'approved', self = true,  page = 1): Promise<FriendModel[]> {
         const offset = page > 1 ? page * 20 : 0;
         const limit = 20;
 
@@ -189,8 +189,7 @@ export class FriendEngine {
         return this.ctx.dbe.query(q).toPromise();
     }
 
-    // Blockers
-    #getBlackRecordById(id: number): Promise<BannedModel> {
+    async #getBlackRecordById(id: number): Promise<BannedModel> {
         const q =
             `SELECT * FROM \`black_list\`
             WHERE id=${escape(id)}
@@ -201,7 +200,7 @@ export class FriendEngine {
         return this.ctx.dbe.queryOnceOfList<BannedModel>(q).toPromise();
     }
 
-    #getBlackListByUser(userId: number, page = 1): Promise<BannedModel[]> {
+    async #getBlackListByUser(userId: number, page = 1): Promise<BannedModel[]> {
         const offset = page > 1 ? page * 20 : 0;
         const limit = 20;
 
@@ -238,15 +237,15 @@ export class FriendEngine {
         return this.ctx.dbe.query(q).toPromise();
     }
 
-    #getOffers(userId: number, self = true,  page = 1): Promise<FriendModel[]> {
+    async #getOffers(userId: number, self = true,  page = 1): Promise<FriendModel[]> {
         return this.#getFriendsByUserId(userId, 'pending', self, page);
     }
 
-    #getActives(userId: number,  page = 1): Promise<FriendModel[]> {
+    async #getActives(userId: number,  page = 1): Promise<FriendModel[]> {
         return this.#getFriendsByUserId(userId, 'approved', null, page);
     }
 
-    #getBlocked(userId: number,  page = 1): Promise<BannedModel[]> {
+    async #getBlocked(userId: number,  page = 1): Promise<BannedModel[]> {
         return this.#getFriendRecordListById(userId, 'blocked', page) as Promise<BannedModel[]>;
     }
 
