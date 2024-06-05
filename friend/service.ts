@@ -39,7 +39,7 @@ export class FriendEngine {
     }
 
     async checkOwnership(id: number, userId: number) {
-        const record = await this.#getFriendRecordById(id).then(result => result?.[0]);
+        const record = await this.#getFriendRecordListById(id).then(result => result?.[0]);
         if(!record) throw 'Record is not exist';
 
         const valid = record.user_id === userId || (record.target_key === 'ent_users' && record.target_id === userId);
@@ -56,7 +56,67 @@ export class FriendEngine {
         return null;
     }
 
-    #getFriendRecordById(id: number, status?: FriendStatus, page = 1): Promise<FriendModel[]> {
+    #checkIsFriend(userId: number, targetId: number): Promise<boolean> {
+        return Promise.all([
+            this.#getFriendRecordByUserIdAndTargetId(userId, targetId),
+            this.#getFriendRecordByUserIdAndTargetId(targetId, userId),
+        ])
+            .then(list => list.flat())
+            .then(list => list.filter(record => record.status === 'approved'))
+            .then(list => Boolean(list.length));
+    }
+
+    #checkIsOffered(userId: number, targetId: number): Promise<boolean> {
+        return Promise.all([
+            this.#getFriendRecordByUserIdAndTargetId(userId, targetId),
+        ])
+            .then(list => list.flat())
+            .then(list => list.filter(record => record.status === 'pending'))
+            .then(list => Boolean(list.length));
+    }
+
+    #checkCanFriendOffer(userId: number, targetId: number): Promise<boolean> {
+        return Promise.all(
+            [
+                this.#getBlackRecordsById(userId, targetId),
+                this.#getBlackRecordsById(targetId, userId),
+                this.#checkIsFriend(userId, targetId)
+            ])
+            .then(([b1, b2, isFriend]) => ({blackRecords: Array.of(...b1, ...b2), isFriend}))
+            .then(({blackRecords, isFriend}) => !(blackRecords?.length || isFriend));
+    }
+
+    #checkIsBanned(userId: number, targetId: number): Promise<boolean> {
+        return this.#getBlackRecordsById(userId, targetId)
+            .then(result => Boolean(result.length));
+    }
+
+    #checkYourIsBanned(userId: number, targetId: number): Promise<boolean> {
+        return this.#getBlackRecordsById(targetId, userId)
+            .then(result => Boolean(result.length));
+    }
+
+    #getFriendRecordByUserIdAndTargetId(userId: number, targetId: number) {
+        const q1 =
+            `SELECT * FROM \`friend_list\`
+                WHERE ( user_id=${escape(userId)}
+                AND (target_key="ent_users" AND target_id=${escape(targetId)}) )
+                AND datetime_delete IS NULL`;
+
+        return this.ctx.dbe.queryList<FriendModel>(q1).toPromise();
+    }
+
+    #getBlackRecordsById(userId: number, targetId: number) {
+        const q =
+            `SELECT * FROM \`black_list\`
+                WHERE ( user_id=${escape(userId)}
+                AND (target_key="ent_users" AND target_id=${escape(targetId)}) )
+                AND datetime_delete IS NULL`;
+
+        return this.ctx.dbe.queryList<BannedModel>(q).toPromise();
+    }
+
+    #getFriendRecordListById(id: number, status?: FriendStatus, page = 1): Promise<FriendModel[]> {
         const offset = page > 1 ? page * 20 : 0;
         const limit = 20;
         const q =
@@ -109,7 +169,7 @@ export class FriendEngine {
     }
 
     async #editFriendRecord(id: number, newstatus: FriendStatus) {
-        const _ = await this.#getFriendRecordById(id);
+        const _ = await this.#getFriendRecordListById(id);
         const exist = Boolean(_?.length);
         if(!exist) throw 'Friend record is not exist';
 
@@ -147,8 +207,7 @@ export class FriendEngine {
 
         const q =
             `SELECT * FROM \`black_list\`
-            WHERE ( user_id=${escape(userId)} 
-               OR (target_key="ent_users" AND target_id=${escape(userId)}) )
+            WHERE ( user_id=${escape(userId)}
             AND datetime_delete IS NULL
             LIMIT ${limit}
             OFFSET ${offset}`;
@@ -160,7 +219,7 @@ export class FriendEngine {
 
     async #blockRecord(blackUserId: number, userId: number) {
         // check user is friend
-        const records = await this.#getFriendRecordById(blackUserId)
+        const records = await this.#getFriendRecordListById(blackUserId)
         const exist = Boolean(records?.length);
         if(exist) throw 'Friend record is not exist';
 
@@ -188,7 +247,7 @@ export class FriendEngine {
     }
 
     #getBlocked(userId: number,  page = 1): Promise<BannedModel[]> {
-        return this.#getFriendRecordById(userId, 'blocked', page) as Promise<BannedModel[]>;
+        return this.#getFriendRecordListById(userId, 'blocked', page) as Promise<BannedModel[]>;
     }
 
     async getFriendsHandler(req: express.Request, res: express.Response) {
@@ -222,13 +281,19 @@ export class FriendEngine {
     async getFriendStateHandler(req: express.Request, res: express.Response) {
         try {
             const userId = parseInt(res.locals.userId);
+            const friendId = parseInt(req.params['id']);
 
+            if(isNaN(friendId)) throw 'user ID is not valid';
 
             const dto: FriendStateDTO = {
-                isFriend: true,
-                canFriendOffer: true,
-                isBlocked: true,
+                isFriend: await this.#checkIsFriend(userId, friendId),
+                canFriendOffer: await this.#checkCanFriendOffer(userId, friendId),
+                isBlocked: await this.#checkIsBanned(userId, friendId),
+                isYourBanned: await this.#checkYourIsBanned(userId, friendId),
+                isOffered: await this.#checkIsOffered(userId, friendId),
             }
+
+            res.send(dto);
         } catch (e) {
             this.sendError(res, e.message || e);
         }
@@ -330,18 +395,6 @@ export class FriendEngine {
         }
     }
 
-    async checkFriendRecordHandler(req: express.Request, res: express.Response) {
-        try {
-            const id = parseInt(req.params['id']);
-            const userId = parseInt(res.locals.userId);
-
-
-            res.send({success: true, id, userId});
-        } catch (e) {
-            this.sendError(res, e.message || e);
-        }
-    }
-
     constructor(private ctx: Context) {
         ctx.friendEngine = this;
         this.router.use(userCatcher.bind(this, this.ctx));
@@ -361,7 +414,7 @@ export class FriendEngine {
         this.router.delete('/block/:id', this.deleteBlackRecordHandler.bind(this));
 
         // проверка Польака на статус дружбы
-        this.router.get('/check/:userid', this.checkFriendRecordHandler.bind(this));
+        this.router.get('/check/:id', this.getFriendStateHandler.bind(this));
 
         // Изменение статуса заявки
         this.router.patch('/:id', this.editFriendHandler.bind(this));

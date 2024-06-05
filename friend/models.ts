@@ -42,7 +42,9 @@ export interface FriendsRequestDTO {
 
 export interface FriendStateDTO {
     isFriend: boolean;
+    isOffered: boolean;
     isBlocked: boolean;
+    isYourBanned: boolean;
     canFriendOffer: boolean;
 }
 
