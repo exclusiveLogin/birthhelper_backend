@@ -48,6 +48,25 @@ export interface FriendStateDTO {
     canFriendOffer: boolean;
 }
 
+class Enricher {
+    user?: User;
+    target?: User | Entity;
+
+    constructor(private context: Context) {}
+
+    async enrich(userId: number, targetId: number, targetKey: EntityKeys = 'ent_users'): Promise<void> {
+        this.user= await this.context.entityEngine
+            .getEntities<UserSrc>('ent_users', null, null, userId)
+            .toPromise()
+            .then(usr => usr?.[0] ? new User(usr[0]) : null);
+
+        this.target= await this.context.entityEngine
+            .getEntities<UserSrc>(targetKey, null, null, targetId)
+            .toPromise()
+            .then(usr => usr?.[0] ? targetKey === 'ent_users' ? new User(usr[0]) : usr[0] : null);
+    }
+}
+
 export class Friend implements FriendModel{
     id: number;
     status: FriendStatus;
@@ -61,30 +80,19 @@ export class Friend implements FriendModel{
     user?: User;
     target?: User | Entity;
 
-    #ready$: Promise<this>;
+    #ready$: Promise<void>;
+    #enricher: Enricher;
 
-    async #enreach(){
-        this.user= await this.context.entityEngine
-            .getEntities<UserSrc>('ent_users', null, null, this.user_id)
-            .toPromise()
-            .then(usr => usr?.[0] ? new User(usr[0]) : null);
-
-        this.target= await this.context.entityEngine
-            .getEntities<UserSrc>(this.target_key, null, null, this.target_id)
-            .toPromise()
-            .then(usr => usr?.[0] ? this.target_key === 'ent_users' ? new User(usr[0]) : usr[0] : null);
-
-        return this;
-    }
     constructor(
         friendModel: FriendModel,
         private context: Context
     ) {
+        this.#enricher = new Enricher(this.context);
         Object.assign(this, friendModel);
-        this.#ready$ = this.#enreach();
+        this.#ready$ = this.#enricher.enrich(friendModel.user_id, friendModel.target_id, friendModel.target_key as EntityKeys);
     }
 
-    ready() {
+    async ready() {
         return this.#ready$.then(() => this);
     }
 
@@ -119,6 +127,7 @@ export class Banned implements BannedModel {
     target?: User | Entity;
 
     #ready$: Promise<void>;
+    #enricher: Enricher;
 
     async #enreach(){
         this.user= await this.context.entityEngine
@@ -135,11 +144,12 @@ export class Banned implements BannedModel {
         friendModel: BannedModel,
         private context: Context
     ) {
+        this.#enricher = new Enricher(this.context);
         Object.assign(this, friendModel);
-        this.#ready$ = this.#enreach();
+        this.#ready$ = this.#enricher.enrich(friendModel.user_id, friendModel.target_id, friendModel.target_key as EntityKeys);
     }
 
-    ready() {
+    async ready() {
         return this.#ready$.then(() => this);
     }
 

@@ -206,7 +206,7 @@ export class FriendEngine {
 
         const q =
             `SELECT * FROM \`black_list\`
-            WHERE ( user_id=${escape(userId)}
+            WHERE user_id=${escape(userId)}
             AND datetime_delete IS NULL
             LIMIT ${limit}
             OFFSET ${offset}`;
@@ -336,14 +336,13 @@ export class FriendEngine {
             await this.checkOwnership(friendRecordId, userId);
             const result = await this.#deleteFriendRecord(friendRecordId);
 
-
             res.send({success: true, result });
         } catch (e) {
             this.sendError(res, e.message || e);
         }
     }
 
-    /** fixme
+    /**
      *
      * @param req
      * @param res
@@ -351,15 +350,13 @@ export class FriendEngine {
     async getBlackListHandler(req: express.Request, res: express.Response) {
         try {
             const selfFriendsMode = !(req.params?.['id']);
-
-            console.log('selfFriendsMode: ', selfFriendsMode, (req.params?.['id']), res.locals.userId);
             const userId = parseInt(!selfFriendsMode ? req.params['id'] : res.locals.userId);
 
-            if (userId) throw 'User cant self blocked';
+            if (!userId) throw 'UserID is not valid';
             const pageNumber = parseInt(req.query['page'] as string) || 1;
 
-
-            res.send({success: true, selfFriendsMode, userId, pageNumber});
+            const result = await this.#getBlackListByUser(userId, pageNumber);
+            res.send(result);
         } catch (e) {
             this.sendError(res, e.message || e);
         }
