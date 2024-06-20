@@ -219,6 +219,7 @@ export const entityRepo: EntityRepo = {
         dctKey: "dict_user_role_type",
         canBeNull: true,
         showOnTable: true,
+        loadEntity: true,
       },
     ],
     permissions: {

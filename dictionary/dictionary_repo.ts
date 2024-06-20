@@ -69,7 +69,7 @@ export const dictionaries: Record<string, IDictionary> = {
     dict_slot_category_type: {db: 'slot_category_type'},
     dict_order_status_type: {db: 'order_status_type'},
     dict_user_status_type: {db: 'user_status_type'},
-    dict_user_role_type: {db: 'role'},
+    dict_user_role_type: {db: 'roles'},
     dict_lk_permission_type: {db: 'lk_permission_type'},
     dict_section_type: {db: 'section_type'},
     dict_votes: {db: 'vote_type'},

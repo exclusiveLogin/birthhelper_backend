@@ -409,7 +409,7 @@ export class FriendEngine {
         // Удаление юзера из блеклиста
         this.router.delete('/block/:id', this.deleteBlackRecordHandler.bind(this));
 
-        // проверка Польака на статус дружбы
+        // проверка Пользака на статус дружбы
         this.router.get('/check/:id', this.getFriendStateHandler.bind(this));
 
         // Изменение статуса заявки
