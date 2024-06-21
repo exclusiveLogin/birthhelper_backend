@@ -54,6 +54,7 @@ folders.forEach((dir) => {
 const jsonparser = bodyParser.json();
 
 import EasyYandexS3 from "easy-yandex-s3";
+import { userCatcher } from "../common/user-catcher";
 
 const s3 = new EasyYandexS3({
   auth: {
@@ -84,8 +85,6 @@ const fileFilter = (req, file, cb) =>
   file && file.mimetype === "image/jpeg" ? cb(null, true) : cb(null, false);
 
 const upload = multer({ storage: storage, fileFilter });
-const entity = express.Router();
-
 export interface Entity extends Slotted {
   [key: string]: any;
 
@@ -119,8 +118,12 @@ export interface FilterParams {
 export class EntityEngine {
   cacheEngine: CacheEngine;
   searchEngine: SearchEngine;
+  router: Router
 
   constructor(private context: Context, admin?: boolean) {
+    this.router = express.Router();
+    this.router.use(userCatcher.bind(this, context));
+
     if (admin) {
       context.entityEngineAdmin = this;
     } else {
@@ -129,6 +132,110 @@ export class EntityEngine {
 
     this.searchEngine = context.searchEngine;
     this.cacheEngine = context.cacheEngine;
+
+    this.router.get(
+      "/",
+      this.context.authorizationEngine.checkAccess.bind(
+        this.context.authorizationEngine,
+        null
+      ),
+      this.rootHandler.bind(this)
+    );
+
+    this.router.get(
+      "/:id/filters",
+      this.context.authorizationEngine.checkAccess.bind(
+        this.context.authorizationEngine,
+        null
+      ),
+      this.context.authorizationEngine.checkPrivateEntity.bind(
+        this.context.authorizationEngine
+      ),
+      this.entityFilterHandler.bind(this)
+    );
+
+    this.router.get(
+      "/:id/set",
+      this.context.authorizationEngine.checkAccess.bind(
+        this.context.authorizationEngine,
+        null
+      ),
+      this.context.authorizationEngine.checkPrivateEntity.bind(
+        this.context.authorizationEngine
+      ),
+      this.entitySetHandler.bind(this)
+    );
+
+    this.router.get(
+      "/file/:id",
+      this.context.authorizationEngine.checkAccess.bind(
+        this.context.authorizationEngine,
+        null
+      ),
+      this.downloadFileHandler.bind(this)
+    );
+
+    this.router.get(
+      "/:id",
+      this.context.authorizationEngine.checkAccess.bind(
+        this.context.authorizationEngine,
+        null
+      ),
+      this.context.authorizationEngine.checkPrivateEntity.bind(
+        this.context.authorizationEngine
+      ),
+      this.queryEntityHandler.bind(this)
+    );
+
+    this.router.get(
+      "/:id/:eid",
+      this.context.authorizationEngine.checkAccess.bind(
+        this.context.authorizationEngine,
+        null
+      ),
+      this.context.authorizationEngine.checkPrivateEntity.bind(
+        this.context.authorizationEngine
+      ),
+      this.queryEntityHandler.bind(this)
+    );
+
+    this.router.post(
+      "/file",
+      jsonparser,
+      this.context.authorizationEngine.checkAccess.bind(
+        this.context.authorizationEngine,
+        null
+      ),
+      this.checkUploadsFSHandler.bind(this),
+      upload.single("photo"),
+      this.uploadFileHandler.bind(this)
+    );
+
+    this.router.delete(
+      "/:id",
+      jsonparser,
+      this.context.authorizationEngine.checkAccess.bind(
+        this.context.authorizationEngine,
+        7
+      ),
+      this.context.authorizationEngine.checkPrivateEntity.bind(
+        this.context.authorizationEngine
+      ),
+      this.deleteEntityHandler.bind(this)
+    );
+
+    this.router.post(
+      "/:id",
+      jsonparser,
+      this.context.authorizationEngine.checkAccess.bind(
+        this.context.authorizationEngine,
+        7
+      ),
+      this.context.authorizationEngine.checkPrivateEntity.bind(
+        this.context.authorizationEngine
+      ),
+      this.createEntityHandler.bind(this)
+    );
   }
 
   getEntitiesConfig(): EntityRepo {
@@ -293,7 +400,7 @@ export class EntityEngine {
         data[datakey] = data[datakey] !== null && +data[datakey];
       }
       if (!targetReq) return;
-      return targetReq.type === "string" || targetReq.type === "text"
+      return targetReq.type === "string" || targetReq.type === "text" || targetReq.type === "date"
         ? `"${sanitizer(data[datakey].toString())}"`
         : data[datakey];
     });
@@ -505,10 +612,11 @@ export class EntityEngine {
     key: EntityKeys,
     hash: string,
     filters: FilterParams,
-    eid: number = null
+    eid: number = null,
+    config?: EntityConfig,
   ): Observable<T[]> {
     // console.log('getEntities ', key, hash, filters, eid)
-    const config = entities[key];
+    config = config ?? entities[key];
 
     if (!config) {
       return throwError(`Сущность ${key} не найдена`);
@@ -590,11 +698,17 @@ export class EntityEngine {
 
     if (entKey) {
       const hash = req.query.hash;
-      const eid = req.params.eid;
+      const eid = parseInt(req.params.eid);
+      const userId = parseInt(res.locals.userId);
+
+      /** @todo ReBAC validators */ 
+      const ownerByUser = entKey === 'ent_users' && userId === eid;
+
+      const config: EntityConfig = ownerByUser ? {...entities[entKey], hiddenFields: ['password']} : null;
 
       // console.log('queryEntityHandler hash: ', req.params);
 
-      const provider = this.getEntities(entKey, hash, filters, eid);
+      const provider = this.getEntities(entKey, hash, filters, eid, config);
 
       if (!provider) {
         res.status(500);
@@ -1081,110 +1195,6 @@ export class EntityEngine {
   }
 
   getRouter(): Router {
-    entity.get(
-      "/",
-      this.context.authorizationEngine.checkAccess.bind(
-        this.context.authorizationEngine,
-        null
-      ),
-      this.rootHandler.bind(this)
-    );
-
-    entity.get(
-      "/:id/filters",
-      this.context.authorizationEngine.checkAccess.bind(
-        this.context.authorizationEngine,
-        null
-      ),
-      this.context.authorizationEngine.checkPrivateEntity.bind(
-        this.context.authorizationEngine
-      ),
-      this.entityFilterHandler.bind(this)
-    );
-
-    entity.get(
-      "/:id/set",
-      this.context.authorizationEngine.checkAccess.bind(
-        this.context.authorizationEngine,
-        null
-      ),
-      this.context.authorizationEngine.checkPrivateEntity.bind(
-        this.context.authorizationEngine
-      ),
-      this.entitySetHandler.bind(this)
-    );
-
-    entity.get(
-      "/file/:id",
-      this.context.authorizationEngine.checkAccess.bind(
-        this.context.authorizationEngine,
-        null
-      ),
-      this.downloadFileHandler.bind(this)
-    );
-
-    entity.get(
-      "/:id",
-      this.context.authorizationEngine.checkAccess.bind(
-        this.context.authorizationEngine,
-        null
-      ),
-      this.context.authorizationEngine.checkPrivateEntity.bind(
-        this.context.authorizationEngine
-      ),
-      this.queryEntityHandler.bind(this)
-    );
-
-    entity.get(
-      "/:id/:eid",
-      this.context.authorizationEngine.checkAccess.bind(
-        this.context.authorizationEngine,
-        null
-      ),
-      this.context.authorizationEngine.checkPrivateEntity.bind(
-        this.context.authorizationEngine
-      ),
-      this.queryEntityHandler.bind(this)
-    );
-
-    entity.post(
-      "/file",
-      jsonparser,
-      this.context.authorizationEngine.checkAccess.bind(
-        this.context.authorizationEngine,
-        null
-      ),
-      this.checkUploadsFSHandler.bind(this),
-      upload.single("photo"),
-      this.uploadFileHandler.bind(this)
-    );
-
-    entity.delete(
-      "/:id",
-      jsonparser,
-      this.context.authorizationEngine.checkAccess.bind(
-        this.context.authorizationEngine,
-        7
-      ),
-      this.context.authorizationEngine.checkPrivateEntity.bind(
-        this.context.authorizationEngine
-      ),
-      this.deleteEntityHandler.bind(this)
-    );
-
-    entity.post(
-      "/:id",
-      jsonparser,
-      this.context.authorizationEngine.checkAccess.bind(
-        this.context.authorizationEngine,
-        7
-      ),
-      this.context.authorizationEngine.checkPrivateEntity.bind(
-        this.context.authorizationEngine
-      ),
-      this.createEntityHandler.bind(this)
-    );
-
-    return entity;
+    return this.router;
   }
 }
