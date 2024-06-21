@@ -249,10 +249,17 @@ export class FriendEngine {
         return this.#getFriendRecordListById(userId, 'blocked', page) as Promise<BannedModel[]>;
     }
 
+    async #getBlackList(userId: number,  page = 1): Promise<BannedModel[]> {
+        return this.#getBlackListByUser(userId, page) as Promise<BannedModel[]>;
+    }
+
     async getFriendsHandler(req: express.Request, res: express.Response) {
         try {
-            const selfFriendsMode = !req.params?.['id'];
-            const userId = parseInt(req.params['id'] ?? res.locals.userId);
+            const responseUserId = parseInt(req.params?.['id']);
+            const sessionUserId = parseInt(res.locals.userId);
+            const userId = responseUserId ? responseUserId : sessionUserId;
+            const selfFriendsMode = sessionUserId === userId;
+
             const pageNumber = parseInt(req.query['page'] as string) || 1;
 
             const dto: FriendsRequestDTO = {
@@ -261,6 +268,10 @@ export class FriendEngine {
                     .then(list => list.map(item => item.getSnapshot())),
                 banned: selfFriendsMode ?
                     await this.#getBlocked(userId,pageNumber)
+                    .then((list) => Promise.all(list.map(item => new Banned(item, this.ctx).ready())))
+                    .then(list => list.map(item => item.getSnapshot())) : null,
+                blackList: selfFriendsMode ?
+                    await this.#getBlackList(userId,pageNumber)
                     .then((list) => Promise.all(list.map(item => new Banned(item, this.ctx).ready())))
                     .then(list => list.map(item => item.getSnapshot())) : null,
                 offered: selfFriendsMode ? await this.#getOffers(userId, false, pageNumber)
@@ -349,8 +360,9 @@ export class FriendEngine {
      */
     async getBlackListHandler(req: express.Request, res: express.Response) {
         try {
-            const selfFriendsMode = !(req.params?.['id']);
-            const userId = parseInt(!selfFriendsMode ? req.params['id'] : res.locals.userId);
+            const responseUserId = parseInt(req.params?.['id']);
+            const sessionUserId = parseInt(res.locals.userId);
+            const userId = responseUserId ? responseUserId : sessionUserId;
 
             if (!userId) throw 'UserID is not valid';
             const pageNumber = parseInt(req.query['page'] as string) || 1;

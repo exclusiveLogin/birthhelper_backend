@@ -33,6 +33,7 @@ export interface FriendsRequestDTO {
     offered: ReturnType<Friend['getSnapshot']>[];
     pending: ReturnType<Friend['getSnapshot']>[];
     banned: ReturnType<Banned['getSnapshot']>[];
+    blackList: ReturnType<Banned['getSnapshot']>[];
     meta?: {
         active: FriendMeta;
         offered: FriendMeta;
