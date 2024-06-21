@@ -261,20 +261,25 @@ export class EntityEngine {
       return Promise.reject("Нет конфигурации для сущности: " + name);
 
     const db = config.db_name;
-    const reqKeys = config.fields.filter((f) => !!f.required);
+    const requiredFields = config.fields.filter((f) => !!f.required);
+    const virtualFields = config.fields.filter((f) => !!f.virtual);
     const fields = config.fields;
     const calc = config.calculated;
     const isSlot = !!config.slot;
     if (isSlot) data["entity_key"] = name;
     //убираем пересечения
     calc && calc.forEach((c) => delete data[c.key]);
+    // убираем виртуальные поля из запроса
+    virtualFields.forEach(field => delete data[field.key])
 
-    if (!reqKeys.every((r) => !!data[r.key])) {
+    if (!requiredFields.every((r) => !!data[r.key])) {
       return Promise.reject("не полные данные в запросе");
     }
 
+
+
     if (
-      !Object.keys(data).every(
+      !Object.keys(data).filter(f => fields.find(ff => ff.virtual && f === ff.key)).every(
         (r) => !!fields.find((f) => f.key === r || r === "entity_key")
       )
     ) {

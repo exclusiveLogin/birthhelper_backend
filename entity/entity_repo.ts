@@ -221,6 +221,11 @@ export const entityRepo: EntityRepo = {
         showOnTable: true,
         loadEntity: true,
       },
+      {
+        key: "meta",
+        virtual: true,
+        type: 'string',
+      }
     ],
     permissions: {
       create: 7,
