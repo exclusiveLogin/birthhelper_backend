@@ -3,7 +3,7 @@ import uuid = require("uuid");
 import bodyParser = require("body-parser");
 import { User, UserRole, UserSession, UserSrc } from "../models/user.interface";
 import { Context } from "../search/config";
-import { map, mapTo } from "rxjs/operators";
+import { map, mapTo, tap } from "rxjs/operators";
 import { OkPacket } from "mysql";
 import { Request, Response } from "express";
 import { EntityKeys } from "../entity/entity_repo.model";
@@ -127,15 +127,11 @@ export class AuthorizationEngine {
   }
 
   async getUserById(id: number): Promise<User> {
-    const q = `SELECT * FROM \`users\` WHERE \`id\` = ${id}`;
-
-    return this.context.dbe
-      .queryList<UserSrc>(q)
-      .pipe(
-        map((result) => result?.[0]),
-        map((userSrc) => new User(userSrc))
-      )
-      .toPromise();
+    return this.context.entityEngine.getEntities('ent_users', null, null, id).pipe(
+      tap(data => console.log(JSON.stringify(data, null, 4))),
+      map((result) => result?.[0] as UserSrc),
+      map((userSrc) => new User(userSrc))
+    ).toPromise();
   }
 
   async getUserByIdSafetly(id: number): Promise<User> {

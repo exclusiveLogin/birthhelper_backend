@@ -1,3 +1,6 @@
+import { MetaInterface } from "./common";
+
+export type UserRoleSlug = "master" | "admin" | "moderator" | "user" | "guest";
 export interface UserRole {
     id: number;
     slug: string;
@@ -14,6 +17,18 @@ export interface UserSession {
     user_id: number;
     datetime_create: string;
     datetime_update: string;
+}
+
+export interface MetaPhoto {
+    id: number;
+    file_id: number;
+    title: string;
+    description: string;
+    datetime_update: string;
+    datetime_create: string;
+    filename: string;
+    aws: string;
+    folder: string;
 }
 
 export interface UserSrc {
@@ -47,6 +62,11 @@ export interface UserSrc {
     shoes_size: number;
     datetime_create: string;
     datetime_update: string;
+
+    meta: MetaInterface & {
+        role: UserRole;
+        photo_id: MetaPhoto;
+    };
 }
 
 export interface UserExit {
@@ -86,6 +106,11 @@ export class User {
     shoes_size: number;
     activation: string;
 
+    meta?: MetaInterface & {
+        role: UserRole;
+        photo_id: MetaPhoto;
+    };
+
     constructor(src: UserSrc) {
         this.multi_pregnant = !!src.multi_pregnant;
         this.has_problems = !!src.has_problems;
@@ -116,5 +141,8 @@ export class User {
         this.weight = src.weight;
         this.clothes_size = src.clothes_size;
         this.shoes_size = src.shoes_size;
+
+        this.meta = src.meta;
     }
+    
 }
