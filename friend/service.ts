@@ -270,7 +270,7 @@ export class FriendEngine {
                     await this.#getBlocked(userId,pageNumber)
                     .then((list) => Promise.all(list.map(item => new Banned(item, this.ctx).ready())))
                     .then(list => list.map(item => item.getSnapshot())) : null,
-                blackList: selfFriendsMode ?
+                blacklist: selfFriendsMode ?
                     await this.#getBlackList(userId,pageNumber)
                     .then((list) => Promise.all(list.map(item => new Banned(item, this.ctx).ready())))
                     .then(list => list.map(item => item.getSnapshot())) : null,
