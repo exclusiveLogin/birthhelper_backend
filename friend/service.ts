@@ -328,6 +328,7 @@ export class FriendEngine {
             const {status} = req.body as EditFriendRequest;
 
             if(!status) throw 'new status is required';
+            if(!friendRecordId) throw 'id record is not valid';
 
             await this.checkOwnership(friendRecordId, userId);
             const result = await this.#editFriendRecord(friendRecordId, status);

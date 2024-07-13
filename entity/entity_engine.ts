@@ -698,8 +698,8 @@ export class EntityEngine {
 
     if (entKey) {
       const hash = req.query.hash;
-      const eid = parseInt(req.params.eid);
-      const userId = parseInt(res.locals.userId);
+      const eid = parseInt(req.params.eid) || undefined;
+      const userId = parseInt(res.locals.userId) || undefined;
 
       /** @todo ReBAC validators */ 
       const ownerByUser = entKey === 'ent_users' && userId === eid;
