@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Хост: 185.178.46.248
--- Время создания: Янв 06 2024 г., 12:22
--- Версия сервера: 8.0.35-0ubuntu0.20.04.1
--- Версия PHP: 8.2.13
+-- Хост: db
+-- Время создания: Окт 08 2024 г., 15:05
+-- Версия сервера: 5.7.44
+-- Версия PHP: 8.2.15
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -28,18 +28,18 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `birthtype` (
-  `id` int NOT NULL,
-  `icon` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `title` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `description` text COLLATE utf8mb3_unicode_ci,
-  `description_ext1` text COLLATE utf8mb3_unicode_ci,
-  `description_ext2` text COLLATE utf8mb3_unicode_ci,
-  `advantage` text COLLATE utf8mb3_unicode_ci,
-  `lack` text COLLATE utf8mb3_unicode_ci,
-  `motivator` varchar(150) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `bg_color` varchar(10) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `image_id` bigint UNSIGNED DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci COMMENT='Виды родов';
+  `id` int(11) NOT NULL,
+  `icon` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text COLLATE utf8_unicode_ci,
+  `description_ext1` text COLLATE utf8_unicode_ci,
+  `description_ext2` text COLLATE utf8_unicode_ci,
+  `advantage` text COLLATE utf8_unicode_ci,
+  `lack` text COLLATE utf8_unicode_ci,
+  `motivator` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `bg_color` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `image_id` bigint(20) UNSIGNED DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Виды родов';
 
 --
 -- Дамп данных таблицы `birthtype`
@@ -55,18 +55,63 @@ INSERT INTO `birthtype` (`id`, `icon`, `title`, `description`, `description_ext1
 -- --------------------------------------------------------
 
 --
+-- Структура таблицы `black_list`
+--
+
+CREATE TABLE `black_list` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `target_key` varchar(20) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'ent_users',
+  `target_id` bigint(20) NOT NULL,
+  `status` varchar(50) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'blocked',
+  `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `datetime_delete` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Дамп данных таблицы `black_list`
+--
+
+INSERT INTO `black_list` (`id`, `user_id`, `target_key`, `target_id`, `status`, `datetime_update`, `datetime_create`, `datetime_delete`) VALUES
+(1, 1, 'ent_users', 19, 'blocked', '2024-06-05 16:37:18', '2024-06-05 16:37:18', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `black_list_status_type`
+--
+
+CREATE TABLE `black_list_status_type` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `slug` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `comment` text COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Тип сущности';
+
+--
+-- Дамп данных таблицы `black_list_status_type`
+--
+
+INSERT INTO `black_list_status_type` (`id`, `title`, `slug`, `comment`) VALUES
+(1, 'Заблокирован', 'blocked', ''),
+(2, 'Разблокирован', 'unblocked', '');
+
+-- --------------------------------------------------------
+
+--
 -- Структура таблицы `bot_messages`
 --
 
 CREATE TABLE `bot_messages` (
-  `id` bigint UNSIGNED NOT NULL,
-  `type` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'telegram',
-  `title` varchar(150) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `text` text COLLATE utf8mb3_unicode_ci NOT NULL,
-  `status` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'pending',
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `type` varchar(50) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'telegram',
+  `title` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
+  `text` text COLLATE utf8_unicode_ci NOT NULL,
+  `status` varchar(50) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'pending',
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `bot_messages`
@@ -85,11 +130,11 @@ INSERT INTO `bot_messages` (`id`, `type`, `title`, `text`, `status`, `datetime_c
 --
 
 CREATE TABLE `bot_messages_status_type` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `slug` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `comment` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci COMMENT='Тип сущности';
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `slug` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `comment` text COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Тип сущности';
 
 --
 -- Дамп данных таблицы `bot_messages_status_type`
@@ -110,11 +155,11 @@ INSERT INTO `bot_messages_status_type` (`id`, `title`, `slug`, `comment`) VALUES
 --
 
 CREATE TABLE `bot_messages_type_type` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `slug` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `comment` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci COMMENT='Тип сущности';
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `slug` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `comment` text COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Тип сущности';
 
 --
 -- Дамп данных таблицы `bot_messages_type_type`
@@ -126,24 +171,42 @@ INSERT INTO `bot_messages_type_type` (`id`, `title`, `slug`, `comment`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Структура таблицы `chats`
+--
+
+CREATE TABLE `chats` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `author` bigint(20) NOT NULL,
+  `type` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `parent` bigint(20) NOT NULL,
+  `avatar` bigint(20) NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `datetime_delete` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Структура таблицы `clinics`
 --
 
 CREATE TABLE `clinics` (
-  `id` int NOT NULL,
-  `contragent` bigint UNSIGNED DEFAULT NULL,
+  `id` int(11) NOT NULL,
+  `contragent` bigint(20) UNSIGNED DEFAULT NULL,
   `status_iho` tinyint(1) DEFAULT NULL,
   `has_oms` tinyint(1) DEFAULT NULL,
   `has_dms` tinyint(1) DEFAULT NULL,
   `has_reanimation` tinyint(1) DEFAULT NULL,
-  `stat_male` int DEFAULT '0',
-  `stat_female` int NOT NULL DEFAULT '0',
+  `stat_male` int(11) DEFAULT '0',
+  `stat_female` int(11) NOT NULL DEFAULT '0',
   `foreign_service` tinyint(1) DEFAULT NULL,
   `mom_with_baby` tinyint(1) DEFAULT NULL,
   `free_meets` tinyint(1) DEFAULT NULL,
-  `facilities_type` int DEFAULT NULL,
-  `specialities_type` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `facilities_type` int(11) DEFAULT NULL,
+  `specialities_type` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `clinics`
@@ -190,13 +253,13 @@ INSERT INTO `clinics` (`id`, `contragent`, `status_iho`, `has_oms`, `has_dms`, `
 --
 
 CREATE TABLE `clinic_specialities_containers` (
-  `id` int NOT NULL,
-  `container_id` int NOT NULL,
-  `speciality_id` int NOT NULL,
-  `overrided_title` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `overrided_description` text COLLATE utf8mb3_unicode_ci,
-  `comment` text COLLATE utf8mb3_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` int(11) NOT NULL,
+  `container_id` int(11) NOT NULL,
+  `speciality_id` int(11) NOT NULL,
+  `overrided_title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `overrided_description` text COLLATE utf8_unicode_ci,
+  `comment` text COLLATE utf8_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `clinic_specialities_containers`
@@ -217,11 +280,11 @@ INSERT INTO `clinic_specialities_containers` (`id`, `container_id`, `speciality_
 --
 
 CREATE TABLE `clinic_specialities_containers_repo` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `description` text COLLATE utf8mb3_unicode_ci,
-  `comment` text COLLATE utf8mb3_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text COLLATE utf8_unicode_ci,
+  `comment` text COLLATE utf8_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `clinic_specialities_containers_repo`
@@ -237,11 +300,11 @@ INSERT INTO `clinic_specialities_containers_repo` (`id`, `title`, `description`,
 --
 
 CREATE TABLE `clinic_specialities_type` (
-  `id` int NOT NULL,
-  `icon` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `description` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci,
-  `bg_color` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL
+  `id` int(11) NOT NULL,
+  `icon` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `title` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
+  `bg_color` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -263,16 +326,16 @@ INSERT INTO `clinic_specialities_type` (`id`, `icon`, `title`, `description`, `b
 --
 
 CREATE TABLE `comments` (
-  `id` bigint UNSIGNED NOT NULL,
-  `text` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `feedback_id` bigint UNSIGNED NOT NULL,
-  `comment_id` bigint UNSIGNED DEFAULT NULL,
-  `user_id` bigint UNSIGNED NOT NULL,
-  `status` varchar(20) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'pending',
-  `type` varchar(20) COLLATE utf8mb3_unicode_ci NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `text` text COLLATE utf8_unicode_ci NOT NULL,
+  `feedback_id` bigint(20) UNSIGNED NOT NULL,
+  `comment_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `status` varchar(20) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'pending',
+  `type` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `comments`
@@ -286,7 +349,42 @@ INSERT INTO `comments` (`id`, `text`, `feedback_id`, `comment_id`, `user_id`, `s
 (7, 'sadasdasd', 30, NULL, 1, 'approved', 'master', '2023-08-01 13:02:09', '2023-08-01 13:02:09'),
 (8, 'Мой первый отзыв о ХЗ какой клинике)', 58, NULL, 19, 'approved', 'master', '2023-09-09 19:38:57', '2023-09-09 19:38:57'),
 (21, 'Рад что вам понравилось )', 58, 8, 1, 'official', 'reply', '2023-12-26 14:20:03', '2023-12-26 14:20:03'),
-(27, 'Рад что вам понравилось )2', 58, 8, 20, 'approved', 'reply', '2023-12-26 14:20:03', '2023-12-26 14:20:03');
+(27, 'Рад что вам понравилось )2', 58, 8, 20, 'approved', 'reply', '2023-12-26 14:20:03', '2023-12-26 14:20:03'),
+(28, 'test', 58, 8, 1, 'deleted', 'reply', '2024-01-12 21:22:42', '2024-02-18 07:36:40'),
+(29, 'sdfsdfsf', 58, 8, 1, 'deleted', 'reply', '2024-01-12 21:25:09', '2024-02-16 18:43:14'),
+(30, 'wefdsdfdsf', 58, 8, 1, 'deleted', 'reply', '2024-01-12 21:25:47', '2024-02-16 18:40:02'),
+(31, 'dfdsfd', 58, 8, 1, 'deleted', 'reply', '2024-01-12 21:28:18', '2024-02-16 18:03:59'),
+(32, 'dsfsdf', 58, 8, 1, 'deleted', 'reply', '2024-01-12 21:30:57', '2024-02-16 17:36:21'),
+(33, 'dsfdsf', 58, 8, 1, 'deleted', 'reply', '2024-01-12 21:32:48', '2024-02-16 17:36:15'),
+(34, 'fcgvbcvbcvbcv', 58, 8, 1, 'deleted', 'reply', '2024-01-13 17:16:20', '2024-02-16 17:36:07'),
+(35, 'Коммент под удаление', 58, 8, 1, 'deleted', 'reply', '2024-02-16 18:00:31', '2024-02-16 18:00:37'),
+(36, 'Gjl elfktyb', 58, 8, 1, 'deleted', 'reply', '2024-02-16 18:05:37', '2024-02-16 18:05:43'),
+(37, 'dfsdfsdfds', 58, 8, 1, 'deleted', 'reply', '2024-02-16 18:09:24', '2024-02-16 18:27:03'),
+(38, 'sdasdsdsda', 58, 8, 1, 'deleted', 'reply', '2024-02-16 18:09:41', '2024-02-16 18:10:02'),
+(39, 'asdasdasd', 58, 8, 1, 'deleted', 'reply', '2024-02-16 18:12:38', '2024-02-16 18:26:46'),
+(40, 'sadasd', 58, 8, 1, 'deleted', 'reply', '2024-02-16 18:14:20', '2024-02-16 18:23:24'),
+(41, 'sadasd', 58, 8, 1, 'deleted', 'reply', '2024-02-16 18:14:21', '2024-02-16 18:19:42'),
+(42, 'dsddd', 58, 8, 1, 'deleted', 'reply', '2024-02-16 18:15:07', '2024-02-16 18:18:17'),
+(43, 'dddddd', 58, 8, 1, 'deleted', 'reply', '2024-02-16 18:15:20', '2024-02-16 18:15:38'),
+(44, 'dsdfdf', 58, 8, 1, 'deleted', 'reply', '2024-02-16 18:27:20', '2024-02-16 18:39:24'),
+(45, 'ddfdfsd', 58, 8, 1, 'deleted', 'reply', '2024-02-16 18:27:44', '2024-02-16 18:38:12'),
+(46, 'sdsadasd', 58, 8, 1, 'deleted', 'reply', '2024-02-16 18:28:37', '2024-02-16 18:36:35'),
+(47, 'dfgdfggdfgdf', 58, 8, 1, 'deleted', 'reply', '2024-02-16 18:40:52', '2024-02-16 18:42:24'),
+(48, 'dfgdgdfgfd', 58, 8, 1, 'deleted', 'reply', '2024-02-16 18:48:20', '2024-02-16 18:51:54'),
+(49, 'sfsdfdsfdsf', 58, 8, 1, 'deleted', 'reply', '2024-02-16 18:52:00', '2024-02-18 07:22:58'),
+(50, 'dsddd', 58, 8, 1, 'deleted', 'reply', '2024-02-16 18:56:12', '2024-02-18 07:22:55'),
+(51, 'sssss', 58, 8, 1, 'deleted', 'reply', '2024-02-16 18:57:31', '2024-02-16 19:07:07'),
+(52, 'dddddd', 58, 8, 1, 'deleted', 'reply', '2024-02-16 19:06:51', '2024-02-16 19:07:05'),
+(53, 'ffffff', 58, 8, 1, 'deleted', 'reply', '2024-02-16 19:06:56', '2024-02-16 19:07:01'),
+(54, 'gfggggg', 58, 8, 1, 'deleted', 'reply', '2024-02-16 19:08:50', '2024-02-16 19:19:02'),
+(55, 'dfrgfdgfg', 58, 8, 1, 'deleted', 'reply', '2024-02-16 19:09:31', '2024-02-16 19:11:06'),
+(56, '', 58, 8, 1, 'deleted', 'reply', '2024-02-16 19:09:36', '2024-02-16 19:09:48'),
+(57, 'sdssss', 58, 8, 1, 'deleted', 'reply', '2024-02-16 19:09:42', '2024-02-16 19:09:45'),
+(58, 'ddddd', 58, 8, 1, 'deleted', 'reply', '2024-02-16 19:18:54', '2024-02-16 19:18:58'),
+(59, 'cfscdfsdfsdfdsf', 58, 8, 1, 'deleted', 'reply', '2024-02-18 07:36:53', '2024-02-22 13:25:54'),
+(60, 'Тест', 58, 8, 1, 'deleted', 'reply', '2024-02-22 13:26:12', '2024-02-22 13:27:00'),
+(61, 'Тест', 58, 8, 1, 'deleted', 'reply', '2024-02-22 13:27:01', '2024-02-22 13:27:10'),
+(62, 'Тест', 58, 8, 1, 'approved', 'reply', '2024-02-22 13:27:10', '2024-02-22 13:27:10');
 
 -- --------------------------------------------------------
 
@@ -295,11 +393,11 @@ INSERT INTO `comments` (`id`, `text`, `feedback_id`, `comment_id`, `user_id`, `s
 --
 
 CREATE TABLE `comment_status_type` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `slug` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `comment` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci COMMENT='Тип сущности';
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `slug` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `comment` text COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Тип сущности';
 
 --
 -- Дамп данных таблицы `comment_status_type`
@@ -322,11 +420,11 @@ INSERT INTO `comment_status_type` (`id`, `title`, `slug`, `comment`) VALUES
 --
 
 CREATE TABLE `comment_type` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `slug` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `comment` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci COMMENT='Тип сущности';
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `slug` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `comment` text COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Тип сущности';
 
 --
 -- Дамп данных таблицы `comment_type`
@@ -343,8 +441,8 @@ INSERT INTO `comment_type` (`id`, `title`, `slug`, `comment`) VALUES
 --
 
 CREATE TABLE `consultation` (
-  `id` int NOT NULL,
-  `contragent` bigint UNSIGNED DEFAULT NULL,
+  `id` int(11) NOT NULL,
+  `contragent` bigint(20) UNSIGNED DEFAULT NULL,
   `avo` tinyint(1) DEFAULT NULL,
   `anemy` tinyint(1) DEFAULT NULL,
   `anomaly_evolution` tinyint(1) DEFAULT NULL,
@@ -354,7 +452,7 @@ CREATE TABLE `consultation` (
   `mioms` tinyint(1) DEFAULT NULL,
   `onko` tinyint(1) DEFAULT NULL,
   `home_visit` tinyint(1) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `consultation`
@@ -384,21 +482,21 @@ INSERT INTO `consultation` (`id`, `contragent`, `avo`, `anemy`, `anomaly_evoluti
 --
 
 CREATE TABLE `contragents` (
-  `id` bigint UNSIGNED NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
   `active` tinyint(1) DEFAULT '1',
-  `address_str` text COLLATE utf8mb3_unicode_ci NOT NULL,
-  `city` varchar(150) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `country` varchar(150) COLLATE utf8mb3_unicode_ci NOT NULL,
+  `address_str` text COLLATE utf8_unicode_ci NOT NULL,
+  `city` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
+  `country` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
   `position_lat` float NOT NULL,
   `position_lon` float NOT NULL,
-  `phone_container_id` int DEFAULT NULL,
-  `title` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `description` mediumtext COLLATE utf8mb3_unicode_ci,
-  `image_id` bigint UNSIGNED DEFAULT NULL,
-  `licence` varchar(150) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
+  `phone_container_id` int(11) DEFAULT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `description` mediumtext COLLATE utf8_unicode_ci,
+  `image_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `licence` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
   `section_clinic` tinyint(1) NOT NULL DEFAULT '0',
   `section_consultation` tinyint(1) NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `contragents`
@@ -455,20 +553,21 @@ INSERT INTO `contragents` (`id`, `active`, `address_str`, `city`, `country`, `po
 --
 
 CREATE TABLE `dislikes` (
-  `id` bigint UNSIGNED NOT NULL,
-  `status` varchar(20) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'active',
-  `target_id` bigint UNSIGNED NOT NULL,
-  `target_type` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `user_id` bigint UNSIGNED NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `status` varchar(20) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'active',
+  `target_id` bigint(20) UNSIGNED NOT NULL,
+  `target_type` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `dislikes`
 --
 
 INSERT INTO `dislikes` (`id`, `status`, `target_id`, `target_type`, `user_id`, `datetime_create`) VALUES
-(19, 'active', 1, 'feedback', 1, '2023-09-06 17:28:38');
+(19, 'active', 1, 'feedback', 1, '2023-09-06 17:28:38'),
+(35, 'active', 62, 'comment', 1, '2024-02-23 20:23:52');
 
 -- --------------------------------------------------------
 
@@ -477,11 +576,11 @@ INSERT INTO `dislikes` (`id`, `status`, `target_id`, `target_type`, `user_id`, `
 --
 
 CREATE TABLE `districts` (
-  `id` bigint UNSIGNED NOT NULL,
-  `name` varchar(20) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `title` text COLLATE utf8mb3_unicode_ci NOT NULL,
-  `title_short` text COLLATE utf8mb3_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `title` text COLLATE utf8_unicode_ci NOT NULL,
+  `title_short` text COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `districts`
@@ -504,22 +603,22 @@ INSERT INTO `districts` (`id`, `name`, `title`, `title_short`) VALUES
 --
 
 CREATE TABLE `doctors` (
-  `id` int NOT NULL,
-  `full_name` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `short_name` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `patronymic` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `experience` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL COMMENT 'стаж',
-  `count` int DEFAULT NULL COMMENT 'количество родов',
-  `description_education` text COLLATE utf8mb3_unicode_ci COMMENT 'образование',
-  `description_experience` text COLLATE utf8mb3_unicode_ci COMMENT 'проф навыки, сильные стороны',
-  `description_pro` text COLLATE utf8mb3_unicode_ci,
-  `description_services` text COLLATE utf8mb3_unicode_ci,
-  `category` bigint UNSIGNED DEFAULT NULL,
-  `position` bigint UNSIGNED DEFAULT NULL COMMENT 'специализация врача',
-  `clinic_id` int DEFAULT NULL COMMENT 'Прикреплен к клинике (ID)',
-  `image_id` bigint UNSIGNED DEFAULT NULL,
+  `id` int(11) NOT NULL,
+  `full_name` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `short_name` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `patronymic` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `experience` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'стаж',
+  `count` int(11) DEFAULT NULL COMMENT 'количество родов',
+  `description_education` text COLLATE utf8_unicode_ci COMMENT 'образование',
+  `description_experience` text COLLATE utf8_unicode_ci COMMENT 'проф навыки, сильные стороны',
+  `description_pro` text COLLATE utf8_unicode_ci,
+  `description_services` text COLLATE utf8_unicode_ci,
+  `category` bigint(20) UNSIGNED DEFAULT NULL,
+  `position` bigint(20) UNSIGNED DEFAULT NULL COMMENT 'специализация врача',
+  `clinic_id` int(11) DEFAULT NULL COMMENT 'Прикреплен к клинике (ID)',
+  `image_id` bigint(20) UNSIGNED DEFAULT NULL,
   `def` tinyint(1) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci COMMENT='Врачи системы';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Врачи системы';
 
 --
 -- Дамп данных таблицы `doctors`
@@ -629,12 +728,12 @@ INSERT INTO `doctors` (`id`, `full_name`, `short_name`, `patronymic`, `experienc
 --
 
 CREATE TABLE `doctor_category_type` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `lettera` varchar(1) DEFAULT NULL,
-  `description` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci,
-  `bg_color` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `icon` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL
+  `description` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
+  `bg_color` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `icon` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -653,11 +752,11 @@ INSERT INTO `doctor_category_type` (`id`, `title`, `lettera`, `description`, `bg
 --
 
 CREATE TABLE `doctor_position_type` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `description` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci,
-  `bg_color` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `icon` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
+  `bg_color` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `icon` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -678,11 +777,11 @@ INSERT INTO `doctor_position_type` (`id`, `title`, `description`, `bg_color`, `i
 --
 
 CREATE TABLE `entity_type` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `name` varchar(20) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `comment` text COLLATE utf8mb3_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci COMMENT='Тип сущности';
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `name` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `comment` text COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Тип сущности';
 
 --
 -- Дамп данных таблицы `entity_type`
@@ -699,13 +798,13 @@ INSERT INTO `entity_type` (`id`, `title`, `name`, `comment`) VALUES
 --
 
 CREATE TABLE `facilities_containers` (
-  `id` int NOT NULL,
-  `container_id` int NOT NULL,
-  `facility_id` int NOT NULL,
-  `overrided_title` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `overrided_description` text COLLATE utf8mb3_unicode_ci,
-  `comment` text COLLATE utf8mb3_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` int(11) NOT NULL,
+  `container_id` int(11) NOT NULL,
+  `facility_id` int(11) NOT NULL,
+  `overrided_title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `overrided_description` text COLLATE utf8_unicode_ci,
+  `comment` text COLLATE utf8_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `facilities_containers`
@@ -730,11 +829,11 @@ INSERT INTO `facilities_containers` (`id`, `container_id`, `facility_id`, `overr
 --
 
 CREATE TABLE `facilities_containers_repo` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `description` text COLLATE utf8mb3_unicode_ci,
-  `comment` text COLLATE utf8mb3_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text COLLATE utf8_unicode_ci,
+  `comment` text COLLATE utf8_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `facilities_containers_repo`
@@ -754,11 +853,11 @@ INSERT INTO `facilities_containers_repo` (`id`, `title`, `description`, `comment
 --
 
 CREATE TABLE `facilities_type` (
-  `id` int NOT NULL,
-  `icon` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `description` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci,
-  `bg_color` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL
+  `id` int(11) NOT NULL,
+  `icon` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `title` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
+  `bg_color` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -774,25 +873,25 @@ INSERT INTO `facilities_type` (`id`, `icon`, `title`, `description`, `bg_color`)
 -- --------------------------------------------------------
 
 --
--- Структура таблицы `feedback`
+-- Структура таблицы `feedbacks`
 --
 
-CREATE TABLE `feedback` (
-  `id` bigint UNSIGNED NOT NULL,
-  `section` varchar(150) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `target_entity_key` text COLLATE utf8mb3_unicode_ci NOT NULL,
-  `target_entity_id` int NOT NULL,
-  `user_id` bigint UNSIGNED NOT NULL,
-  `status` varchar(20) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'pending',
+CREATE TABLE `feedbacks` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `section` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `target_entity_key` text COLLATE utf8_unicode_ci NOT NULL,
+  `target_entity_id` int(11) NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `status` varchar(20) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'pending',
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
--- Дамп данных таблицы `feedback`
+-- Дамп данных таблицы `feedbacks`
 --
 
-INSERT INTO `feedback` (`id`, `section`, `target_entity_key`, `target_entity_id`, `user_id`, `status`, `datetime_update`, `datetime_create`) VALUES
+INSERT INTO `feedbacks` (`id`, `section`, `target_entity_key`, `target_entity_id`, `user_id`, `status`, `datetime_update`, `datetime_create`) VALUES
 (1, 'clinic', 'ent_clinic_contragents', 35, 1, 'reject', '2023-08-01 13:03:10', '2023-07-16 15:06:35'),
 (2, 'clinic', 'ent_clinic_contragents', 35, 1, 'deleted', '2023-08-01 13:03:19', '2023-07-17 13:47:46'),
 (4, 'clinic', 'ent_clinic_contragents', 35, 1, 'deleted', '2023-08-01 13:03:23', '2023-07-17 13:48:36'),
@@ -818,7 +917,7 @@ INSERT INTO `feedback` (`id`, `section`, `target_entity_key`, `target_entity_id`
 (25, 'clinic', 'ent_clinic_contragents', 35, 19, 'approved', '2023-09-01 10:57:46', '2023-07-18 17:34:14'),
 (26, 'clinic', 'ent_clinic_contragents', 35, 19, 'approved', '2023-09-01 10:57:47', '2023-07-18 17:40:55'),
 (27, 'clinic', 'ent_clinic_contragents', 35, 19, 'approved', '2023-09-01 10:57:47', '2023-07-18 17:43:42'),
-(28, 'clinic', 'ent_clinic_contragents', 35, 1, 'approved', '2023-07-19 16:20:34', '2023-07-18 20:07:57'),
+(28, 'clinic', 'ent_clinic_contragents', 35, 1, 'deleted', '2024-02-16 18:16:28', '2023-07-18 20:07:57'),
 (29, 'clinic', 'ent_clinic_contragents', 35, 1, 'deleted', '2023-09-01 10:41:52', '2023-07-18 20:10:20'),
 (30, 'clinic', 'ent_clinic_contragents', 35, 1, 'approved', '2023-08-15 17:14:19', '2023-08-14 21:00:00'),
 (31, 'consultation', 'ent_consultation_contragents', 24, 1, 'deleted', '2023-09-08 16:05:15', '2023-09-08 16:04:35'),
@@ -863,11 +962,11 @@ INSERT INTO `feedback` (`id`, `section`, `target_entity_key`, `target_entity_id`
 --
 
 CREATE TABLE `feedback_entity_type` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `slug` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `comment` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci COMMENT='Тип сущности';
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `slug` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `comment` text COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Тип сущности';
 
 --
 -- Дамп данных таблицы `feedback_entity_type`
@@ -885,11 +984,11 @@ INSERT INTO `feedback_entity_type` (`id`, `title`, `slug`, `comment`) VALUES
 --
 
 CREATE TABLE `feedback_rate` (
-  `entity_key` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `entity_id` bigint NOT NULL,
-  `rate` int NOT NULL,
+  `entity_key` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `entity_id` bigint(20) NOT NULL,
+  `rate` int(11) NOT NULL,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -898,11 +997,11 @@ CREATE TABLE `feedback_rate` (
 --
 
 CREATE TABLE `feedback_status_type` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `slug` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `comment` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci COMMENT='Тип сущности';
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `slug` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `comment` text COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Тип сущности';
 
 --
 -- Дамп данных таблицы `feedback_status_type`
@@ -924,12 +1023,12 @@ INSERT INTO `feedback_status_type` (`id`, `title`, `slug`, `comment`) VALUES
 --
 
 CREATE TABLE `files` (
-  `id` bigint UNSIGNED NOT NULL,
-  `filename` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `aws` varchar(570) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `folder` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `type` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `filename` varchar(500) COLLATE utf8_unicode_ci NOT NULL,
+  `aws` varchar(570) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `folder` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `type` varchar(50) COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `files`
@@ -1096,7 +1195,59 @@ INSERT INTO `files` (`id`, `filename`, `aws`, `folder`, `type`) VALUES
 (187, 'Услуги фотографа_1668953153644.jpeg', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/%D0%A3%D1%81%D0%BB%D1%83%D0%B3%D0%B8%20%D1%84%D0%BE%D1%82%D0%BE%D0%B3%D1%80%D0%B0%D1%84%D0%B0_1668953153644.jpeg', '/system-images', 'image/jpeg'),
 (188, 'видео_1668953379934.jpg', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/%D0%B2%D0%B8%D0%B4%D0%B5%D0%BE_1668953379934.jpg', '/system-images', 'image/jpeg'),
 (189, 'Скорая_1668953799391.jpg', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/%D0%A1%D0%BA%D0%BE%D1%80%D0%B0%D1%8F_1668953799391.jpg', '/system-images', 'image/jpeg'),
-(190, 'Скорая_1668953851404.jpg', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/%D0%A1%D0%BA%D0%BE%D1%80%D0%B0%D1%8F_1668953851404.jpg', '/system-images', 'image/jpeg');
+(190, 'Скорая_1668953851404.jpg', 'https://birhhelper-storage.storage.yandexcloud.net/system-images/%D0%A1%D0%BA%D0%BE%D1%80%D0%B0%D1%8F_1668953851404.jpg', '/system-images', 'image/jpeg'),
+(191, 'photo_2023-10-25_18-52-25_1718971112726.jpg', 'https://birhhelper-storage.storage.yandexcloud.net/user-images/photo_2023-10-25_18-52-25_1718971112726.jpg', '/user-images', 'image/jpeg');
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `friend_list`
+--
+
+CREATE TABLE `friend_list` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `target_key` varchar(20) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'ent_users',
+  `target_id` bigint(20) NOT NULL,
+  `status` varchar(50) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'pending',
+  `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `datetime_delete` timestamp NULL DEFAULT NULL,
+  `uniq` varchar(50) COLLATE utf8_unicode_ci GENERATED ALWAYS AS (md5(concat(`status`,`user_id`,`target_key`,`target_id`,convert(coalesce(`datetime_delete`,'') using utf8)))) STORED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Дамп данных таблицы `friend_list`
+--
+
+INSERT INTO `friend_list` (`id`, `user_id`, `target_key`, `target_id`, `status`, `datetime_update`, `datetime_create`, `datetime_delete`) VALUES
+(27, 1, 'ent_users', 19, 'approved', '2024-06-28 18:55:02', '2024-06-28 18:55:02', NULL),
+(28, 20, 'ent_users', 1, 'pending', '2024-06-28 18:55:02', '2024-06-28 18:55:02', NULL),
+(29, 21, 'ent_users', 1, 'approved', '2024-06-28 18:55:13', '2024-06-28 18:55:13', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `friend_status_type`
+--
+
+CREATE TABLE `friend_status_type` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `slug` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `comment` text COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Тип сущности';
+
+--
+-- Дамп данных таблицы `friend_status_type`
+--
+
+INSERT INTO `friend_status_type` (`id`, `title`, `slug`, `comment`) VALUES
+(1, 'Ожидание', 'pending', ''),
+(3, 'Отклонен', 'declined', ''),
+(4, 'Одобрен', 'approved', ''),
+(5, 'Удалена пользователем', 'deleted', ''),
+(6, 'Заблокирован', 'blocked', '');
 
 -- --------------------------------------------------------
 
@@ -1105,13 +1256,13 @@ INSERT INTO `files` (`id`, `filename`, `aws`, `folder`, `type`) VALUES
 --
 
 CREATE TABLE `images` (
-  `id` bigint UNSIGNED NOT NULL,
-  `file_id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb3_unicode_ci NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `file_id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `description` text COLLATE utf8_unicode_ci NOT NULL,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `images`
@@ -1278,7 +1429,8 @@ INSERT INTO `images` (`id`, `file_id`, `title`, `description`, `datetime_update`
 (187, 187, 'Услуги фотографа', 'null', '2022-11-20 14:05:54', '2022-11-20 14:05:54'),
 (188, 188, 'Видео', 'null', '2022-11-20 14:09:40', '2022-11-20 14:09:40'),
 (189, 189, 'Трансфер', 'null', '2022-11-20 14:16:39', '2022-11-20 14:16:39'),
-(190, 190, 'Трансфер', 'null', '2022-11-20 14:17:31', '2022-11-20 14:17:31');
+(190, 190, 'Трансфер', 'null', '2022-11-20 14:17:31', '2022-11-20 14:17:31'),
+(191, 191, 'Без названия', 'Без описания', '2024-06-21 11:58:32', '2024-06-21 11:58:32');
 
 -- --------------------------------------------------------
 
@@ -1287,13 +1439,13 @@ INSERT INTO `images` (`id`, `file_id`, `title`, `description`, `datetime_update`
 --
 
 CREATE TABLE `likes` (
-  `id` bigint UNSIGNED NOT NULL,
-  `status` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'active',
-  `target_id` bigint UNSIGNED NOT NULL,
-  `target_type` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `user_id` bigint UNSIGNED NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `status` varchar(20) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'active',
+  `target_id` bigint(20) UNSIGNED NOT NULL,
+  `target_type` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `likes`
@@ -1306,8 +1458,12 @@ INSERT INTO `likes` (`id`, `status`, `target_id`, `target_type`, `user_id`, `dat
 (22, 'active', 60, 'feedback', 1, '2023-09-09 20:58:04'),
 (23, 'active', 61, 'feedback', 1, '2023-09-09 20:58:05'),
 (35, 'active', 38, 'feedback', 1, '2023-09-28 10:15:00'),
-(36, 'active', 30, 'feedback', 1, '2023-12-25 18:22:44'),
-(37, 'active', 58, 'feedback', 1, '2023-12-26 18:37:17');
+(37, 'active', 58, 'feedback', 1, '2023-12-26 18:37:17'),
+(38, 'active', 27, 'feedback', 1, '2024-01-13 17:17:39'),
+(39, 'active', 25, 'feedback', 1, '2024-01-13 17:18:16'),
+(42, 'active', 21, 'comment', 1, '2024-02-23 22:03:01'),
+(43, 'active', 30, 'feedback', 1, '2024-02-23 22:03:26'),
+(47, 'active', 27, 'comment', 1, '2024-02-24 09:48:04');
 
 -- --------------------------------------------------------
 
@@ -1316,11 +1472,11 @@ INSERT INTO `likes` (`id`, `status`, `target_id`, `target_type`, `user_id`, `dat
 --
 
 CREATE TABLE `like_type` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `slug` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `comment` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci COMMENT='Тип сущности';
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `slug` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `comment` text COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Тип сущности';
 
 --
 -- Дамп данных таблицы `like_type`
@@ -1337,14 +1493,14 @@ INSERT INTO `like_type` (`id`, `title`, `slug`, `comment`) VALUES
 --
 
 CREATE TABLE `lk_permissions` (
-  `id` bigint UNSIGNED NOT NULL,
-  `user_id` bigint UNSIGNED NOT NULL,
-  `contragent_entity_key` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `contragent_entity_id` bigint NOT NULL,
-  `permission_id` bigint UNSIGNED NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `contragent_entity_key` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `contragent_entity_id` bigint(20) NOT NULL,
+  `permission_id` bigint(20) UNSIGNED NOT NULL,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `lk_permissions`
@@ -1369,12 +1525,12 @@ INSERT INTO `lk_permissions` (`id`, `user_id`, `contragent_entity_key`, `contrag
 --
 
 CREATE TABLE `lk_permission_type` (
-  `id` bigint UNSIGNED NOT NULL,
-  `slug` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `description` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci,
-  `icon` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `bg_color` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `slug` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `title` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
+  `icon` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `bg_color` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -1393,22 +1549,22 @@ INSERT INTO `lk_permission_type` (`id`, `slug`, `title`, `description`, `icon`, 
 --
 
 CREATE TABLE `orders` (
-  `id` bigint UNSIGNED NOT NULL,
-  `user_id` bigint UNSIGNED NOT NULL,
-  `session_id` bigint UNSIGNED NOT NULL,
-  `slot_entity_key` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `slot_entity_id` bigint UNSIGNED NOT NULL,
-  `contragent_entity_id` bigint UNSIGNED DEFAULT NULL,
-  `section_key` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `tab_key` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `floor_key` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `utility` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'other',
-  `refferer` bigint UNSIGNED NOT NULL,
-  `status` varchar(20) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `group_token` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `session_id` bigint(20) UNSIGNED NOT NULL,
+  `slot_entity_key` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `slot_entity_id` bigint(20) UNSIGNED NOT NULL,
+  `contragent_entity_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `section_key` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `tab_key` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `floor_key` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `utility` varchar(50) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'other',
+  `refferer` bigint(20) UNSIGNED NOT NULL,
+  `status` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `group_token` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `orders`
@@ -1493,7 +1649,17 @@ INSERT INTO `orders` (`id`, `user_id`, `session_id`, `slot_entity_key`, `slot_en
 (76, 3, 1813, 'ent_birth_type_slots', 61, 1, 'clinic', 'birthtype', 'birthtype', 'other', 3, 'pending', NULL, '2023-12-12 18:06:06', '2023-12-12 18:06:06'),
 (77, 1, 1920, 'ent_birth_additional_slots', 433, 1, 'clinic', 'other', 'other', 'other', 1, 'pending', NULL, '2023-12-20 19:59:49', '2023-12-20 19:59:49'),
 (78, 1, 1920, 'ent_consultation_doctor_slots', 490, 1, 'consultation', 'consultation_doctors', 'consultation_doctors_1', 'other', 1, 'deleted', NULL, '2023-12-21 10:32:35', '2023-12-20 20:02:14'),
-(79, 1, 1920, 'ent_consultation_doctor_slots', 490, 1, 'consultation', 'consultation_doctors', 'consultation_doctors_1', 'other', 1, 'pending', NULL, '2023-12-21 11:23:47', '2023-12-21 11:23:47');
+(79, 1, 1920, 'ent_consultation_doctor_slots', 490, 1, 'consultation', 'consultation_doctors', 'consultation_doctors_1', 'other', 1, 'pending', NULL, '2023-12-21 11:23:47', '2023-12-21 11:23:47'),
+(80, 19, 1813, 'ent_doctor_slots', 140, 1, 'clinic', 'doctors', 'doctors1_1', 'other', 19, 'completed', 'd5065550-086a-49c4-8c52-02b1383df0c2', '2024-05-15 18:35:10', '2024-01-29 18:08:32'),
+(81, 19, 1813, 'ent_placement_slots', 432, 1, 'clinic', 'placement', 'placement', 'other', 19, 'deleted', NULL, '2024-05-15 18:32:32', '2024-01-29 18:08:40'),
+(82, 19, 1813, 'ent_birth_type_slots', 63, 1, 'clinic', 'birthtype', 'birthtype', 'other', 19, 'completed', 'd5065550-086a-49c4-8c52-02b1383df0c2', '2024-05-15 18:35:10', '2024-01-29 18:08:43'),
+(83, 19, 1813, 'ent_placement_slots', 432, 1, 'clinic', 'placement', 'placement', 'other', 19, 'completed', 'd5065550-086a-49c4-8c52-02b1383df0c2', '2024-05-15 18:35:10', '2024-05-15 18:32:33'),
+(84, 19, 1813, 'ent_birth_additional_slots', 436, 1, 'clinic', 'other', 'other', 'other', 19, 'completed', 'd5065550-086a-49c4-8c52-02b1383df0c2', '2024-05-15 18:35:10', '2024-05-15 18:32:35'),
+(85, 19, 1813, 'ent_birth_additional_slots', 435, 1, 'clinic', 'other', 'other', 'other', 19, 'completed', 'd5065550-086a-49c4-8c52-02b1383df0c2', '2024-05-15 18:35:10', '2024-05-15 18:32:37'),
+(86, 3, 2407, 'ent_doctor_slots', 140, 1, 'clinic', 'doctors', 'doctors1_1', 'other', 3, 'pending', NULL, '2024-05-16 11:51:40', '2024-05-16 11:51:40'),
+(87, 3, 2407, 'ent_placement_slots', 432, 1, 'clinic', 'placement', 'placement', 'other', 3, 'pending', NULL, '2024-05-16 11:51:46', '2024-05-16 11:51:46'),
+(88, 3, 2407, 'ent_birth_type_slots', 61, 1, 'clinic', 'birthtype', 'birthtype', 'other', 3, 'pending', NULL, '2024-05-16 11:51:52', '2024-05-16 11:51:52'),
+(89, 3, 2407, 'ent_birth_additional_slots', 433, 1, 'clinic', 'other', 'other', 'other', 3, 'pending', NULL, '2024-05-16 11:51:57', '2024-05-16 11:51:57');
 
 -- --------------------------------------------------------
 
@@ -1502,13 +1668,13 @@ INSERT INTO `orders` (`id`, `user_id`, `session_id`, `slot_entity_key`, `slot_en
 --
 
 CREATE TABLE `order_contacts` (
-  `id` bigint UNSIGNED NOT NULL,
-  `group_token` varchar(150) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `user_id` bigint NOT NULL,
-  `session_id` bigint NOT NULL,
-  `phone` varchar(150) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `email` varchar(150) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `skype` varchar(150) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `group_token` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
+  `user_id` bigint(20) NOT NULL,
+  `session_id` bigint(20) NOT NULL,
+  `phone` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `email` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `skype` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
   `ch_email` tinyint(1) DEFAULT NULL,
   `ch_phone` tinyint(1) DEFAULT NULL,
   `ch_viber` tinyint(1) DEFAULT NULL,
@@ -1517,14 +1683,15 @@ CREATE TABLE `order_contacts` (
   `ch_telegram` tinyint(1) NOT NULL,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `order_contacts`
 --
 
 INSERT INTO `order_contacts` (`id`, `group_token`, `user_id`, `session_id`, `phone`, `email`, `skype`, `ch_email`, `ch_phone`, `ch_viber`, `ch_whatsapp`, `ch_skype`, `ch_telegram`, `datetime_create`, `datetime_update`) VALUES
-(1, 'b50c5ffc-838b-4f1e-8c33-5dd17c519c37', 1, 1079, '89171215000', 'alter4444@gmail.com', 'exclusive_login', 0, 0, 0, 1, 0, 1, '2023-02-21 08:52:06', '2023-02-21 08:52:06');
+(1, 'b50c5ffc-838b-4f1e-8c33-5dd17c519c37', 1, 1079, '89171215000', 'alter4444@gmail.com', 'exclusive_login', 0, 0, 0, 1, 0, 1, '2023-02-21 08:52:06', '2023-02-21 08:52:06'),
+(2, 'd5065550-086a-49c4-8c52-02b1383df0c2', 19, 1813, '+79537147431', 'egorenkovov@yandex.ru', NULL, 0, 0, 1, 1, 0, 0, '2024-05-15 18:33:50', '2024-05-15 18:33:50');
 
 -- --------------------------------------------------------
 
@@ -1533,10 +1700,10 @@ INSERT INTO `order_contacts` (`id`, `group_token`, `user_id`, `session_id`, `pho
 --
 
 CREATE TABLE `order_status_type` (
-  `slug` varchar(20) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `title` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb3_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `slug` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `description` text COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `order_status_type`
@@ -1559,13 +1726,13 @@ INSERT INTO `order_status_type` (`slug`, `title`, `description`) VALUES
 --
 
 CREATE TABLE `phones` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `description` text COLLATE utf8mb3_unicode_ci,
-  `phone` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `comment` text COLLATE utf8mb3_unicode_ci,
-  `section` varchar(150) COLLATE utf8mb3_unicode_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text COLLATE utf8_unicode_ci,
+  `phone` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `comment` text COLLATE utf8_unicode_ci,
+  `section` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `phones`
@@ -1586,11 +1753,11 @@ INSERT INTO `phones` (`id`, `title`, `description`, `phone`, `comment`, `section
 --
 
 CREATE TABLE `phones_containers_repo` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `description` text COLLATE utf8mb3_unicode_ci,
-  `comment` text COLLATE utf8mb3_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text COLLATE utf8_unicode_ci,
+  `comment` text COLLATE utf8_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `phones_containers_repo`
@@ -1610,11 +1777,11 @@ INSERT INTO `phones_containers_repo` (`id`, `title`, `description`, `comment`) V
 --
 
 CREATE TABLE `phone_containers` (
-  `id` int NOT NULL,
-  `container_id` int NOT NULL,
-  `phone_id` int NOT NULL,
-  `comment` text COLLATE utf8mb3_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` int(11) NOT NULL,
+  `container_id` int(11) NOT NULL,
+  `phone_id` int(11) NOT NULL,
+  `comment` text COLLATE utf8_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `phone_containers`
@@ -1634,14 +1801,14 @@ INSERT INTO `phone_containers` (`id`, `container_id`, `phone_id`, `comment`) VAL
 --
 
 CREATE TABLE `roles` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `description` text COLLATE utf8mb3_unicode_ci,
-  `slug` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `rank` int NOT NULL DEFAULT '0',
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text COLLATE utf8_unicode_ci,
+  `slug` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `rank` int(11) NOT NULL DEFAULT '0',
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `roles`
@@ -1661,12 +1828,12 @@ INSERT INTO `roles` (`id`, `title`, `description`, `slug`, `rank`, `datetime_cre
 --
 
 CREATE TABLE `search` (
-  `hash` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `section` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `filters` text COLLATE utf8mb3_unicode_ci NOT NULL,
+  `hash` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `section` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `filters` text COLLATE utf8_unicode_ci NOT NULL,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `search`
@@ -1702,11 +1869,11 @@ INSERT INTO `search` (`hash`, `section`, `filters`, `datetime_create`, `datetime
 --
 
 CREATE TABLE `section_type` (
-  `id` bigint NOT NULL,
-  `title` varchar(150) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `slug` varchar(150) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb3_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` bigint(20) NOT NULL,
+  `title` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
+  `slug` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
+  `description` text COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `section_type`
@@ -1723,18 +1890,18 @@ INSERT INTO `section_type` (`id`, `title`, `slug`, `description`) VALUES
 --
 
 CREATE TABLE `services` (
-  `id` int NOT NULL,
-  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `description` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci,
-  `description_ext1` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci,
-  `description_ext2` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci,
-  `image_id` bigint UNSIGNED DEFAULT NULL,
-  `article_id` int DEFAULT NULL,
-  `trimester` int DEFAULT NULL,
-  `slot_category_type` bigint UNSIGNED DEFAULT NULL COMMENT 'Категория услуги',
+  `id` int(11) NOT NULL,
+  `title` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
+  `description_ext1` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
+  `description_ext2` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
+  `image_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `article_id` int(11) DEFAULT NULL,
+  `trimester` int(11) DEFAULT NULL,
+  `slot_category_type` bigint(20) UNSIGNED DEFAULT NULL COMMENT 'Категория услуги',
   `adv` tinyint(1) DEFAULT NULL,
-  `area_min` int UNSIGNED DEFAULT NULL,
-  `area_max` int UNSIGNED DEFAULT NULL
+  `area_min` int(10) UNSIGNED DEFAULT NULL,
+  `area_max` int(10) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -1768,11 +1935,11 @@ INSERT INTO `services` (`id`, `title`, `description`, `description_ext1`, `descr
 --
 
 CREATE TABLE `services_containers_repo` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `description` text COLLATE utf8mb3_unicode_ci,
-  `comment` text COLLATE utf8mb3_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text COLLATE utf8_unicode_ci,
+  `comment` text COLLATE utf8_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `services_containers_repo`
@@ -1788,13 +1955,13 @@ INSERT INTO `services_containers_repo` (`id`, `title`, `description`, `comment`)
 --
 
 CREATE TABLE `service_containers` (
-  `id` bigint UNSIGNED NOT NULL,
-  `container_id` int NOT NULL,
-  `service_id` int NOT NULL,
-  `overrided_title` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `overrided_description` text COLLATE utf8mb3_unicode_ci,
-  `comment` text COLLATE utf8mb3_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `container_id` int(11) NOT NULL,
+  `service_id` int(11) NOT NULL,
+  `overrided_title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `overrided_description` text COLLATE utf8_unicode_ci,
+  `comment` text COLLATE utf8_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `service_containers`
@@ -1812,21 +1979,21 @@ INSERT INTO `service_containers` (`id`, `container_id`, `service_id`, `overrided
 --
 
 CREATE TABLE `service_slot` (
-  `id` bigint UNSIGNED NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
-  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `section` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `image_id` bigint UNSIGNED DEFAULT NULL,
-  `service_id` bigint UNSIGNED NOT NULL,
-  `price` int NOT NULL,
-  `benefit_price` int DEFAULT NULL,
-  `benefit_percent` int DEFAULT NULL,
-  `contragent_id` bigint UNSIGNED NOT NULL,
-  `entity_type` bigint UNSIGNED NOT NULL DEFAULT '1',
-  `slot_category_type` bigint UNSIGNED DEFAULT NULL,
-  `facilities_type` int DEFAULT NULL,
-  `entity_key` varchar(150) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `section` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `image_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `service_id` bigint(20) UNSIGNED NOT NULL,
+  `price` int(11) NOT NULL,
+  `benefit_price` int(11) DEFAULT NULL,
+  `benefit_percent` int(11) DEFAULT NULL,
+  `contragent_id` bigint(20) UNSIGNED NOT NULL,
+  `entity_type` bigint(20) UNSIGNED NOT NULL DEFAULT '1',
+  `slot_category_type` bigint(20) UNSIGNED DEFAULT NULL,
+  `facilities_type` int(11) DEFAULT NULL,
+  `entity_key` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `service_slot`
@@ -2274,13 +2441,13 @@ INSERT INTO `service_slot` (`id`, `active`, `title`, `section`, `image_id`, `ser
 --
 
 CREATE TABLE `sessions` (
-  `id` bigint UNSIGNED NOT NULL,
-  `token` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `user_id` bigint UNSIGNED NOT NULL,
-  `user_agent` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `token` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `user_agent` text COLLATE utf8_unicode_ci,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `sessions`
@@ -3832,7 +3999,7 @@ INSERT INTO `sessions` (`id`, `token`, `user_id`, `user_agent`, `datetime_create
 (1810, '6b258610-a581-466f-a5e3-9150754493b3', 3, 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36', '2023-11-02 04:11:12', '2023-11-02 04:11:12'),
 (1811, 'c22f51e9-1379-4b8f-98f2-42ed6ecc9874', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2023-11-02 07:06:48', '2023-11-02 07:06:48'),
 (1812, '76c50432-b7c6-49a4-b7c1-be93008aba52', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2023-11-02 07:06:52', '2023-11-02 07:06:52'),
-(1813, 'e5109a76-9040-42f1-853f-edb778607546', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 YaBrowser/23.1.2.980 Yowser/2.5 Safari/537.36', '2023-11-02 12:35:38', '2023-12-12 18:26:40'),
+(1813, 'e5109a76-9040-42f1-853f-edb778607546', 19, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 YaBrowser/23.1.2.980 Yowser/2.5 Safari/537.36', '2023-11-02 12:35:38', '2024-01-08 15:20:28'),
 (1814, '3ae58dbb-1f08-435e-ae1a-a708697543d0', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2023-11-02 12:57:14', '2023-11-02 12:57:14'),
 (1815, 'f08254bf-dc1a-43aa-8c17-4bcf6aabe8af', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2023-11-02 14:13:50', '2023-11-02 14:13:50'),
 (1816, '2b116eef-5e0e-4c12-9bb4-58de11d8e369', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.5845.931 YaBrowser/23.9.3.931 Yowser/2.5 Safari/537.36', '2023-11-02 20:49:44', '2023-11-02 20:49:44'),
@@ -4002,7 +4169,7 @@ INSERT INTO `sessions` (`id`, `token`, `user_id`, `user_agent`, `datetime_create
 (1979, '89e9eae6-15d3-4f8a-bada-c2a05b5c67de', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.5993.771 YaBrowser/23.11.2.771 Yowser/2.5 Safari/537.36', '2023-12-23 16:39:56', '2023-12-23 16:39:56'),
 (1980, '8541c132-24ba-41b7-96fd-160078fbbebe', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2023-12-23 20:40:36', '2023-12-23 20:40:36'),
 (1981, '2995c476-c9cc-48d4-93fd-8ae713982044', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.5993.771 YaBrowser/23.11.2.771 Yowser/2.5 Safari/537.36', '2023-12-24 04:01:29', '2023-12-24 04:01:29'),
-(1982, 'd086f3f7-9cb2-4984-8fab-375d37eb5e55', 1, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', '2023-12-24 18:13:29', '2023-12-24 18:13:42'),
+(1982, 'd086f3f7-9cb2-4984-8fab-375d37eb5e55', 1, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36', '2023-12-24 18:13:29', '2024-06-19 21:07:55'),
 (1983, '1d0239b5-f841-4ff4-96d6-d7255f0b3fd4', 1, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', '2023-12-24 20:58:54', '2023-12-24 20:59:02'),
 (1984, 'f8476243-e02c-49ee-9dfc-0a8d295ec147', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.71 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2023-12-24 21:11:13', '2023-12-24 21:11:13'),
 (1985, 'f249648d-6527-415e-ab90-1175bb2dbafe', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2023-12-25 10:47:31', '2023-12-25 10:47:31'),
@@ -4012,7 +4179,7 @@ INSERT INTO `sessions` (`id`, `token`, `user_id`, `user_agent`, `datetime_create
 (1989, '6b77125b-13b8-40c8-9b4f-acfbce844d13', 3, 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.111 YaBrowser/21.2.1.94 (beta) Yowser/2.5 Safari/537.36', '2023-12-25 15:52:15', '2023-12-25 15:52:15'),
 (1990, '00be8a26-48b8-4984-b833-db5afa3a67cd', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2023-12-26 00:44:38', '2023-12-26 00:44:38'),
 (1991, '6995106b-8a88-44af-8419-8545033bdb91', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2023-12-26 12:46:07', '2023-12-26 12:46:07'),
-(1992, 'f5365e33-313d-4b55-b02a-94c2c8b57984', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', '2023-12-26 19:36:09', '2023-12-26 19:36:09'),
+(1992, 'f5365e33-313d-4b55-b02a-94c2c8b57984', 1, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36', '2023-12-26 19:36:09', '2024-05-25 11:47:40'),
 (1993, 'e4df3243-ddcb-4e25-81ad-4dd972518a81', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.71 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2023-12-27 02:59:28', '2023-12-27 02:59:28'),
 (1994, '12235999-54c3-4ff0-afb4-7ea25c717322', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.71 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2023-12-27 03:44:27', '2023-12-27 03:44:27'),
 (1995, 'd5732114-69be-4e05-91be-44d341e59b3b', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2023-12-27 10:28:10', '2023-12-27 10:28:10'),
@@ -4051,7 +4218,543 @@ INSERT INTO `sessions` (`id`, `token`, `user_id`, `user_agent`, `datetime_create
 (2028, 'e0849e48-546a-4089-91b9-a78da8be9e90', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-06 06:16:38', '2024-01-06 06:16:38'),
 (2029, 'fc6d3c09-b428-43f3-985c-939577f0694c', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-06 06:17:20', '2024-01-06 06:17:20'),
 (2030, '33276661-b3d1-4cf5-a543-990880ce245f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-06 06:18:19', '2024-01-06 06:18:19'),
-(2031, '2e91a0a0-49f7-4876-a207-364ed51aa351', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-06 10:17:41', '2024-01-06 10:17:41');
+(2031, '2e91a0a0-49f7-4876-a207-364ed51aa351', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-06 10:17:41', '2024-01-06 10:17:41'),
+(2032, 'bf214a31-ecca-4bba-92c3-491a6415552d', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-01-06 19:12:50', '2024-01-06 19:12:50'),
+(2033, '433ce544-e724-4386-87e8-7692b57f75db', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-07 13:19:10', '2024-01-07 13:19:10'),
+(2034, '9afde5ab-c4b8-451f-9594-fa3fa4f41137', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-07 16:46:00', '2024-01-07 16:46:00'),
+(2035, '344d833e-2186-4c08-b878-5b9d21e99e65', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-07 23:53:44', '2024-01-07 23:53:44'),
+(2036, 'd43aac98-aefb-4644-969e-1b4840b83c35', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-08 15:13:23', '2024-01-08 15:13:23'),
+(2037, '8d2585a2-fe14-481a-b2a2-1c0e9efe79c9', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-08 15:16:30', '2024-01-08 15:16:30'),
+(2038, '05aba4c8-af1a-4db7-83d8-2ad84d8e4ccc', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-08 15:16:31', '2024-01-08 15:16:31'),
+(2039, '7519a349-0fe9-4bef-baba-6386435b76b8', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-08 15:16:56', '2024-01-08 15:16:56'),
+(2040, '3c6963ce-ed09-4327-8a8d-c8ec25e4bfcd', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-08 15:16:58', '2024-01-08 15:16:58'),
+(2041, '5323c903-c64f-485c-aab8-57bb800035a4', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-08 15:17:19', '2024-01-08 15:17:19'),
+(2042, '34d47007-683d-4eb4-9443-cb7292c01f8a', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-08 15:18:37', '2024-01-08 15:18:37'),
+(2043, '900080be-e59f-4daa-be88-c1dd3bb7e04d', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-08 15:19:18', '2024-01-08 15:19:18'),
+(2044, '819b2cff-94b0-4d67-a107-b6efa4ec080f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-08 15:19:26', '2024-01-08 15:19:26'),
+(2045, 'a0a73e4f-92c7-43bb-9cc9-983a6286ea44', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-08 15:19:31', '2024-01-08 15:19:31'),
+(2046, '92114f97-4fda-4433-aa09-179760d85b19', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-08 15:20:54', '2024-01-08 15:20:54'),
+(2047, 'a6bfcbd1-5e36-41f3-bd41-4c703a5c907d', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', '2024-01-08 18:01:49', '2024-01-08 18:01:49'),
+(2048, 'c168c19d-6872-4946-b762-58f4b0bfc0aa', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-09 06:37:56', '2024-01-09 06:37:56'),
+(2049, '0bc57ffa-3287-41d0-82ff-4a4b827f2760', 3, 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_1_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1.2 Mobile/15E148 Safari/604.1', '2024-01-10 06:44:25', '2024-01-10 06:44:25'),
+(2050, 'a7754249-00ff-4813-8b95-91b00c9298c7', 3, 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_1_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1.2 Mobile/15E148 Safari/604.1', '2024-01-10 11:32:12', '2024-01-10 11:32:12'),
+(2051, 'c2b54125-9382-4d16-853a-f1e00baf3800', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-10 11:58:56', '2024-01-10 11:58:56'),
+(2052, 'a8860f2b-b6eb-43d1-813a-a4bcba748f83', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-10 12:18:24', '2024-01-10 12:18:24'),
+(2053, '47c620c6-c1dd-47c1-b6ba-0ce506e79522', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.71 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-01-11 02:26:07', '2024-01-11 02:26:07'),
+(2054, '9dd01cbb-a296-4e25-bb9c-3eba0f70a138', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.71 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-01-11 03:56:10', '2024-01-11 03:56:10'),
+(2055, 'deb1dad3-abb2-43d0-b792-3d64f6d583fb', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-11 12:32:46', '2024-01-11 12:32:46'),
+(2056, 'f0732969-555c-47fa-a2ab-2375816c27a2', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-11 12:34:20', '2024-01-11 12:34:20'),
+(2057, 'a765efda-c09b-433b-b4fa-9befae57a1a4', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-11 22:32:21', '2024-01-11 22:32:21'),
+(2058, 'adf62abb-61be-452a-87ef-eae34cc14e94', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-11 22:46:41', '2024-01-11 22:46:41'),
+(2059, 'c7573c3c-adbf-4c1b-9bea-ebd00ea63521', 3, 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/99.0.4844.0 Safari/537.36', '2024-01-12 04:57:13', '2024-01-12 04:57:13'),
+(2060, 'd6dcf324-e5d1-49d7-b36e-110be6c1fe62', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-01-12 09:19:47', '2024-01-12 09:19:47'),
+(2061, 'e15e8f84-2295-480a-a2cb-a5c65aed215b', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-13 00:03:37', '2024-01-13 00:03:37'),
+(2062, '50c2da89-0dcd-4c71-b9d1-bcf7bd3d7bab', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-14 00:29:59', '2024-01-14 00:29:59'),
+(2063, '82f3cc08-33e8-41d7-9265-c312cf4a7709', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-01-14 04:57:48', '2024-01-14 04:57:48'),
+(2064, '00294ccc-faf5-41eb-bf44-006959b961c3', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-14 14:21:22', '2024-01-14 14:21:22'),
+(2065, '4bd6dcda-567a-401d-88d9-fae6c7ac2d3b', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.199 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-01-14 16:44:16', '2024-01-14 16:44:16'),
+(2066, '13a5eb01-b41d-4bdd-a6b3-3b6a12c34731', 3, 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/120.0.6099.199 Safari/537.36', '2024-01-14 16:44:16', '2024-01-14 16:44:16'),
+(2067, '74563026-940a-45db-a46e-2428ce47376b', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-15 02:39:20', '2024-01-15 02:39:20'),
+(2068, '20c03ace-2333-46fd-9500-6aef7578f078', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-15 07:27:44', '2024-01-15 07:27:44'),
+(2069, 'b05577f0-6088-4613-a841-949483b243a0', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-16 00:48:47', '2024-01-16 00:48:47'),
+(2070, '35a69986-7d6d-48f2-b299-548edcd19124', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-16 14:35:08', '2024-01-16 14:35:08'),
+(2071, '2fe75d84-6fee-4214-a649-c14b60d6ebda', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-17 07:14:58', '2024-01-17 07:14:58'),
+(2072, 'e6993f10-f7f4-4e5a-b339-39d93124e844', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-17 09:02:50', '2024-01-17 09:02:50'),
+(2073, '7ff31e00-aadf-44ee-90d8-7a911b1f0529', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-17 09:31:57', '2024-01-17 09:31:57'),
+(2074, 'b1f5c25b-d298-452f-9ff6-9625c41c6395', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-19 00:47:00', '2024-01-19 00:47:00'),
+(2075, '660ee566-f56a-4ac2-9a6c-1858521322e4', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-20 10:23:38', '2024-01-20 10:23:38'),
+(2076, 'c387408d-6eec-4253-a764-8ac731fbc547', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-20 14:09:09', '2024-01-20 14:09:09'),
+(2077, '927bba23-7b35-4824-bba1-ed543677a62b', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36', '2024-01-20 14:15:30', '2024-01-20 14:15:30'),
+(2078, '6232a730-0bcd-4062-8b52-cbc56444e5f7', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-21 07:55:46', '2024-01-21 07:55:46'),
+(2079, '2c32be3a-7fe3-49aa-b7c0-eb535f45740c', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-01-21 12:38:57', '2024-01-21 12:38:57'),
+(2080, '63a576ca-c1a7-4d82-85ca-2a847859ee74', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.199 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-01-22 03:33:12', '2024-01-22 03:33:12'),
+(2081, 'a8e5fe4e-45ca-4ec2-9695-4d5610385048', 3, 'Mozilla/5.0 (Windows NT 10.0.0; Win64; x64; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.5993.159 Not=A?Brand/99 YaBrowser/23.11.3.935 Yowser/2.5  Safari/537.36', '2024-01-22 09:52:52', '2024-01-22 09:52:52'),
+(2082, 'b2a7faec-d0c6-4100-9fe9-2cfa3f9a0e63', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-22 09:54:12', '2024-01-22 09:54:12'),
+(2083, '21bd4423-c575-4520-baa1-156d0e1a7e5e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-22 09:55:37', '2024-01-22 09:55:37'),
+(2084, '9711274e-c902-49ed-aff2-741127be2222', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-23 06:43:49', '2024-01-23 06:43:49'),
+(2085, '0c8d9715-a52e-47a5-a860-6b8c1e508628', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-01-23 13:15:23', '2024-01-23 13:15:23'),
+(2086, '014fa6d9-5333-4336-9c5a-e036e1cd2e68', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-24 09:52:33', '2024-01-24 09:52:33'),
+(2087, 'c693eeb3-8faf-422e-a11c-5ba14fba94ba', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-25 07:19:33', '2024-01-25 07:19:33'),
+(2088, '5df60be9-3ded-4fa5-b004-f988a23612be', 3, 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1', '2024-01-25 15:20:24', '2024-01-25 15:20:24'),
+(2089, 'b2adfa87-b4fa-4b4c-ad0c-410d21226427', 3, 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1', '2024-01-25 16:14:50', '2024-01-25 16:14:50');
+INSERT INTO `sessions` (`id`, `token`, `user_id`, `user_agent`, `datetime_create`, `datetime_update`) VALUES
+(2090, 'e5adc01d-4328-4f8e-ab98-92572279f13c', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-25 21:12:11', '2024-01-25 21:12:11'),
+(2091, '4bf94a39-de6c-4401-83b7-7c67dcb9479f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-27 07:25:10', '2024-01-27 07:25:11'),
+(2092, '017b5e65-bd09-4627-967d-b54cc038a197', 3, 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1', '2024-01-27 15:41:06', '2024-01-27 15:41:06'),
+(2093, 'b4f81f57-8f78-4d1d-9897-b7315759ca1e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-28 07:24:46', '2024-01-28 07:24:46'),
+(2094, '517bf126-da7b-4122-bd43-46679e6b9f27', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-01-28 10:28:45', '2024-01-28 10:28:45'),
+(2095, '81890a17-e766-43c2-b975-2f531501240c', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-28 14:35:38', '2024-01-28 14:35:38'),
+(2096, '1d63e803-32e7-40be-8942-ca70d926ed48', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-29 06:26:03', '2024-01-29 06:26:03'),
+(2097, '3f49c20c-beac-4526-b014-ed24c6f0383e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-29 06:53:02', '2024-01-29 06:53:02'),
+(2098, '74a94f06-7530-4647-9f20-fb5cd929e5b7', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-29 18:11:50', '2024-01-29 18:11:50'),
+(2099, '755079fe-9dd4-4414-8f93-a6a0d3ad6e7e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-01-30 02:11:12', '2024-01-30 02:11:13'),
+(2100, 'a242038d-6474-4b4a-88a7-bf8bb4323672', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-01 02:02:54', '2024-02-01 02:02:54'),
+(2101, 'b947acb5-fbc7-4d4b-811b-71f5e3262ee4', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-01 23:57:58', '2024-02-01 23:57:58'),
+(2102, '1c9bfb9c-e510-4634-b39d-f140792d87e7', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-03 07:46:44', '2024-02-03 07:46:44'),
+(2103, '1df2419c-d620-43ae-8ac9-f9e26b6d70fe', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.6167.85 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-02-03 16:40:06', '2024-02-03 16:40:06'),
+(2104, 'a5225a93-ee6c-4af5-b74c-3f5ae69759b0', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-02-03 20:21:21', '2024-02-03 20:21:21'),
+(2105, '10b05e60-2406-49cf-8a4b-f1a03b5aac62', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-03 23:27:18', '2024-02-03 23:27:18'),
+(2106, 'f705de0a-a9e1-4361-8972-3002d6851f3d', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-04 01:50:27', '2024-02-04 01:50:27'),
+(2107, '74322a9f-3b4a-4d23-86e3-2447ed213113', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-05 05:11:24', '2024-02-05 05:11:24'),
+(2108, 'd470086f-b637-4816-a5bc-c6760892867f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-06 09:41:03', '2024-02-06 09:41:03'),
+(2109, 'aabffbc3-a9c5-404d-a9c8-e40730519a8e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-07 02:20:12', '2024-02-07 02:20:12'),
+(2110, 'db962967-1f1e-442b-b0db-3856a72d9539', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-07 15:31:48', '2024-02-07 15:31:48'),
+(2111, '9cb17041-9c33-4e2f-b377-e47812b24f3e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-08 13:13:56', '2024-02-08 13:13:56'),
+(2112, 'd33a0df3-1ae9-46ce-bb31-0559d3c6c773', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36', '2024-02-09 07:58:57', '2024-02-09 07:58:57'),
+(2113, '51a37409-3e17-4661-ba9d-5347e5b8aa95', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-09 22:48:18', '2024-02-09 22:48:18'),
+(2114, '5f4b92db-37c4-438b-9a79-c35089c25af7', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-09 22:50:36', '2024-02-09 22:50:36'),
+(2115, '5f40dae7-280d-4255-ad70-1130cf9cf91f', 3, 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/99.0.4844.0 Safari/537.36', '2024-02-10 04:52:57', '2024-02-10 04:52:57'),
+(2116, '3d243e6e-656a-4659-b43a-7593e4afc89b', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.6167.85 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-02-10 05:31:59', '2024-02-10 05:31:59'),
+(2117, '6f1b8a9f-2049-4469-985c-2d22cec9212b', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-02-10 19:44:44', '2024-02-10 19:44:44'),
+(2118, '4f074a87-4248-4181-8494-b73a40679141', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-02-10 19:44:54', '2024-02-10 19:44:54'),
+(2119, 'e84f3de7-541b-46bb-9cca-1efc48ea783e', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-02-10 19:45:04', '2024-02-10 19:45:04'),
+(2120, '89af6951-0300-4b4f-b860-af3aa2385362', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-12 03:59:52', '2024-02-12 03:59:52'),
+(2121, '6d1e0e96-b009-457e-bdbf-dd93ca3a57f4', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.6167.85 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-02-13 03:06:26', '2024-02-13 03:06:26'),
+(2122, 'ca34fd3b-b186-4d5b-b3d4-3e130ebd89cf', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-14 00:50:02', '2024-02-14 00:50:02'),
+(2123, '418392a4-e178-484c-b743-75eebb1bed10', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-14 00:50:10', '2024-02-14 00:50:10'),
+(2124, 'a17dc9db-81dc-4e90-9b85-7daf3801fe32', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-14 16:34:55', '2024-02-14 16:34:55'),
+(2125, 'b630e378-47f2-4e00-b03a-20bafd4affba', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-15 14:17:25', '2024-02-15 14:17:25'),
+(2126, '71b79902-5ead-44f0-9b09-83370048979b', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-15 15:50:12', '2024-02-15 15:50:12'),
+(2127, 'b73dc93f-d262-46d3-ba71-94adf5ad8d78', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-15 16:21:29', '2024-02-15 16:21:29'),
+(2128, '653d6f1f-df79-4e68-b110-ad0d44f0afd1', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-16 02:27:43', '2024-02-16 02:27:43'),
+(2129, 'd8992856-59a6-40c1-b97f-8e286fc36994', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-16 03:16:22', '2024-02-16 03:16:22'),
+(2130, '99c56af3-9ca5-489b-a44e-a3f1be335e37', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-17 07:34:48', '2024-02-17 07:34:48'),
+(2131, '758f3fb2-4bc0-41e0-a162-4504d6ebe969', 3, 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 YaBrowser/23.5.1.575 (beta) Yowser/2.5 Safari/537.36', '2024-02-18 10:16:44', '2024-02-18 10:16:44'),
+(2132, 'd0ea56ae-1086-429e-bf92-09d923d4cf22', 3, 'Mozilla/5.0 (Windows NT 10.0.0; Win64; x64; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.6167.185 Chrome/121.0.6167.185 Not A(Brand/99  Safari/537.36', '2024-02-18 10:16:58', '2024-02-18 10:16:58'),
+(2133, 'b3b25ebc-d560-482e-a44b-219fb3a22990', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-18 12:41:52', '2024-02-18 12:41:52'),
+(2134, 'c56b8a43-f4f1-4cc5-b7a0-d1b92adde316', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-18 19:25:34', '2024-02-18 19:25:34'),
+(2135, '883322d5-3c9e-44f8-b4a1-155cc3e85087', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-19 01:55:57', '2024-02-19 01:55:57'),
+(2136, 'eb780ef0-4f00-479b-b7df-8488c50e8711', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-19 01:59:23', '2024-02-19 01:59:23'),
+(2137, '7ff627ac-c170-451b-804d-c6d96bfe20a8', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.6167.85 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-02-19 03:01:53', '2024-02-19 03:01:53'),
+(2138, 'cd6ebc9a-2b28-4b4a-81cc-0f1dd0590cff', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.6167.85 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-02-19 05:18:58', '2024-02-19 05:18:58'),
+(2139, '3f5c7eee-77ed-4191-b0a0-9a6dac77786b', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-19 19:48:18', '2024-02-19 19:48:18'),
+(2140, '4e929f6b-b8ae-4ab7-a433-18e2db78b35f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-19 23:37:20', '2024-02-19 23:37:20'),
+(2141, 'e380f60f-d80e-43e4-9279-d1384f73eb96', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Safari/605.1.15 (Applebot/0.1; +http://www.apple.com/go/applebot)', '2024-02-20 06:14:20', '2024-02-20 06:14:20'),
+(2142, 'ba37ab51-d7f0-43f4-9f00-f08047e753d5', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-20 09:54:16', '2024-02-20 09:54:16'),
+(2143, '190554a2-b239-4e5c-af8c-f2766622ef0d', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-21 09:22:21', '2024-02-21 09:22:21'),
+(2144, '0bd4ca5a-38e6-4ddd-81d2-6d2ba2d87149', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-21 10:27:17', '2024-02-21 10:27:17'),
+(2145, 'eb4c9681-976c-4f3f-866b-2d5cb15862f8', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-21 10:58:55', '2024-02-21 10:58:55'),
+(2146, '80aea58a-5c98-4987-a91e-140074aa0c1a', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-02-21 13:46:50', '2024-02-21 13:46:50'),
+(2147, 'e6fe324e-a55f-4b50-ba97-b536a15b459f', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-02-21 13:47:03', '2024-02-21 13:47:03'),
+(2148, 'c22092fa-8706-4429-9853-ee3bcb520769', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-22 14:32:35', '2024-02-22 14:32:35'),
+(2149, 'e6bee8e5-2351-4474-b090-ac6ae63f9d58', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-23 03:06:15', '2024-02-23 03:06:15'),
+(2150, '759caec1-fe8d-46af-a31b-d336093660c0', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.6167.139 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-02-23 08:28:32', '2024-02-23 08:28:32'),
+(2151, '0d15903a-e5b5-4d0c-b535-05296c013e03', 3, 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36', '2024-02-24 06:44:23', '2024-02-24 06:44:23'),
+(2152, '0124a857-e9d9-4789-a040-e9e6816002a0', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36', '2024-02-24 10:33:40', '2024-02-24 10:33:40'),
+(2153, '4b31de96-71f6-426e-8f53-5de9f2c4bc50', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0', '2024-02-24 10:39:31', '2024-02-24 10:39:31'),
+(2154, '5c753855-a777-476f-bd9f-4d51586fb599', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0', '2024-02-24 10:39:54', '2024-02-24 10:39:54'),
+(2155, '895d63b7-f59c-4c85-9dfc-8d7b4c9324c8', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0', '2024-02-24 10:44:44', '2024-02-24 10:44:44'),
+(2156, 'da581196-f255-40d4-9ba5-0dbf0e81f797', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-24 14:01:08', '2024-02-24 14:01:08'),
+(2157, '32e2d745-117a-47c5-bcc3-98e21ae46649', 3, 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/119.0.6045.159 Safari/537.36', '2024-02-25 11:27:44', '2024-02-25 11:27:44'),
+(2158, '637dc10c-0b5f-42db-a807-dc0d5420c2b4', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-25 12:34:44', '2024-02-25 12:34:44'),
+(2159, '77e9a168-862a-47af-a643-d1e9a5b2946d', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-25 19:26:47', '2024-02-25 19:26:47'),
+(2160, '6d24d191-1493-4287-b956-889cd585ddc0', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-25 19:26:49', '2024-02-25 19:26:49'),
+(2161, 'be09c696-791b-4b5b-baa9-2fd399e73a35', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-26 02:48:52', '2024-02-26 02:48:52'),
+(2162, '9e3ef9ce-9476-456e-b0ea-84273e22e781', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-02-26 16:57:27', '2024-02-26 16:57:27'),
+(2163, '9ad385e0-6b5c-46a0-ac53-8e6d703387ea', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-26 22:02:25', '2024-02-26 22:02:25'),
+(2164, '9fc4e093-2259-4695-9548-7c5ebb196f9e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-27 05:02:44', '2024-02-27 05:02:44'),
+(2165, '542222bc-41f9-4271-9899-32a9c9ebc286', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-02-28 12:06:21', '2024-02-28 12:06:21'),
+(2166, '46f187c4-44f6-4d77-8a56-20731c91d8ef', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-02-28 12:08:36', '2024-02-28 12:08:36'),
+(2167, '0ef6fe5a-72cf-4973-8160-a53fc410eed2', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-28 14:04:37', '2024-02-28 14:04:37'),
+(2168, 'ad9a2e00-6e52-425c-b4d1-952d6b4bc5e2', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-28 18:29:09', '2024-02-28 18:29:09'),
+(2169, '97820f29-5c01-414b-9c47-3113413616c5', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-28 18:33:06', '2024-02-28 18:33:06'),
+(2170, 'b872cda1-9b6c-44e9-87a5-0090d7f01872', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-28 18:36:54', '2024-02-28 18:36:54'),
+(2171, '3269903d-8e5f-4196-8cab-9b9d85d70c75', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-28 18:44:55', '2024-02-28 18:44:55'),
+(2172, 'ae435aa0-7c42-42ef-ba23-03e54de66b67', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-28 18:50:18', '2024-02-28 18:50:18'),
+(2173, '8481cfd1-45da-40b8-be4c-3415f9498c48', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-28 20:30:17', '2024-02-28 20:30:17'),
+(2174, '2d782c93-00f6-47b4-a2a2-5a8ef3e8f211', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-02-29 04:00:30', '2024-02-29 04:00:30'),
+(2175, 'c75b7a48-a393-4e82-b170-f80799c76ff5', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-29 06:04:29', '2024-02-29 06:04:29'),
+(2176, 'f68679ef-bffa-469a-b06a-63204edf60e1', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-02-29 06:37:30', '2024-02-29 06:37:30'),
+(2177, '9a58013f-6d11-4e5a-9491-853c41d0e236', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-01 03:41:38', '2024-03-01 03:41:38'),
+(2178, '2ee3dfce-0703-4440-a80a-d285121d94f1', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-01 06:55:09', '2024-03-01 06:55:09'),
+(2179, '581a4eab-a655-4267-bab4-8f397055c52d', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-01 15:57:32', '2024-03-01 15:57:32'),
+(2180, 'def06ef8-9b91-4d78-a505-6a12a1f0d693', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-02 00:26:34', '2024-03-02 00:26:34'),
+(2181, 'bfbaeb19-9d84-46db-8979-2a35cf474390', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-03 00:59:30', '2024-03-03 00:59:30'),
+(2182, '82672819-f415-412b-b1fb-c46a51058165', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-03 19:44:16', '2024-03-03 19:44:16'),
+(2183, '6037d04d-4c6e-4852-8c0c-9fa3d847acd2', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-04 12:48:35', '2024-03-04 12:48:35'),
+(2184, '4f54e65e-8860-429e-a948-a8c3e3c795b0', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-04 20:01:51', '2024-03-04 20:01:51'),
+(2185, '0826a12d-3f52-4dc9-bb52-3795c7eb871c', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Safari/605.1.15 (Applebot/0.1; +http://www.apple.com/go/applebot)', '2024-03-05 01:36:19', '2024-03-05 01:36:19'),
+(2186, '42cae855-70cb-4e96-ace9-aecc819c76d6', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-05 05:08:00', '2024-03-05 05:08:00'),
+(2187, '5f8bb088-a459-482d-8126-7eae8e25309f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-05 05:10:43', '2024-03-05 05:10:43'),
+(2188, '108e0ae9-9734-4408-9853-c79c46f22df1', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36', '2024-03-05 06:30:53', '2024-03-05 06:30:53'),
+(2189, '716c6e80-1439-4be0-a7f4-6920997cbbb0', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-05 08:35:46', '2024-03-05 08:35:46'),
+(2190, 'b521eb1c-f3dc-4bab-940e-a67edb338b86', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-05 19:42:17', '2024-03-05 19:42:17'),
+(2191, '9d4b5f09-31af-4b2a-b11d-b45eca05bbbb', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-06 00:05:22', '2024-03-06 00:05:22'),
+(2192, 'a45d0bff-9fab-47ed-942b-c40a0a300c40', 3, 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/121.0.6167.139 Safari/537.36', '2024-03-06 08:21:19', '2024-03-06 08:21:19'),
+(2193, '0146ed16-e20d-4dd6-8e0f-5ef882bfcbce', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-06 15:29:39', '2024-03-06 15:29:39'),
+(2194, '55de6ad2-e488-4843-9bb1-3f03de8d8857', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-06 16:15:30', '2024-03-06 16:15:30'),
+(2195, '66eda7bb-491f-43e1-b2fd-47e4e7aab46a', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-06 16:17:33', '2024-03-06 16:17:33'),
+(2196, 'a95b4f10-c525-49f2-bba6-9162712789dd', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-03-06 22:52:38', '2024-03-06 22:52:38'),
+(2197, '257c980a-27f8-40dd-8418-15672a3e7106', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-07 05:09:10', '2024-03-07 05:09:10'),
+(2198, '925c528f-d9dd-4b0a-a5be-c6fb45d5e753', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-07 11:13:13', '2024-03-07 11:13:13'),
+(2199, '308059d8-a70c-4ff3-a673-a7f56333f784', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-07 20:19:19', '2024-03-07 20:19:19'),
+(2200, '59fe448f-d68d-4e1a-966a-2dfb3c47465e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-07 20:40:46', '2024-03-07 20:40:46'),
+(2201, '6fd79c6d-fa95-46b9-85d5-dac034b734fc', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-08 08:49:08', '2024-03-08 08:49:08'),
+(2202, '6a7e91ac-5501-4a00-8508-56b74d70037a', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-08 10:10:23', '2024-03-08 10:10:23'),
+(2203, 'e30c224d-cec3-4b89-94fc-5dbd51254e2f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-09 10:36:59', '2024-03-09 10:36:59'),
+(2204, 'd3b828f4-9731-4c74-83f5-44c01d80a09d', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-10 10:05:22', '2024-03-10 10:05:22'),
+(2205, '097e9082-9ecf-418c-b7bd-75f12fdf2e4a', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-10 22:56:06', '2024-03-10 22:56:06'),
+(2206, 'c2b164e3-04d2-42be-b7eb-33c0639db890', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-10 23:14:05', '2024-03-10 23:14:05'),
+(2207, '4df01d65-16a4-4313-b615-09b329e1c08a', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-10 23:27:20', '2024-03-10 23:27:20'),
+(2208, '7bad0ffa-2223-494f-ba5d-fcea73778c86', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-10 23:41:52', '2024-03-10 23:41:52'),
+(2209, '959ef55a-9a78-40f1-a8e3-e35168f1ccb1', 3, 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/99.0.4844.0 Safari/537.36', '2024-03-11 07:58:03', '2024-03-11 07:58:03'),
+(2210, '9600f9b8-e60b-42c6-9083-ce5666a795e5', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-12 04:02:27', '2024-03-12 04:02:27'),
+(2211, '36080a82-2f98-471e-ba7b-59e03d48a32b', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-12 04:34:25', '2024-03-12 04:34:25'),
+(2212, 'bed3d597-922a-4445-adad-cdfbecfa05ad', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.94 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-03-12 05:31:52', '2024-03-12 05:31:52'),
+(2213, '0a730533-90dd-4b7d-931d-77a6bf497de2', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-13 02:26:26', '2024-03-13 02:26:26'),
+(2214, 'de72668b-af0f-4406-9dbd-a23cae4b8c5a', 3, 'Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/120.0.6099.28 Safari/537.36', '2024-03-14 01:55:04', '2024-03-14 01:55:04'),
+(2215, '83689092-d7fb-4920-8738-f5d1fcba9986', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-14 07:46:56', '2024-03-14 07:46:56'),
+(2216, '8c2f7fc2-4291-4b9f-86d1-9beb9ec59e1f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-14 12:45:51', '2024-03-14 12:45:51'),
+(2217, 'd8ef97d5-8508-46a9-a467-c73981fbb0ca', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-14 12:45:51', '2024-03-14 12:45:51'),
+(2218, 'd4f35b28-a4b5-4302-b0c6-3394b8c9013b', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-14 12:45:55', '2024-03-14 12:45:55'),
+(2219, 'cbc4a141-60fb-47fb-ae8a-134343e4669a', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-14 12:45:56', '2024-03-14 12:45:56'),
+(2220, 'd1bf733e-b515-474f-b5b9-3657ec0c2f34', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-14 12:46:06', '2024-03-14 12:46:06'),
+(2221, '0aff3850-9318-49f4-a4f3-6efaa761fb62', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-14 12:46:26', '2024-03-14 12:46:26'),
+(2222, 'adbd7f7d-bcf3-4171-99cc-4dda2ac1e8cf', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-14 12:51:20', '2024-03-14 12:51:20'),
+(2223, '904e6464-a325-40e3-8189-440fdaf38f75', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-14 14:57:37', '2024-03-14 14:57:37'),
+(2224, 'c0fc0e51-46b9-461e-b775-5e07cbca75d3', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-14 16:01:39', '2024-03-14 16:01:39'),
+(2225, '89febd43-2862-46d9-989e-263a18f1619e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-14 16:31:03', '2024-03-14 16:31:03'),
+(2226, '769ea40f-ccb3-4b5d-b5dc-b2bd0cd6f0bd', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-14 23:00:41', '2024-03-14 23:00:41'),
+(2227, 'bf0c1c68-74d7-4686-8ce3-58593177f5fc', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-14 23:38:37', '2024-03-14 23:38:37'),
+(2228, 'bda361ba-b9aa-4373-a76b-d17f7cd37b92', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-15 01:03:29', '2024-03-15 01:03:29'),
+(2229, '621d786d-06f1-45a0-b962-16d7f4ca59f7', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-15 01:33:57', '2024-03-15 01:33:57'),
+(2230, '9333c358-76d8-4dfa-a42c-1df67739d4f0', 3, 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm) Chrome/112.0.0.0 Safari/537.36', '2024-03-15 07:28:33', '2024-03-15 07:28:33'),
+(2231, 'fc67ed85-cbe8-41e4-918b-63a4598fcf24', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-15 17:49:26', '2024-03-15 17:49:26'),
+(2232, '381252f1-98c5-4673-be4f-2f448e45d714', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-15 21:46:27', '2024-03-15 21:46:27'),
+(2233, '20751a00-c26d-42be-afcb-d85e17d04d52', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-15 22:01:48', '2024-03-15 22:01:48'),
+(2234, 'a6e426dd-7697-4bb8-b6dd-c6eb85309854', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-16 10:52:30', '2024-03-16 10:52:31'),
+(2235, '63720262-9d07-43da-8082-62efffc11ec2', 3, 'Mozilla/5.0 (Windows NT 10.0.0; Win64; x64; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.129 Chrome/122.0.6261.129 Not(A:Brand/24  Safari/537.36', '2024-03-16 13:22:44', '2024-03-16 13:22:44'),
+(2236, 'ec255900-0285-43a4-893e-0dc835b5006b', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 OPR/107.0.0.0 (Edition Yx 03)', '2024-03-16 18:07:36', '2024-03-16 18:07:36'),
+(2237, '9ea69a47-ec16-4fd4-80bf-2e1afc2077d2', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36', '2024-03-16 18:34:49', '2024-03-16 18:34:49'),
+(2238, 'a41d36c7-e90d-47af-aab8-5e69b7d1824c', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-17 02:44:05', '2024-03-17 02:44:05'),
+(2239, '2cc6ce14-0a96-429c-a584-6c9d90433ee8', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-17 22:32:02', '2024-03-17 22:32:02'),
+(2240, '0211ef6c-2733-4992-929e-e4c943abf268', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-18 03:54:30', '2024-03-18 03:54:30'),
+(2241, 'b3802007-cd86-447b-bb72-2eec55c885ed', 3, 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/122.0.6261.94 Safari/537.36', '2024-03-18 04:20:48', '2024-03-18 04:20:48'),
+(2242, '55396368-437a-4843-a96e-5394f29d2db8', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.94 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-03-18 04:20:53', '2024-03-18 04:20:53'),
+(2243, '333e3c87-6106-40e6-b009-24062c399a2a', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-18 19:19:53', '2024-03-18 19:19:53'),
+(2244, 'cfdce376-e86a-466e-b24e-6df22e672060', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-19 11:38:19', '2024-03-19 11:38:19'),
+(2245, '089bc6d1-d0e4-44a7-84e3-ed366e23c865', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-19 14:39:33', '2024-03-19 14:39:33'),
+(2246, '374ac33d-6489-45ff-bc37-e42ba2508c37', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-19 15:14:08', '2024-03-19 15:14:08'),
+(2247, '8ba8df5a-02a4-429d-8731-4416b4ef20cc', 3, 'Mozilla/5.0 (compatible; BitSightBot/1.0)', '2024-03-19 16:45:26', '2024-03-19 16:45:26'),
+(2248, 'ac5ac443-2258-4417-b4c0-9b49f9e9df63', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-03-19 17:51:50', '2024-03-19 17:51:50'),
+(2249, '52f4f8b3-1d7a-4858-9983-e0ec10c98a97', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-20 08:41:13', '2024-03-20 08:41:13'),
+(2250, '66b9a7ce-b3a1-4b92-a355-8907da06ec75', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-20 10:34:53', '2024-03-20 10:34:53'),
+(2251, '61e8afa4-dcda-462c-a780-f9cc25737055', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-03-20 15:02:22', '2024-03-20 15:02:22'),
+(2252, '38a369b4-0f85-4d0d-9219-9b81f4c739fe', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-20 19:49:25', '2024-03-20 19:49:25'),
+(2253, '127e42ad-1f50-4e0a-a4f7-9d842b136864', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-21 00:41:25', '2024-03-21 00:41:25'),
+(2254, '3649e6d2-d77a-4705-ad33-1028bec7e002', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-21 06:07:17', '2024-03-21 06:07:17'),
+(2255, 'a0d552eb-4914-40d7-abc9-61d1a5257821', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-21 09:34:22', '2024-03-21 09:34:22'),
+(2256, 'ebd55f8c-0d0c-4155-b0e1-b83316e1894e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-21 10:22:49', '2024-03-21 10:22:49'),
+(2257, '4cbdedf0-99bb-4288-9c11-6b115a233380', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36', '2024-03-21 14:01:56', '2024-03-21 14:01:56'),
+(2258, 'c1b3a937-9186-4c97-bdf0-bdc38d00466e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-21 17:34:41', '2024-03-21 17:34:41'),
+(2259, '71f6f904-0740-4b7a-ae94-816522d78dec', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-22 05:39:40', '2024-03-22 05:39:40'),
+(2260, '98eca677-2c4e-4eb4-9f95-2da8eb7371e5', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-22 17:59:55', '2024-03-22 17:59:55'),
+(2261, 'a0facb7a-e539-409c-8850-80e9d756e486', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-22 19:06:13', '2024-03-22 19:06:13'),
+(2262, 'dc3c7d0f-06ea-4ce9-9745-1d4ee50bdda0', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-22 23:12:48', '2024-03-22 23:12:48'),
+(2263, '99a5c693-7dd3-439c-a689-1b774626597a', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-23 20:44:23', '2024-03-23 20:44:23'),
+(2264, 'c23a79e4-b8b6-46a2-a36d-4aac84fc310e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-24 20:37:21', '2024-03-24 20:37:21'),
+(2265, 'f50781c4-67a5-45cc-9972-24bd137204ab', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-25 08:21:41', '2024-03-25 08:21:41'),
+(2266, '6445f727-10f5-404c-ba56-343522f7ad39', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-25 16:46:42', '2024-03-25 16:46:42'),
+(2267, '706ab3ce-80ea-4dfd-bfff-d3fdcf6179cd', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-26 00:52:19', '2024-03-26 00:52:19'),
+(2268, '90b758a4-c1c6-44b9-ac46-e5c8aae7c86d', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-26 00:55:05', '2024-03-26 00:55:05'),
+(2269, 'dc725c80-6f25-4d1b-a221-b642edb88910', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-26 00:55:07', '2024-03-26 00:55:07'),
+(2270, 'aaabbc0e-769b-4ea7-9023-ebcf6fbab07a', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-26 06:14:10', '2024-03-26 06:14:10'),
+(2271, '3b6325cf-a18a-479e-9c01-2fd912206d56', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-26 12:40:40', '2024-03-26 12:40:40'),
+(2272, 'f113649d-397e-49be-b3a6-bcd0a62919a1', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.94 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-03-27 23:48:08', '2024-03-27 23:48:08'),
+(2273, '798e57b8-71cf-4fc6-ab07-be81312d0b9f', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.94 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-03-28 09:45:22', '2024-03-28 09:45:22'),
+(2274, '5178150d-48f3-4e34-97a1-ea2a619998ca', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.94 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-03-28 10:53:13', '2024-03-28 10:53:13'),
+(2275, 'abed1488-5164-498d-8bc5-5c63edca4b71', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-28 18:39:35', '2024-03-28 18:39:35'),
+(2276, '828c6809-c57b-4964-abe8-ab03eeac5b31', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-29 11:05:56', '2024-03-29 11:05:56'),
+(2277, '0996a855-5134-482f-ae96-7b4739be4d0b', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-29 14:42:12', '2024-03-29 14:42:12'),
+(2278, 'c3931d9f-e6ac-45df-838d-315491f81958', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-29 17:06:16', '2024-03-29 17:06:16'),
+(2279, '193dcbd2-d79e-4b0a-be2a-b66f7e73955c', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-30 08:55:31', '2024-03-30 08:55:31'),
+(2280, 'c4abc739-02a9-4124-9731-2532fdb6655c', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-30 09:45:35', '2024-03-30 09:45:35'),
+(2281, '48f5db1a-c272-40c6-b185-71c53e548d0c', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-31 00:06:57', '2024-03-31 00:06:57'),
+(2282, 'ada72442-b027-4b32-ba8c-eb8aa2a09ee4', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-03-31 00:56:19', '2024-03-31 00:56:19'),
+(2283, 'd6848f81-993d-4ad9-91b2-16c9eb604f78', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-02 17:31:57', '2024-04-02 17:31:57'),
+(2284, '4b10e2a2-bda8-49ca-9cde-4df7acf81b29', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-02 17:40:05', '2024-04-02 17:40:05'),
+(2285, '9754709e-e51d-4b91-96de-e0f2b2bfa392', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-03 17:37:21', '2024-04-03 17:37:21'),
+(2286, '17bd4833-daa8-4e13-80c9-f9b6c5fbaf7c', 3, 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/122.0.6261.94 Safari/537.36', '2024-04-04 14:34:31', '2024-04-04 14:34:31'),
+(2287, 'fa7e6b95-2374-4322-9947-a44886fa88f9', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-04 15:10:07', '2024-04-04 15:10:07'),
+(2288, '020988de-a5c3-4b58-aa07-7bf04fec4d39', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-04 16:12:21', '2024-04-04 16:12:21'),
+(2289, '57ced283-1cdd-47bb-9e8b-86c2a0922831', 3, 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/116.0.5845.140 Safari/537.36', '2024-04-05 00:12:07', '2024-04-05 00:12:07'),
+(2290, '711f63d9-0939-4db6-8264-06629933ac42', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-04-05 12:58:26', '2024-04-05 12:58:26'),
+(2291, '6e0756e2-5901-42c2-b94d-528b30c5e6f1', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-04-05 21:19:06', '2024-04-05 21:19:06'),
+(2292, '7fd1522e-9f66-44fd-a70f-d76b77b08367', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-06 04:24:41', '2024-04-06 04:24:41'),
+(2293, '1874c779-2188-455b-aa6f-e4d57899689d', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-06 14:09:04', '2024-04-06 14:09:04'),
+(2294, '325dc7e2-9233-47b1-a77d-22198ea43332', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-06 14:38:34', '2024-04-06 14:38:34'),
+(2295, 'dc311a69-bcd5-4df0-b88f-05eb1a210318', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-06 14:41:57', '2024-04-06 14:41:57'),
+(2296, 'a7c17da8-aa88-495e-a650-db001ebb638c', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-06 14:44:00', '2024-04-06 14:44:00'),
+(2297, '446f9320-9caa-4d6f-bd3d-846b81c30d78', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-06 14:44:02', '2024-04-06 14:44:02'),
+(2298, 'c3fa5d67-7f3a-43a2-9a8b-c1d32b7be261', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-06 14:44:28', '2024-04-06 14:44:28'),
+(2299, '0f1c9086-4f75-4da7-96e4-bc4e63adaa79', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-06 14:44:29', '2024-04-06 14:44:29'),
+(2300, 'b71ed048-f408-4382-b7ff-51bede45270b', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-06 14:44:30', '2024-04-06 14:44:30'),
+(2301, 'b68121d7-cde4-49b5-93f6-f9ec0cf2b2b5', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-07 06:25:27', '2024-04-07 06:25:28');
+INSERT INTO `sessions` (`id`, `token`, `user_id`, `user_agent`, `datetime_create`, `datetime_update`) VALUES
+(2302, 'c07bb0f8-443a-412b-8f97-b21c10bc1137', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-07 20:04:45', '2024-04-07 20:04:45'),
+(2303, 'ea50a4d9-81fa-414a-bdb9-467330d2e099', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-08 00:26:51', '2024-04-08 00:26:51'),
+(2304, '171917db-0060-4bfc-ab66-d79fcda438fe', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.94 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-04-08 15:54:21', '2024-04-08 15:54:21'),
+(2305, '94ab3875-4d58-4a05-a795-1885060fcc14', 3, 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/122.0.6261.94 Safari/537.36', '2024-04-08 15:54:28', '2024-04-08 15:54:28'),
+(2306, '60c40424-34b9-4ab2-a28b-050983f43aee', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.94 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-04-08 15:54:31', '2024-04-08 15:54:31'),
+(2307, '32e3f22e-9a42-4667-9b06-d228df81977c', 3, 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/122.0.6261.94 Safari/537.36', '2024-04-08 15:54:31', '2024-04-08 15:54:31'),
+(2308, 'aa67156b-a85f-4b3a-81a0-e6e43e1d40b5', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36', '2024-04-09 12:32:13', '2024-04-09 12:32:13'),
+(2309, '91ea9de0-f26e-435a-b69b-f9d3a5e405a8', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-11 15:14:06', '2024-04-11 15:14:06'),
+(2310, '016f0af7-6805-49fd-9f54-fcebee41ae63', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-11 16:17:08', '2024-04-11 16:17:08'),
+(2311, '5ca1e70b-0712-4eae-a9c5-01bceeecd973', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-11 16:17:10', '2024-04-11 16:17:10'),
+(2312, '417d5ccb-d4c2-4296-b361-4d75171d92e5', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-12 15:56:34', '2024-04-12 15:56:34'),
+(2313, 'ebf41a3e-c22e-4388-ab76-606c613b36b9', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-13 11:08:06', '2024-04-13 11:08:06'),
+(2314, 'ae8465ec-13bd-4022-bc32-3b81d8aa083f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-13 16:22:22', '2024-04-13 16:22:22'),
+(2315, '44bdddd5-a572-47b6-b8a1-e4e63169ab29', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-13 16:25:18', '2024-04-13 16:25:18'),
+(2316, 'f95ce7f4-a7e3-4f4d-8df2-e7e2debeb6a2', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-13 16:46:20', '2024-04-13 16:46:20'),
+(2317, '19cbeb96-4703-4212-b2cd-7609bd7010ab', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-13 17:05:23', '2024-04-13 17:05:23'),
+(2318, '31e485bb-f0a1-44f6-bf84-13a50613682d', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-15 13:35:19', '2024-04-15 13:35:19'),
+(2319, 'f37fe1cf-2e88-442f-9391-de2b22a97514', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-16 09:23:58', '2024-04-16 09:23:58'),
+(2320, 'fb050569-407b-4055-a5a3-d70521f4ae2f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-17 02:36:35', '2024-04-17 02:36:35'),
+(2321, '893b3e7c-ffd8-4d63-8634-4eae910b676c', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-17 03:32:10', '2024-04-17 03:32:10'),
+(2322, '857d15ae-d908-42f5-b566-5887be1c68e7', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-17 04:06:44', '2024-04-17 04:06:44'),
+(2323, 'd89e0579-438b-4b61-99bb-7418b94b64ef', 3, 'Mozilla/5.0 (Windows NT 10.0.0; Win64; x64; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.6312.107 Chrome/123.0.6312.107 Not:A-Brand/8  Safari/537.36', '2024-04-18 01:50:16', '2024-04-18 01:50:16'),
+(2324, '35b3898d-222d-483a-b7d1-ea111a3d959e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-18 05:05:51', '2024-04-18 05:05:51'),
+(2325, '9b1f071c-60d6-4d9f-9aa3-1a9691b8afb2', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-18 05:12:56', '2024-04-18 05:12:56'),
+(2326, '23b90ec5-37d7-4770-8e33-5c20d8ca29fb', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-18 07:36:30', '2024-04-18 07:36:30'),
+(2327, '1da47522-5854-4cec-ba66-d6505ba251a1', 3, 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.6 (KHTML, like Gecko) Chrome/20.0.1092.0 Safari/536.6', '2024-04-18 10:19:46', '2024-04-18 10:19:46'),
+(2328, 'eabf1c1e-4bc8-4836-a0a7-703cf1d346fc', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-19 09:56:59', '2024-04-19 09:56:59'),
+(2329, '26096d2f-dbfc-4c19-aafc-38dd86785062', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-19 11:33:12', '2024-04-19 11:33:12'),
+(2330, '5d7d663b-c8fa-4d37-b116-849d4695accf', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-19 12:05:55', '2024-04-19 12:05:55'),
+(2331, 'e9c27828-d2cb-4fd1-8dff-5f3f1163840d', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-19 13:36:25', '2024-04-19 13:36:25'),
+(2332, '26a64044-0aa7-4bf8-baf6-aeb7f1573b78', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0', '2024-04-20 02:11:26', '2024-04-20 02:11:26'),
+(2333, '8b30ad4a-0927-42ef-9bed-4bf31ddb28ac', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-20 03:52:05', '2024-04-20 03:52:05'),
+(2334, 'dcab96fe-8c41-4dcd-85ac-7b0e908f7168', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-20 05:14:20', '2024-04-20 05:14:20'),
+(2335, '71ae24de-efbd-4156-b9ff-0cf17ff525b6', 3, 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/122.0.6261.94 Safari/537.36', '2024-04-20 15:08:07', '2024-04-20 15:08:07'),
+(2336, 'e073d913-f0a3-453b-9bf3-2fc06458a1d5', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.94 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-04-20 15:08:14', '2024-04-20 15:08:14'),
+(2337, '2214841a-87fe-4a5a-bec5-80c707647c14', 3, 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/122.0.6261.94 Safari/537.36', '2024-04-20 15:08:15', '2024-04-20 15:08:15'),
+(2338, '6617b41e-828c-470e-b2e6-cfedcd8d7fc0', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-21 01:16:12', '2024-04-21 01:16:12'),
+(2339, '13994604-310f-419a-9076-3436bf12a2e9', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-21 05:05:32', '2024-04-21 05:05:32'),
+(2340, 'a7baf06f-613f-4ae0-b23d-6767fbfba137', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 OPR/107.0.0.0 (Edition Yx GX)', '2024-04-21 18:22:41', '2024-04-21 18:22:41'),
+(2341, 'b514a66e-60bf-4ad1-a590-fe98e49a483e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-21 22:53:15', '2024-04-21 22:53:15'),
+(2342, '5d7f48c5-9ab4-458a-8aeb-f4591004be5e', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.94 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-04-22 01:21:47', '2024-04-22 01:21:47'),
+(2343, '51e2f01d-71ca-4ad7-be71-97eae8700d82', 3, 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.939 YaBrowser/24.1.1.939 (beta) Yowser/2.5 Safari/537.36', '2024-04-23 08:04:57', '2024-04-23 08:04:57'),
+(2344, '3a19d860-6348-4f6a-b0cc-74d59ab11d4b', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-23 11:47:24', '2024-04-23 11:47:24'),
+(2345, '305414a1-f8d7-4a4c-b03e-246ce577562a', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0', '2024-04-23 11:56:17', '2024-04-23 11:56:17'),
+(2346, 'bd964db1-47c8-4194-85dc-d7ca3134c6ac', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-23 14:48:14', '2024-04-23 14:48:14'),
+(2347, 'd1f57824-0776-45ba-9f7d-9777e07e64c8', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-24 10:44:28', '2024-04-24 10:44:28'),
+(2348, '7bc8e7a1-b23b-49a0-bb85-883906f9a1f3', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-24 10:44:30', '2024-04-24 10:44:30'),
+(2349, '0c750c0b-5180-4463-b308-a16e93c57069', 3, 'Mozilla/5.0 (Windows NT 6.1; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.5414.120 Chrome/109.0.5414.120 Not_A Brand/99  Safari/537.36', '2024-04-24 11:55:17', '2024-04-24 11:55:17'),
+(2350, '28f13624-b2a7-40f2-83c5-25090fb13819', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-25 00:56:54', '2024-04-25 00:56:54'),
+(2351, 'fc24d4df-07e2-4df9-97b2-8808d9afc77e', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36', '2024-04-25 07:43:15', '2024-04-25 07:43:15'),
+(2352, 'fe6ee748-b0d0-4bef-8d2d-f1fd4703fa75', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-26 09:03:53', '2024-04-26 09:03:53'),
+(2353, 'efb72d41-4cdd-47c4-a2e3-4dc2f5c74bb3', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-26 10:53:28', '2024-04-26 10:53:28'),
+(2354, 'a93442d6-a0ef-450e-b7fb-cd9412a043fe', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-27 03:55:42', '2024-04-27 03:55:42'),
+(2355, 'e07750f5-d993-457d-830d-e55a56779006', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-27 04:03:41', '2024-04-27 04:03:41'),
+(2356, 'a3a906c9-5168-4431-bb29-dabddb13dd43', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-27 04:03:41', '2024-04-27 04:03:42'),
+(2357, 'a0e68900-6c1a-4810-ad4b-968d98b28efc', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-27 04:08:02', '2024-04-27 04:08:02'),
+(2358, 'd6cf692e-777f-4398-bb92-272b9707fbe5', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-27 04:12:01', '2024-04-27 04:12:01'),
+(2359, '8ee52bbe-13c0-4b29-8661-224fa29239f8', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-28 04:31:50', '2024-04-28 04:31:50'),
+(2360, 'd009cf1a-b936-4a05-92c8-fa34466548f6', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-28 04:31:50', '2024-04-28 04:31:50'),
+(2361, 'a44c8db4-e148-4a7f-bf5f-f402ff3c2e3a', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-28 06:10:30', '2024-04-28 06:10:30'),
+(2362, 'abebe50f-fd91-46b1-9f6b-411f05719d9e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-28 07:27:13', '2024-04-28 07:27:13'),
+(2363, 'af986faa-12da-4509-825e-e5873e323a47', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-29 01:37:31', '2024-04-29 01:37:31'),
+(2364, '0bf1654a-2fb3-4954-a8f2-70a95910fb00', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-04-29 01:53:02', '2024-04-29 01:53:02'),
+(2365, 'bacf6eb5-dfa7-45b1-8885-121fefaf6d9d', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-01 01:41:13', '2024-05-01 01:41:13'),
+(2366, '90ff4a2e-13b7-484c-a57b-d1bbbb5ef46f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-01 06:06:18', '2024-05-01 06:06:18'),
+(2367, '7b84b99d-d2d1-4f9d-95fd-8805c4b59781', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-05-01 21:56:29', '2024-05-01 21:56:29'),
+(2368, 'a80943c9-0487-48e6-9fd6-fc698745362a', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-01 23:08:12', '2024-05-01 23:08:12'),
+(2369, '214996e0-2258-4552-b1f3-5097c71cce4c', 3, 'Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/120.0.6099.28 Safari/537.36', '2024-05-01 23:13:17', '2024-05-01 23:13:17'),
+(2370, '2f531abe-43a2-4f39-b6d3-9a6f10d00a09', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.94 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-05-02 03:55:19', '2024-05-02 03:55:19'),
+(2371, 'ee16833c-047f-41a2-9646-fb519e57c2f2', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.94 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-05-02 11:00:49', '2024-05-02 11:00:49'),
+(2372, '9f406388-4226-4c16-84fd-08cbcd701a0e', 3, 'Mozilla/5.0 (Linux; Android 13; SM-A235F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36', '2024-05-02 23:45:21', '2024-05-02 23:45:21'),
+(2373, 'cd8522c5-4fba-407d-bce4-507a7de3e226', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-03 02:26:23', '2024-05-03 02:26:23'),
+(2374, '234efeb1-f4c1-4402-80e1-7cb8a6623959', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-03 05:05:29', '2024-05-03 05:05:29'),
+(2375, '06373e7b-e24c-4d7c-97cf-130ef8f1154a', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-03 06:50:35', '2024-05-03 06:50:35'),
+(2376, 'fd708ea6-1d19-47fb-ac94-3d61c212088c', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-04 02:28:35', '2024-05-04 02:28:35'),
+(2377, '28dd3ecc-daea-432e-864a-0bc392644376', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-04 08:18:43', '2024-05-04 08:18:43'),
+(2378, '535fc55a-2429-478a-9637-7efa9e1f8773', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-04 16:46:08', '2024-05-04 16:46:08'),
+(2379, '3cf33c70-84f1-400b-8556-7aae31b659ae', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-04 21:31:43', '2024-05-04 21:31:43'),
+(2380, '26fd69d1-4531-4303-b0fd-173eae0b6943', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-04 21:47:34', '2024-05-04 21:47:34'),
+(2381, '8b8de40a-879d-4719-85b4-fec9859b41eb', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-05 23:23:12', '2024-05-05 23:23:12'),
+(2382, 'c56ddbc1-8994-45f4-a1c3-7933fbc97e6a', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-05 23:40:36', '2024-05-05 23:40:36'),
+(2383, '03a12294-0e64-4666-801a-a2bb4048c53d', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-07 09:23:37', '2024-05-07 09:23:37'),
+(2384, '9c5ee5c3-c834-4b1a-b323-c58957561c11', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-07 13:57:42', '2024-05-07 13:57:42'),
+(2385, 'b6ab037d-ba37-467e-8246-38799a76a2ce', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-08 00:13:41', '2024-05-08 00:13:41'),
+(2386, '47855bd3-7dc5-47f2-b939-505f5021ff07', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-08 19:52:35', '2024-05-08 19:52:35'),
+(2387, 'c4eb9cc7-9a8f-455e-969c-cfd602c70b8f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-09 02:20:02', '2024-05-09 02:20:02'),
+(2388, 'f5068899-1406-4f70-8512-14383a0fd7fe', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.118 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-05-10 03:57:30', '2024-05-10 03:57:30'),
+(2389, 'ef87da4a-f780-4ea7-9a3e-530570e993a9', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.118 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-05-10 11:23:50', '2024-05-10 11:23:50'),
+(2390, '57f83146-b5a8-4ffe-a291-a18097461b4f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-10 12:35:02', '2024-05-10 12:35:02'),
+(2391, '18660de3-4e89-4cd8-a856-0ac702a6b89f', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 OPR/107.0.0.0 (Edition Yx GX)', '2024-05-10 19:49:45', '2024-05-10 19:49:45'),
+(2392, '4385c7d4-c407-4f96-b491-cd2a63e98e16', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36', '2024-05-11 06:09:18', '2024-05-11 06:09:18'),
+(2393, '236a472d-2f33-4c17-b4f2-4699bd55ff05', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-11 17:37:37', '2024-05-11 17:37:37'),
+(2394, '1cdfaef3-ef70-4ac1-839d-b5c41aba57d1', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-11 17:37:37', '2024-05-11 17:37:37'),
+(2395, '9c5334e0-4009-4b51-905d-2337eacbfc37', 3, 'Mozilla/5.0 (Linux; Android 10; Mi 9T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36', '2024-05-12 05:21:31', '2024-05-12 05:21:31'),
+(2396, 'bd861ff6-0851-4479-918d-6a443436cca2', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-12 08:56:42', '2024-05-12 08:56:42'),
+(2397, '839e1f56-5fbb-46f7-8ae9-051159ff78de', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-12 23:03:24', '2024-05-12 23:03:24'),
+(2398, '7a7b1880-0bbd-4529-8096-9646c2a72878', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-13 18:38:24', '2024-05-13 18:38:24'),
+(2399, 'b2f8a1bc-e807-4d65-83c5-61a5c50068e9', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-13 22:41:50', '2024-05-13 22:41:50'),
+(2400, '50b1bf69-b70b-42cd-8f7f-e90b93be35cb', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-14 10:14:35', '2024-05-14 10:14:35'),
+(2401, '0decaa1a-f896-4d0e-a342-2b7a6c5abf8c', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-15 12:03:40', '2024-05-15 12:03:40'),
+(2402, 'd7719cfe-d430-4b1f-b25b-fcc0484c702a', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15', '2024-05-15 17:52:24', '2024-05-15 17:52:24'),
+(2403, '0288fd5b-dc9d-44b5-8e52-f0aae6d65713', 1, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36', '2024-05-15 18:32:39', '2024-05-18 07:03:18'),
+(2404, '7f82abbb-7d11-40ad-a66b-43003a1378e4', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-15 18:39:32', '2024-05-15 18:39:32'),
+(2405, '7dbfc161-aaea-4c5e-974d-91cdd0b0e8b2', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-15 18:54:46', '2024-05-15 18:54:46'),
+(2406, '32c1fe45-9ea9-4cb7-847e-26eb44a4cc1c', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.118 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-05-16 06:20:02', '2024-05-16 06:20:02'),
+(2407, 'd4537090-a60b-4850-a1d3-0a7c1415cf86', 3, 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1', '2024-05-16 11:50:51', '2024-05-16 11:50:51'),
+(2408, '43790017-b7b5-4917-a1ec-601db02683ae', 3, 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1', '2024-05-16 11:53:33', '2024-05-16 11:53:33'),
+(2409, 'c17e6f24-efa8-4edc-b8b9-2ec2befd3524', 3, 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1', '2024-05-17 08:19:22', '2024-05-17 08:19:22'),
+(2410, '5188b4ca-2eb9-408d-930b-becf43b40033', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-17 15:41:54', '2024-05-17 15:41:54'),
+(2411, '250f377c-c058-4fa6-9e1d-58d61e1809fc', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-18 13:54:21', '2024-05-18 13:54:21'),
+(2412, '0957e01f-5504-4f61-b2f5-8eda48c68602', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-18 14:11:50', '2024-05-18 14:11:50'),
+(2413, 'a9231ea7-f3d4-4a28-baaa-d413b51d2964', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-18 14:11:51', '2024-05-18 14:11:51'),
+(2414, '9cb6af45-3242-48d8-ad5f-efd154680254', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-19 20:09:48', '2024-05-19 20:09:48'),
+(2415, '5c10ec00-6799-4152-95f1-9f12d7cbf48e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-20 02:03:30', '2024-05-20 02:03:31'),
+(2416, '4fd45870-70a2-477e-8c6d-14dcefe8f4c6', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-20 02:20:06', '2024-05-20 02:20:06'),
+(2417, 'e848537d-c8d5-4880-88d9-2a1e403f7dd5', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-20 14:03:18', '2024-05-20 14:03:18'),
+(2418, '4ca8dbbc-f92e-4e0e-84eb-bcdf9febe5f2', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-20 17:16:23', '2024-05-20 17:16:23'),
+(2419, '6a07076c-6594-45cb-928f-cdf7d462a608', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-21 01:16:54', '2024-05-21 01:16:54'),
+(2420, 'e2527329-1761-4265-b164-acb109e1e190', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-21 04:59:17', '2024-05-21 04:59:17'),
+(2421, '6cd94891-dd0a-41ee-9859-9fd854d9fb72', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.201 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-05-22 03:55:17', '2024-05-22 03:55:17'),
+(2422, '638f11a2-e950-4884-a1d6-ee96d66bd2b7', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-22 08:10:10', '2024-05-22 08:10:10'),
+(2423, '2519eda5-3c55-4147-aef5-eb8287129087', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.201 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-05-22 16:58:46', '2024-05-22 16:58:46'),
+(2424, 'c86f9cd5-653e-43c0-95f3-eb9244018a67', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-23 19:07:50', '2024-05-23 19:07:50'),
+(2425, '7d4672b4-69e8-4855-8466-8d656dd33687', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-24 17:39:26', '2024-05-24 17:39:26'),
+(2426, 'fa798c57-caed-48ae-b58d-020bf950933f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-24 19:17:00', '2024-05-24 19:17:00'),
+(2427, 'eaaf33ed-ef9f-40e9-836a-feff49f773f4', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-24 20:22:25', '2024-05-24 20:22:25'),
+(2428, '3cebb5d3-b0e1-480d-ab35-526aa73b9a7c', 3, 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36', '2024-05-25 03:13:31', '2024-05-25 03:13:31'),
+(2429, '35dd1193-6488-4235-88c6-f341f4cae34f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-25 06:47:28', '2024-05-25 06:47:28'),
+(2430, '913916db-e2f2-46d2-81f7-fb646d981c36', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-25 07:02:13', '2024-05-25 07:02:13'),
+(2431, '883ba17f-5ca4-468f-923f-a0563378d088', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-25 07:02:14', '2024-05-25 07:02:14'),
+(2432, 'fc23be8a-f23c-4e05-88c9-87dc5190a285', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36', '2024-05-25 13:33:06', '2024-05-25 13:33:06'),
+(2433, '5d58b74e-d5a5-4ced-a1fa-5171722a2f27', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-25 19:21:01', '2024-05-25 19:21:01'),
+(2434, 'cd268642-4382-46df-8d80-30d7fe6f2c8d', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-26 07:24:46', '2024-05-26 07:24:46'),
+(2435, 'd97904eb-68b9-4983-9eaa-b3e9a9e5b8c8', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-26 16:32:33', '2024-05-26 16:32:33'),
+(2436, '23ee74cb-5a72-4226-89ff-e3a73dba039a', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-26 20:46:16', '2024-05-26 20:46:16'),
+(2437, '44d5d647-7334-4efa-9517-f3f5683fa426', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-27 02:21:51', '2024-05-27 02:21:51'),
+(2438, '368f9989-507a-4aee-81bb-aaf595f1cb86', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-27 02:37:33', '2024-05-27 02:37:33'),
+(2439, '53075bc5-269c-4ecc-808f-7b83655a9d7e', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36', '2024-05-27 09:58:30', '2024-05-27 09:58:30'),
+(2440, '7ab90c00-b14a-420e-a8f8-af75ef5756c2', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15 (Applebot/0.1; +http://www.apple.com/go/applebot)', '2024-05-27 11:16:14', '2024-05-27 11:16:14'),
+(2441, '13c0fc77-3614-4636-a8ac-101fe1d158dc', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-27 20:24:06', '2024-05-27 20:24:06'),
+(2442, 'ee094a00-8144-45d4-b448-1a91efa2e89b', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-28 01:22:57', '2024-05-28 01:22:57'),
+(2443, '3e56d3b9-354b-49fb-aca5-0b94eccf2f82', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-28 01:56:13', '2024-05-28 01:56:13'),
+(2444, '0d884b02-e220-4033-ae8a-a47b17be7f01', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-28 02:11:36', '2024-05-28 02:11:36'),
+(2445, '048e2070-9de2-4d21-8239-2380bf0c2614', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-28 16:37:14', '2024-05-28 16:37:14'),
+(2446, '10927865-687b-4167-857a-2552385ae312', 3, 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36', '2024-05-29 02:22:56', '2024-05-29 02:22:56'),
+(2447, 'eafbb82c-4836-491b-be9b-d837e7523d8d', 3, 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.139 Not(A:Brand/24 YaBrowser/24.4.3.1012 Yowser/2.5  Safari/537.36', '2024-05-29 03:38:02', '2024-05-29 03:38:02'),
+(2448, '45dce8b1-923e-44d7-b60a-0b1d3fef875b', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-29 06:35:38', '2024-05-29 06:35:38'),
+(2449, 'fe924062-93b7-41bf-8255-62e5c553561a', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-29 08:40:36', '2024-05-29 08:40:36'),
+(2450, 'e7b694b0-cf47-4906-9dbf-84a838764c17', 3, 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.139 Not(A:Brand/24 YaBrowser/24.4.3.1086 Yowser/2.5  Safari/537.36', '2024-05-30 04:06:07', '2024-05-30 04:06:07'),
+(2451, '88380ed3-23c8-47ab-98dd-6e124ed5cef3', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-30 18:17:56', '2024-05-30 18:17:56'),
+(2452, '0ad2149c-7a25-40ac-9876-5e36d31febd8', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-30 19:30:28', '2024-05-30 19:30:28'),
+(2453, '7969b9fb-4818-4d11-83ee-1f06e1637e1a', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-31 00:05:07', '2024-05-31 00:05:07'),
+(2454, '24b4f96e-d8c5-426d-ad10-30ffa9afa8b7', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-05-31 00:20:58', '2024-05-31 00:20:58'),
+(2455, '6a5d4ca7-32a3-4ca9-a71f-4827cd0c5f0d', 3, 'Mozilla/5.0 (Windows NT 15.0.0; Win64; x64; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.139 Not(A:Brand/24 YaBrowser/24.4.3.1012 Yowser/2.5  Safari/537.36', '2024-06-01 14:52:45', '2024-06-01 14:52:45'),
+(2456, 'a16c57f4-9718-43b4-8ea1-41f61f0686a5', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-01 18:59:12', '2024-06-01 18:59:12'),
+(2457, 'a7972f57-6b6e-4b59-8850-7089ddee9a86', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-01 18:59:34', '2024-06-01 18:59:34'),
+(2458, '257ce274-4a50-4e99-b18b-b33161316ba1', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-01 21:42:21', '2024-06-01 21:42:21'),
+(2459, '8719f8dc-6e8a-4803-a79d-3a81619f1be2', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-01 21:42:27', '2024-06-01 21:42:27'),
+(2460, '17542653-2fc1-423b-82ff-381dce57b594', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-01 21:43:17', '2024-06-01 21:43:17'),
+(2461, '2813c03d-988f-4dd0-8d08-30d5fd112d01', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-01 21:43:28', '2024-06-01 21:43:28'),
+(2462, '9b8f8480-06e1-4cb0-a2af-0a195b93a149', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-01 21:44:14', '2024-06-01 21:44:14'),
+(2463, '930d2d36-c207-4f67-bf6a-f95af631aacd', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-01 21:45:17', '2024-06-01 21:45:17'),
+(2464, '18e0a0e0-90fc-41cb-beb5-81c35de9a3f0', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-01 21:45:26', '2024-06-01 21:45:26'),
+(2465, 'af769081-a4cc-494e-8800-7e8d4a891da8', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-02 00:52:40', '2024-06-02 00:52:40'),
+(2466, '70a1091a-aa82-4e20-9796-b004c666e37f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-02 10:01:48', '2024-06-02 10:01:48'),
+(2467, 'd618756b-4b30-4fcc-a3a2-fdc94ce8b764', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-02 10:20:43', '2024-06-02 10:20:43'),
+(2468, '54e3a17e-47a0-4837-bb1c-7ff4a52434bf', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-02 10:34:57', '2024-06-02 10:34:57'),
+(2469, '4d322670-305d-48bc-a24b-fca77f3ddaf5', 3, 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/125.0.6422.66 Safari/537.36', '2024-06-02 16:14:30', '2024-06-02 16:14:30'),
+(2470, 'e526d727-93d8-41b5-9b6e-bfa45159d610', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.6422.66 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-06-02 16:14:38', '2024-06-02 16:14:38'),
+(2471, '54681934-ff9f-4667-abbb-9a7b12817681', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-02 17:30:45', '2024-06-02 17:30:45'),
+(2472, 'c644458d-d984-4ce0-ac58-ddbbda668ecb', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-02 18:20:37', '2024-06-02 18:20:37'),
+(2473, '9a57ac35-916b-4d87-afd3-a6c994a25b84', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-02 22:40:14', '2024-06-02 22:40:14'),
+(2474, '15319228-e731-4954-9eb2-6d7ba8706e73', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-02 22:46:12', '2024-06-02 22:46:12'),
+(2475, '591f6b99-a0fb-46a0-8ea4-c8b5cebf5fd6', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-03 00:15:42', '2024-06-03 00:15:42'),
+(2476, '1f47d5b6-8942-4888-871b-1fe7e3cd3884', 3, 'Mozilla/5.0 (Linux ; ; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.179 Chrome/124.0.6367.179 Not-A.Brand/99  Safari/537.36', '2024-06-03 07:05:43', '2024-06-03 07:05:43'),
+(2477, 'f640b417-c95b-4b7e-98ce-721359b23379', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-03 11:26:37', '2024-06-03 11:26:37'),
+(2478, 'bc45d7c9-f418-44ab-b860-5a89af28c11e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-03 11:32:10', '2024-06-03 11:32:10'),
+(2479, '9a14eb74-20c0-47ce-bd45-c691495ff3c4', 3, 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/125.0.6422.66 Safari/537.36', '2024-06-03 18:41:40', '2024-06-03 18:41:40'),
+(2480, '0f8b9291-e818-4053-8ccf-e2825fdb1710', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-03 19:42:55', '2024-06-03 19:42:55'),
+(2481, 'f099b226-76e7-4073-be9b-300bd9bd7294', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-04 00:02:45', '2024-06-04 00:02:45'),
+(2482, 'f3b47ec3-2c7b-4145-a760-38785d813e0e', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-04 01:49:13', '2024-06-04 01:49:13'),
+(2483, 'a9c171ad-bee1-489d-9976-82aeb0965548', 3, 'Mozilla/5.0 (Windows NT 10.0.0; Win64; x64; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.156 Not(A:Brand/24 YaBrowser/24.4.4.1168 Yowser/2.5  Safari/537.36', '2024-06-04 01:51:15', '2024-06-04 01:51:15'),
+(2484, '2b583523-1a29-46b4-acf4-1bbd9ac957e4', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.6422.66 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-06-04 06:17:47', '2024-06-04 06:17:47'),
+(2485, 'a16ea106-82c0-4a81-b7ef-91e10b3791d4', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-04 08:18:12', '2024-06-04 08:18:12'),
+(2486, '91c1023c-724e-474f-bd29-f2f3990deaab', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-04 12:38:36', '2024-06-04 12:38:36'),
+(2487, '6216be35-f16e-4f6c-beeb-53751b0dbedc', 3, 'Mozilla/5.0 (Linux 6.1.50; ; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.129 Not_A Brand/8  Safari/537.36', '2024-06-04 23:27:58', '2024-06-04 23:27:58'),
+(2488, '3a1d9a9b-f3bc-4639-a0e0-677e416a71a8', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-05 01:40:07', '2024-06-05 01:40:07'),
+(2489, '88179dfb-6d42-4894-8b54-6dbeba35b4f8', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-05 08:07:22', '2024-06-05 08:07:22'),
+(2490, '939adab6-81e0-4fb7-b9d4-3bb6bba7773d', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-05 14:15:17', '2024-06-05 14:15:17'),
+(2491, '22901e3b-31e2-456c-9565-a83d78540c39', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-05 16:14:40', '2024-06-05 16:14:40'),
+(2492, '7e1376db-add2-4340-9e19-d340f20dc5ab', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-05 17:18:54', '2024-06-05 17:18:54'),
+(2493, '012b6f5b-8633-410e-815d-f7fd037844dc', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-05 17:34:33', '2024-06-05 17:34:33'),
+(2494, 'c6067f31-ede3-4c74-8cf2-e543aaa38dc4', 3, 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36', '2024-06-05 19:41:50', '2024-06-05 19:41:50'),
+(2495, 'fa33f224-67e5-4d08-9f31-e56707520a87', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-05 21:29:07', '2024-06-05 21:29:07'),
+(2496, '0ba4ed1c-7e17-4ee5-8863-34119d79b242', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-05 21:54:44', '2024-06-05 21:54:44'),
+(2497, '26bad4f0-ac77-413d-9dcb-a18b6f72de79', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-06 02:21:20', '2024-06-06 02:21:20'),
+(2498, 'd1bd9088-742c-4b4d-9365-db8686c01ab9', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-06 09:39:41', '2024-06-06 09:39:41'),
+(2499, '543c0958-894d-470a-8b0c-ff710dfac52f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-06 16:18:07', '2024-06-06 16:18:07'),
+(2500, '64920d15-a167-460d-8739-7069e5c8ab7b', 3, 'Mozilla/5.0 (Windows NT 10.0.0; Win64; x64; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.6422.142 Chrome/125.0.6422.142 Not.A/Brand/24  Safari/537.36', '2024-06-06 16:27:26', '2024-06-06 16:27:26'),
+(2501, '733ce151-49e5-477d-9e95-0df43f6bcf23', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-07 05:21:07', '2024-06-07 05:21:07'),
+(2502, '58d47e7d-1683-4bf7-9e6f-b47ec1461cee', 3, 'Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/120.0.6099.28 Safari/537.36', '2024-06-07 08:09:43', '2024-06-07 08:09:43'),
+(2503, 'dd3c81ea-9cb4-438a-9712-3b353032bd4b', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-07 09:53:26', '2024-06-07 09:53:26'),
+(2504, '8f06e689-53b5-492a-adc4-76a419205f8c', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-07 18:21:19', '2024-06-07 18:21:19'),
+(2505, 'd61e0c85-e9e8-434e-9518-65379697d18c', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-08 10:00:06', '2024-06-08 10:00:06'),
+(2506, 'ef6bcf89-c22b-4762-ae52-c7933951efeb', 3, 'Mozilla/5.0 (X11; Linux armv7l) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36', '2024-06-08 15:05:28', '2024-06-08 15:05:28'),
+(2507, '5178258a-e401-4228-87a3-a5a3ee0f3850', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-08 17:49:10', '2024-06-08 17:49:10'),
+(2508, '978dd5af-c7f6-4099-9bd9-eedb61b83eb1', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-08 20:00:05', '2024-06-08 20:00:05'),
+(2509, 'f94507ea-4c0e-44aa-a46a-fb41b6a7e096', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-08 20:30:44', '2024-06-08 20:30:44'),
+(2510, '871b09d7-0f36-499c-a052-ddb0c610ff77', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-09 10:27:44', '2024-06-09 10:27:44');
+INSERT INTO `sessions` (`id`, `token`, `user_id`, `user_agent`, `datetime_create`, `datetime_update`) VALUES
+(2511, '118c59b3-f388-4159-b834-c5e7df5e0d62', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-09 17:55:59', '2024-06-09 17:55:59'),
+(2512, 'a2210b01-47fb-4612-a550-face3815ee4d', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-09 21:00:57', '2024-06-09 21:00:57'),
+(2513, '5c0fce63-7f35-47c2-94e6-7f3deabf722b', 3, 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.5414.120 Chrome/109.0.5414.120 Not_A Brand/99  Safari/537.36', '2024-06-11 03:20:42', '2024-06-11 03:20:42'),
+(2514, 'f72ee8df-fd61-4568-b54b-5a2ffaf1b437', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-11 04:31:59', '2024-06-11 04:31:59'),
+(2515, 'ac871a0a-40e3-45a3-ac68-64cf9fc93610', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-11 04:37:04', '2024-06-11 04:37:04'),
+(2516, 'fbe8e2b6-ef0a-4479-b197-e42e2a0f69dd', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-11 10:05:22', '2024-06-11 10:05:22'),
+(2517, 'ff92cd13-6d2d-400c-b890-d7f6c031bfc0', 3, 'Mozilla/5.0 (compatible; BitSightBot/1.0)', '2024-06-11 14:11:42', '2024-06-11 14:11:42'),
+(2518, '4a7f27cc-251b-462f-a31c-1491e7fedc8a', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36', '2024-06-11 18:00:49', '2024-06-11 18:00:49'),
+(2519, '821b4437-c977-4f3b-9023-8815c739f4cc', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-11 19:06:19', '2024-06-11 19:06:19'),
+(2520, 'af00f3cb-3b80-425a-8258-ca13f6e36590', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-11 21:19:21', '2024-06-11 21:19:21'),
+(2521, 'd355ffb2-646c-4bda-830c-9801577a3ebc', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-12 00:24:28', '2024-06-12 00:24:28'),
+(2522, 'd8dff52a-f19d-4b7d-8558-ecdf300af059', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36', '2024-06-12 08:02:18', '2024-06-12 08:02:18'),
+(2523, 'a93769c3-8b06-4018-83d2-9fee06bc6e15', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-12 13:17:53', '2024-06-12 13:17:53'),
+(2524, '0746b751-01c3-4434-b51f-52b31d478b44', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-13 01:46:15', '2024-06-13 01:46:15'),
+(2525, '854c6904-cb76-47c9-92b5-bb48619394fa', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-13 07:12:49', '2024-06-13 07:12:49'),
+(2526, '7d52ddcd-8779-4adc-9053-9b2e315a5fb7', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-13 09:33:37', '2024-06-13 09:33:37'),
+(2527, '73bb8fcb-77ee-4e73-9a8c-188100c01387', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36', '2024-06-13 10:33:07', '2024-06-13 10:33:07'),
+(2528, '17216691-82eb-4159-9f52-0d11c1e13e2b', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-13 16:57:46', '2024-06-13 16:57:46'),
+(2529, '48ecd174-4d8f-4c96-aea9-e0c489201198', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-14 05:05:32', '2024-06-14 05:05:32'),
+(2530, 'a61aee40-800a-465c-a851-ce045cf83523', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-14 05:06:35', '2024-06-14 05:06:35'),
+(2531, 'd1221f55-8c71-4e60-a04e-4c7a4b627789', 3, 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm) Chrome/112.0.0.0 Safari/537.36', '2024-06-14 08:39:56', '2024-06-14 08:39:56'),
+(2532, 'cdb79559-e806-4b84-bf7d-389ffca1f6c3', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-14 10:42:31', '2024-06-14 10:42:31'),
+(2533, '2e41595e-f213-4a89-88d4-8a32cfd87592', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36', '2024-06-14 17:14:16', '2024-06-14 17:14:16'),
+(2534, '328eda98-359e-4fac-88a4-37a94f07a433', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.6422.154 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-06-14 21:30:56', '2024-06-14 21:30:56'),
+(2535, 'cc4c3f5d-c4c7-48df-bb00-0f5b97867c5e', 3, 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/125.0.6422.154 Safari/537.36', '2024-06-14 21:30:57', '2024-06-14 21:30:57'),
+(2536, '4f06a055-2855-43a6-a50b-d6d2ff939c1a', 3, 'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/111.0', '2024-06-15 12:12:07', '2024-06-15 12:12:07'),
+(2537, 'cf346879-e551-43cf-b827-eb228aa1ad1f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-15 16:36:04', '2024-06-15 16:36:04'),
+(2538, '497d8e93-0eaa-4c7d-8c83-c75f6c410a51', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-15 16:36:05', '2024-06-15 16:36:05'),
+(2539, '434e1fdf-79e4-4b34-9126-0aa479073cd3', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.6422.154 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-06-15 17:14:17', '2024-06-15 17:14:17'),
+(2540, 'e30090f2-2479-4ee8-9d57-d1dc5f2a76e3', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.6422.154 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-06-15 17:29:37', '2024-06-15 17:29:37'),
+(2541, 'e03bd3fe-b615-48bf-9edd-2db2afa88be3', 3, 'Mozilla/5.0 (Windows NT 10.0.0; Win64; x64; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.6478.56 Chrome/126.0.6478.56 Not/A)Brand/8  Safari/537.36', '2024-06-16 12:13:04', '2024-06-16 12:13:04'),
+(2542, '8e5634fa-985f-4c6d-a6fa-854a1bedde0b', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-17 17:03:39', '2024-06-17 17:03:39'),
+(2543, 'b6c6e6cf-5fe0-4938-91c3-08fa11751c4f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-17 17:04:12', '2024-06-17 17:04:12'),
+(2544, '28fbc2e1-91d6-4f41-a46d-0ff4a6cf82df', 3, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36', '2024-06-17 22:46:05', '2024-06-17 22:46:05'),
+(2545, '6ef923d9-1817-400d-bd66-16ae0dd45f8e', 3, 'Mozilla/5.0 (Windows NT 10.0.0; Win64; x64; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.6422.142 Chrome/125.0.6422.142 Not.A/Brand/24  Safari/537.36', '2024-06-19 14:36:30', '2024-06-19 14:36:30'),
+(2546, 'eabdb8a7-b815-4f11-81cd-dcb440817107', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-21 09:29:40', '2024-06-21 09:29:40'),
+(2547, '2b122844-5297-41f9-808b-739148de0ad4', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-21 12:47:21', '2024-06-21 12:47:21'),
+(2548, '36d8fdb6-dc01-44fe-9526-b1fb6edcfd32', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-21 12:47:23', '2024-06-21 12:47:23'),
+(2549, '7dc12f7b-2b18-4f25-8e85-0f311201bec0', 3, 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.5414.168 Chrome/109.0.5414.168 Not_A Brand/99  Safari/537.36', '2024-06-21 20:50:14', '2024-06-21 20:50:14'),
+(2550, '6e763fe3-c79d-4515-9192-8216288d7c21', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-22 01:31:25', '2024-06-22 01:31:25'),
+(2551, '88f2d333-73f2-490f-a587-c103f96ac9c7', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-22 02:36:23', '2024-06-22 02:36:23'),
+(2552, 'e1488861-b60c-476a-8dc3-e19739ca173b', 3, 'Mozilla/5.0 (Windows NT 15.0.0; Win64; x64; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.71 Not-A.Brand/99 YaBrowser/24.6.0.1874 Yowser/2.5  Safari/537.36', '2024-06-22 22:08:25', '2024-06-22 22:08:25'),
+(2553, '9e4a37e3-f135-4b28-8a9a-f40efa97f91b', 3, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36', '2024-06-23 17:11:20', '2024-06-23 17:11:20'),
+(2554, 'b7edd79f-700b-456c-9dd1-bab7fed58074', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-23 17:55:14', '2024-06-23 17:55:14'),
+(2555, 'e64c0c3b-b1e5-44e4-86b9-2e10182749c6', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-23 17:58:39', '2024-06-23 17:58:39'),
+(2556, 'bee4c98b-0c74-4ab6-a000-0d9386488d43', 3, 'Mozilla/5.0 (Linux ; ; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.6045.193 Chrome/119.0.6045.193 Not?A_Brand/24  Safari/537.36', '2024-06-24 05:29:03', '2024-06-24 05:29:03'),
+(2557, '6ac6f78c-f06e-4f7c-9790-308519613c96', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-24 16:21:14', '2024-06-24 16:21:14'),
+(2558, '31302166-2ace-4cec-9fb9-c2291d6da442', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.6422.154 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-06-24 23:45:12', '2024-06-24 23:45:12'),
+(2559, 'cfc15ca9-3059-4a54-ad8b-d994d40aa9dd', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-25 03:38:34', '2024-06-25 03:38:34'),
+(2560, '1da6bc89-cef5-4803-9582-532f53a67c20', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.6422.154 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-06-25 04:13:51', '2024-06-25 04:13:51'),
+(2561, '283eeae6-afac-47aa-abc8-4d3f13476d1f', 3, 'Mozilla/5.0 (compatible; YandexRenderResourcesBot/1.0; +http://yandex.com/bots) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0', '2024-06-25 06:57:15', '2024-06-25 06:57:15'),
+(2562, 'f5915511-7e06-4bec-8e24-0e0dd9e2c386', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.6422.154 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-06-25 08:29:46', '2024-06-25 08:29:46'),
+(2563, '8b0e9d57-610f-459c-bc40-6040c6c51ff6', 3, 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.6422.154 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', '2024-06-25 09:07:26', '2024-06-25 09:07:26'),
+(2564, 'b94eb339-9c66-4999-a99e-5b1f61871b47', 3, 'Mozilla/5.0 (Windows NT 10.0.0; Win64; x64; ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.6478.63 Chrome/126.0.6478.63 Not/A)Brand/8  Safari/537.36', '2024-06-25 14:11:22', '2024-06-25 14:11:22');
 
 -- --------------------------------------------------------
 
@@ -4060,12 +4763,12 @@ INSERT INTO `sessions` (`id`, `token`, `user_id`, `user_agent`, `datetime_create
 --
 
 CREATE TABLE `slot_category_type` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `description` text COLLATE utf8mb3_unicode_ci,
-  `icon` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `bg_color` varchar(10) COLLATE utf8mb3_unicode_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci COMMENT='Словарь категорий услуг';
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text COLLATE utf8_unicode_ci,
+  `icon` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `bg_color` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Словарь категорий услуг';
 
 --
 -- Дамп данных таблицы `slot_category_type`
@@ -4088,11 +4791,11 @@ INSERT INTO `slot_category_type` (`id`, `title`, `description`, `icon`, `bg_colo
 --
 
 CREATE TABLE `telegram_subscribes` (
-  `id` bigint UNSIGNED NOT NULL,
-  `chat_id` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `chat_id` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -4101,13 +4804,13 @@ CREATE TABLE `telegram_subscribes` (
 --
 
 CREATE TABLE `trimester` (
-  `id` int NOT NULL,
-  `name` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
+  `id` int(11) NOT NULL,
+  `name` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `title` varchar(50) CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
-  `description` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `icon` varchar(150) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `bg_color` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `article_id` int DEFAULT NULL
+  `description` text CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `icon` varchar(150) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `bg_color` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `article_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -4126,45 +4829,45 @@ INSERT INTO `trimester` (`id`, `name`, `title`, `description`, `icon`, `bg_color
 --
 
 CREATE TABLE `users` (
-  `id` bigint UNSIGNED NOT NULL COMMENT 'id',
+  `id` bigint(20) UNSIGNED NOT NULL COMMENT 'id',
   `active` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'статус активности юзера',
-  `login` varchar(50) COLLATE utf8mb3_unicode_ci NOT NULL COMMENT 'логин',
-  `password` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL COMMENT 'пароль',
-  `role` bigint UNSIGNED NOT NULL COMMENT 'роль в системе (привилегии)',
-  `activation` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL COMMENT 'активационный код(для активации учетки при регистрации)',
-  `first_name` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `last_name` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `patronymic` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `photo_id` bigint UNSIGNED DEFAULT NULL,
-  `status_type` int DEFAULT NULL COMMENT 'статус пользователя  (планирует , выбирает , беременна, родила ...)',
+  `login` varchar(50) COLLATE utf8_unicode_ci NOT NULL COMMENT 'логин',
+  `password` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'пароль',
+  `role` bigint(20) UNSIGNED NOT NULL COMMENT 'роль в системе (привилегии)',
+  `activation` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'активационный код(для активации учетки при регистрации)',
+  `first_name` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `last_name` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `patronymic` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `photo_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `status_type` int(11) DEFAULT NULL COMMENT 'статус пользователя  (планирует , выбирает , беременна, родила ...)',
   `multi_pregnant` tinyint(1) DEFAULT '0' COMMENT 'многоплодная беременность',
   `client_birthday_datetime` timestamp NULL DEFAULT NULL COMMENT 'дата рождения клиента',
   `conception_datetime` timestamp NULL DEFAULT NULL COMMENT 'дата зачатия ребенка если беременна',
   `has_problems` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'осложнения',
-  `phone` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `email` varchar(150) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `skype` varchar(150) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
+  `phone` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `email` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `skype` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
   `ch_skype` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'предпочитаемый канал связи',
   `ch_phone` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'предпочитаемый канал связи',
   `ch_viber` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'предпочитаемый канал связи',
   `ch_whatsapp` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'предпочитаемый канал связи',
   `ch_telegram` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'предпочитаемый канал связи',
   `ch_email` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'предпочитаемый канал связи',
-  `height` int DEFAULT NULL COMMENT 'Рост',
-  `weight` int DEFAULT NULL COMMENT 'Вес',
-  `clothes_size` int UNSIGNED DEFAULT NULL COMMENT 'Размер одежды',
-  `shoes_size` int UNSIGNED DEFAULT NULL COMMENT 'Размер обуви',
+  `height` int(11) DEFAULT NULL COMMENT 'Рост',
+  `weight` int(11) DEFAULT NULL COMMENT 'Вес',
+  `clothes_size` int(10) UNSIGNED DEFAULT NULL COMMENT 'Размер одежды',
+  `shoes_size` int(10) UNSIGNED DEFAULT NULL COMMENT 'Размер обуви',
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `users`
 --
 
 INSERT INTO `users` (`id`, `active`, `login`, `password`, `role`, `activation`, `first_name`, `last_name`, `patronymic`, `photo_id`, `status_type`, `multi_pregnant`, `client_birthday_datetime`, `conception_datetime`, `has_problems`, `phone`, `email`, `skype`, `ch_skype`, `ch_phone`, `ch_viber`, `ch_whatsapp`, `ch_telegram`, `ch_email`, `height`, `weight`, `clothes_size`, `shoes_size`, `datetime_update`, `datetime_create`) VALUES
-(1, 1, 'admin', '21232f297a57a5a743894a0e4a801fc3', 7, NULL, 'Сергей', 'Савин', 'Владимирович', 46, 1, 0, NULL, NULL, 0, '89171215000', 'alter4444@gmail.com', 'exclusive_login', 0, 0, 0, 1, 1, 0, NULL, NULL, NULL, NULL, '2021-08-23 16:55:02', '2021-08-16 20:35:44'),
-(3, 1, 'guest', NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2021-08-23 16:55:08', '2021-08-17 12:52:35'),
+(1, 1, 'admin', '21232f297a57a5a743894a0e4a801fc3', 7, NULL, 'Сергей', 'Савин', 'Владимирович', 191, 1, 0, '1983-01-27 21:00:00', NULL, 0, '89171215000', 'alter4444@gmail.com', 'exclusive_login', 0, 1, 1, 1, 1, 0, NULL, NULL, NULL, NULL, '2021-08-23 16:55:02', '2021-08-16 20:35:44'),
+(3, 1, 'guest', NULL, 1, NULL, 'Гость', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2021-08-23 16:55:08', '2021-08-17 12:52:35'),
 (19, 1, 'EgorenkovOV', 'f9202cc7caf572f0c160379f17e325eb', 6, '55c6f51c-9992-4d77-9323-e6fa1562ad52', 'Олег', 'Егоренков', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2021-08-26 08:06:40', '2021-08-26 08:04:34'),
 (20, 1, 'testuser', '5f4dcc3b5aa765d61d8327deb882cf99', 2, NULL, 'Анна', 'Протасова', NULL, NULL, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2021-12-28 09:44:16', '2021-12-28 09:44:16'),
 (21, 1, 'user', 'ee11cbb19052e40b07aac0ca060c23ee', 2, 'c643e8d3-d5ea-4d9f-b231-e72facbc5cb7', 'Лана', 'Кужедуб', NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, '2021-12-30 11:38:02', '2021-12-30 11:38:02');
@@ -4176,12 +4879,12 @@ INSERT INTO `users` (`id`, `active`, `login`, `password`, `role`, `activation`, 
 --
 
 CREATE TABLE `user_status_type` (
-  `id` bigint UNSIGNED NOT NULL,
-  `title` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `description` text COLLATE utf8mb3_unicode_ci,
-  `icon` varchar(50) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `bg_color` varchar(10) COLLATE utf8mb3_unicode_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci COMMENT='Словарь категорий услуг';
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `description` text COLLATE utf8_unicode_ci,
+  `icon` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `bg_color` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Словарь категорий услуг';
 
 --
 -- Дамп данных таблицы `user_status_type`
@@ -4200,13 +4903,13 @@ INSERT INTO `user_status_type` (`id`, `title`, `description`, `icon`, `bg_color`
 --
 
 CREATE TABLE `votes` (
-  `id` bigint UNSIGNED NOT NULL,
-  `vote_slug` varchar(20) COLLATE utf8mb3_unicode_ci NOT NULL,
-  `feedback_id` bigint UNSIGNED NOT NULL,
-  `rate` int NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `vote_slug` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `feedback_id` bigint(20) UNSIGNED NOT NULL,
+  `rate` int(11) NOT NULL,
   `datetime_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `datetime_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `votes`
@@ -4248,13 +4951,6 @@ INSERT INTO `votes` (`id`, `vote_slug`, `feedback_id`, `rate`, `datetime_update`
 (173, 'personal', 27, 5, '2023-07-18 17:43:42', '2023-07-18 17:43:42'),
 (174, 'facilities', 27, 5, '2023-07-18 17:43:42', '2023-07-18 17:43:42'),
 (175, 'food', 27, 5, '2023-07-18 17:43:42', '2023-07-18 17:43:42'),
-(253, 'placement', 28, 1, '2023-07-19 16:20:34', '2023-07-19 16:20:34'),
-(254, 'comfort', 28, 1, '2023-07-19 16:20:34', '2023-07-19 16:20:34'),
-(255, 'cleaness', 28, 1, '2023-07-19 16:20:34', '2023-07-19 16:20:34'),
-(256, 'PTC', 28, 1, '2023-07-19 16:20:34', '2023-07-19 16:20:34'),
-(257, 'food', 28, 1, '2023-07-19 16:20:34', '2023-07-19 16:20:34'),
-(258, 'personal', 28, 1, '2023-07-19 16:20:34', '2023-07-19 16:20:34'),
-(259, 'facilities', 28, 1, '2023-07-19 16:20:34', '2023-07-19 16:20:34'),
 (274, 'PTC', 30, 2, '2023-08-15 17:14:19', '2023-08-15 17:14:19'),
 (275, 'comfort', 30, 3, '2023-08-15 17:14:19', '2023-08-15 17:14:19'),
 (276, 'food', 30, 3, '2023-08-15 17:14:19', '2023-08-15 17:14:19'),
@@ -4361,14 +5057,14 @@ INSERT INTO `votes` (`id`, `vote_slug`, `feedback_id`, `rate`, `datetime_update`
 --
 
 CREATE TABLE `vote_type` (
-  `id` bigint NOT NULL,
-  `slug` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `feedback_entity_type` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `section` varchar(150) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `slot_category_type` bigint UNSIGNED DEFAULT NULL,
-  `description` text CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+  `id` bigint(20) NOT NULL,
+  `slug` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `title` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `feedback_entity_type` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `section` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `slot_category_type` bigint(20) UNSIGNED DEFAULT NULL,
+  `description` text COLLATE utf8_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Дамп данных таблицы `vote_type`
@@ -4395,6 +5091,24 @@ ALTER TABLE `birthtype`
   ADD KEY `image_id` (`image_id`);
 
 --
+-- Индексы таблицы `black_list`
+--
+ALTER TABLE `black_list`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `id` (`id`),
+  ADD UNIQUE KEY `uniq` (`user_id`,`target_key`,`status`,`datetime_delete`),
+  ADD KEY `status` (`status`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Индексы таблицы `black_list_status_type`
+--
+ALTER TABLE `black_list_status_type`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `id` (`id`),
+  ADD UNIQUE KEY `slug` (`slug`);
+
+--
 -- Индексы таблицы `bot_messages`
 --
 ALTER TABLE `bot_messages`
@@ -4417,6 +5131,13 @@ ALTER TABLE `bot_messages_type_type`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id` (`id`),
   ADD UNIQUE KEY `slug` (`slug`);
+
+--
+-- Индексы таблицы `chats`
+--
+ALTER TABLE `chats`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `id` (`id`);
 
 --
 -- Индексы таблицы `clinics`
@@ -4552,9 +5273,9 @@ ALTER TABLE `facilities_type`
   ADD PRIMARY KEY (`id`);
 
 --
--- Индексы таблицы `feedback`
+-- Индексы таблицы `feedbacks`
 --
-ALTER TABLE `feedback`
+ALTER TABLE `feedbacks`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id` (`id`),
   ADD KEY `section` (`section`),
@@ -4590,6 +5311,24 @@ ALTER TABLE `feedback_status_type`
 ALTER TABLE `files`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id` (`id`);
+
+--
+-- Индексы таблицы `friend_list`
+--
+ALTER TABLE `friend_list`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `id` (`id`),
+  ADD UNIQUE KEY `uniq` (`uniq`) USING BTREE,
+  ADD KEY `status` (`status`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Индексы таблицы `friend_status_type`
+--
+ALTER TABLE `friend_status_type`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `id` (`id`),
+  ADD UNIQUE KEY `slug` (`slug`);
 
 --
 -- Индексы таблицы `images`
@@ -4800,301 +5539,331 @@ ALTER TABLE `vote_type`
 -- AUTO_INCREMENT для таблицы `birthtype`
 --
 ALTER TABLE `birthtype`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT для таблицы `black_list`
+--
+ALTER TABLE `black_list`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT для таблицы `black_list_status_type`
+--
+ALTER TABLE `black_list_status_type`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT для таблицы `bot_messages`
 --
 ALTER TABLE `bot_messages`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT для таблицы `bot_messages_status_type`
 --
 ALTER TABLE `bot_messages_status_type`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT для таблицы `bot_messages_type_type`
 --
 ALTER TABLE `bot_messages_type_type`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT для таблицы `chats`
+--
+ALTER TABLE `chats`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT для таблицы `clinics`
 --
 ALTER TABLE `clinics`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT для таблицы `clinic_specialities_containers`
 --
 ALTER TABLE `clinic_specialities_containers`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT для таблицы `clinic_specialities_containers_repo`
 --
 ALTER TABLE `clinic_specialities_containers_repo`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT для таблицы `clinic_specialities_type`
 --
 ALTER TABLE `clinic_specialities_type`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT для таблицы `comments`
 --
 ALTER TABLE `comments`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
 
 --
 -- AUTO_INCREMENT для таблицы `comment_status_type`
 --
 ALTER TABLE `comment_status_type`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT для таблицы `comment_type`
 --
 ALTER TABLE `comment_type`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT для таблицы `consultation`
 --
 ALTER TABLE `consultation`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- AUTO_INCREMENT для таблицы `contragents`
 --
 ALTER TABLE `contragents`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
 
 --
 -- AUTO_INCREMENT для таблицы `dislikes`
 --
 ALTER TABLE `dislikes`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT для таблицы `districts`
 --
 ALTER TABLE `districts`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT для таблицы `doctors`
 --
 ALTER TABLE `doctors`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
 
 --
 -- AUTO_INCREMENT для таблицы `doctor_category_type`
 --
 ALTER TABLE `doctor_category_type`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT для таблицы `doctor_position_type`
 --
 ALTER TABLE `doctor_position_type`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT для таблицы `entity_type`
 --
 ALTER TABLE `entity_type`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT для таблицы `facilities_containers`
 --
 ALTER TABLE `facilities_containers`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=157;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=157;
 
 --
 -- AUTO_INCREMENT для таблицы `facilities_containers_repo`
 --
 ALTER TABLE `facilities_containers_repo`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT для таблицы `facilities_type`
 --
 ALTER TABLE `facilities_type`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
--- AUTO_INCREMENT для таблицы `feedback`
+-- AUTO_INCREMENT для таблицы `feedbacks`
 --
-ALTER TABLE `feedback`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
+ALTER TABLE `feedbacks`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
 
 --
 -- AUTO_INCREMENT для таблицы `feedback_entity_type`
 --
 ALTER TABLE `feedback_entity_type`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT для таблицы `feedback_status_type`
 --
 ALTER TABLE `feedback_status_type`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT для таблицы `files`
 --
 ALTER TABLE `files`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=191;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=192;
+
+--
+-- AUTO_INCREMENT для таблицы `friend_list`
+--
+ALTER TABLE `friend_list`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+
+--
+-- AUTO_INCREMENT для таблицы `friend_status_type`
+--
+ALTER TABLE `friend_status_type`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT для таблицы `images`
 --
 ALTER TABLE `images`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=191;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=192;
 
 --
 -- AUTO_INCREMENT для таблицы `likes`
 --
 ALTER TABLE `likes`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
 -- AUTO_INCREMENT для таблицы `like_type`
 --
 ALTER TABLE `like_type`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT для таблицы `lk_permissions`
 --
 ALTER TABLE `lk_permissions`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT для таблицы `lk_permission_type`
 --
 ALTER TABLE `lk_permission_type`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT для таблицы `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=80;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=90;
 
 --
 -- AUTO_INCREMENT для таблицы `order_contacts`
 --
 ALTER TABLE `order_contacts`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT для таблицы `phones`
 --
 ALTER TABLE `phones`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT для таблицы `phones_containers_repo`
 --
 ALTER TABLE `phones_containers_repo`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT для таблицы `phone_containers`
 --
 ALTER TABLE `phone_containers`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=132;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=132;
 
 --
 -- AUTO_INCREMENT для таблицы `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT для таблицы `section_type`
 --
 ALTER TABLE `section_type`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT для таблицы `services`
 --
 ALTER TABLE `services`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT для таблицы `services_containers_repo`
 --
 ALTER TABLE `services_containers_repo`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT для таблицы `service_containers`
 --
 ALTER TABLE `service_containers`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT для таблицы `service_slot`
 --
 ALTER TABLE `service_slot`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=493;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=493;
 
 --
 -- AUTO_INCREMENT для таблицы `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2032;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2565;
 
 --
 -- AUTO_INCREMENT для таблицы `slot_category_type`
 --
 ALTER TABLE `slot_category_type`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT для таблицы `telegram_subscribes`
 --
 ALTER TABLE `telegram_subscribes`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT для таблицы `trimester`
 --
 ALTER TABLE `trimester`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT для таблицы `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'id', AUTO_INCREMENT=22;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'id', AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT для таблицы `user_status_type`
 --
 ALTER TABLE `user_status_type`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT для таблицы `votes`
 --
 ALTER TABLE `votes`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=533;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=533;
 
 --
 -- AUTO_INCREMENT для таблицы `vote_type`
 --
 ALTER TABLE `vote_type`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Ограничения внешнего ключа сохраненных таблиц
@@ -5104,124 +5873,138 @@ ALTER TABLE `vote_type`
 -- Ограничения внешнего ключа таблицы `birthtype`
 --
 ALTER TABLE `birthtype`
-  ADD CONSTRAINT `birthtype_ibfk_1` FOREIGN KEY (`image_id`) REFERENCES `images` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `birthtype_ibfk_1` FOREIGN KEY (`image_id`) REFERENCES `images` (`id`);
+
+--
+-- Ограничения внешнего ключа таблицы `black_list`
+--
+ALTER TABLE `black_list`
+  ADD CONSTRAINT `black_list_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `black_list_ibfk_3` FOREIGN KEY (`status`) REFERENCES `black_list_status_type` (`slug`);
 
 --
 -- Ограничения внешнего ключа таблицы `bot_messages`
 --
 ALTER TABLE `bot_messages`
-  ADD CONSTRAINT `bot_messages_ibfk_1` FOREIGN KEY (`type`) REFERENCES `bot_messages_type_type` (`slug`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `bot_messages_ibfk_2` FOREIGN KEY (`status`) REFERENCES `bot_messages_status_type` (`slug`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `bot_messages_ibfk_1` FOREIGN KEY (`type`) REFERENCES `bot_messages_type_type` (`slug`),
+  ADD CONSTRAINT `bot_messages_ibfk_2` FOREIGN KEY (`status`) REFERENCES `bot_messages_status_type` (`slug`);
 
 --
 -- Ограничения внешнего ключа таблицы `clinics`
 --
 ALTER TABLE `clinics`
-  ADD CONSTRAINT `clinics_ibfk_1` FOREIGN KEY (`contragent`) REFERENCES `contragents` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `clinics_ibfk_1` FOREIGN KEY (`contragent`) REFERENCES `contragents` (`id`);
 
 --
 -- Ограничения внешнего ключа таблицы `comments`
 --
 ALTER TABLE `comments`
-  ADD CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`feedback_id`) REFERENCES `feedback` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `comments_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `comments_ibfk_3` FOREIGN KEY (`comment_id`) REFERENCES `comments` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `comments_ibfk_5` FOREIGN KEY (`type`) REFERENCES `comment_type` (`slug`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `comments_ibfk_6` FOREIGN KEY (`status`) REFERENCES `comment_status_type` (`slug`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`feedback_id`) REFERENCES `feedbacks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `comments_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `comments_ibfk_3` FOREIGN KEY (`comment_id`) REFERENCES `comments` (`id`),
+  ADD CONSTRAINT `comments_ibfk_5` FOREIGN KEY (`type`) REFERENCES `comment_type` (`slug`),
+  ADD CONSTRAINT `comments_ibfk_6` FOREIGN KEY (`status`) REFERENCES `comment_status_type` (`slug`);
 
 --
 -- Ограничения внешнего ключа таблицы `dislikes`
 --
 ALTER TABLE `dislikes`
-  ADD CONSTRAINT `dislikes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `dislikes_ibfk_2` FOREIGN KEY (`target_type`) REFERENCES `like_type` (`slug`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `dislikes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `dislikes_ibfk_2` FOREIGN KEY (`target_type`) REFERENCES `like_type` (`slug`);
 
 --
 -- Ограничения внешнего ключа таблицы `doctors`
 --
 ALTER TABLE `doctors`
-  ADD CONSTRAINT `doctors_ibfk_1` FOREIGN KEY (`category`) REFERENCES `doctor_category_type` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `doctors_ibfk_2` FOREIGN KEY (`position`) REFERENCES `doctor_position_type` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `doctors_ibfk_3` FOREIGN KEY (`image_id`) REFERENCES `images` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `doctors_ibfk_1` FOREIGN KEY (`category`) REFERENCES `doctor_category_type` (`id`),
+  ADD CONSTRAINT `doctors_ibfk_2` FOREIGN KEY (`position`) REFERENCES `doctor_position_type` (`id`),
+  ADD CONSTRAINT `doctors_ibfk_3` FOREIGN KEY (`image_id`) REFERENCES `images` (`id`);
 
 --
--- Ограничения внешнего ключа таблицы `feedback`
+-- Ограничения внешнего ключа таблицы `feedbacks`
 --
-ALTER TABLE `feedback`
-  ADD CONSTRAINT `feedback_ibfk_1` FOREIGN KEY (`section`) REFERENCES `section_type` (`slug`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `feedback_ibfk_2` FOREIGN KEY (`status`) REFERENCES `feedback_status_type` (`slug`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `feedback_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `feedbacks`
+  ADD CONSTRAINT `feedbacks_ibfk_1` FOREIGN KEY (`section`) REFERENCES `section_type` (`slug`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `feedbacks_ibfk_2` FOREIGN KEY (`status`) REFERENCES `feedback_status_type` (`slug`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `feedbacks_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Ограничения внешнего ключа таблицы `friend_list`
+--
+ALTER TABLE `friend_list`
+  ADD CONSTRAINT `friend_list_ibfk_1` FOREIGN KEY (`status`) REFERENCES `friend_status_type` (`slug`),
+  ADD CONSTRAINT `friend_list_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
 -- Ограничения внешнего ключа таблицы `images`
 --
 ALTER TABLE `images`
-  ADD CONSTRAINT `images_ibfk_1` FOREIGN KEY (`file_id`) REFERENCES `files` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `images_ibfk_1` FOREIGN KEY (`file_id`) REFERENCES `files` (`id`);
 
 --
 -- Ограничения внешнего ключа таблицы `likes`
 --
 ALTER TABLE `likes`
-  ADD CONSTRAINT `likes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `likes_ibfk_2` FOREIGN KEY (`target_type`) REFERENCES `like_type` (`slug`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `likes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `likes_ibfk_2` FOREIGN KEY (`target_type`) REFERENCES `like_type` (`slug`);
 
 --
 -- Ограничения внешнего ключа таблицы `lk_permissions`
 --
 ALTER TABLE `lk_permissions`
-  ADD CONSTRAINT `lk_permissions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `lk_permissions_ibfk_2` FOREIGN KEY (`permission_id`) REFERENCES `lk_permission_type` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `lk_permissions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `lk_permissions_ibfk_2` FOREIGN KEY (`permission_id`) REFERENCES `lk_permission_type` (`id`);
 
 --
 -- Ограничения внешнего ключа таблицы `orders`
 --
 ALTER TABLE `orders`
-  ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`refferer`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `orders_ibfk_3` FOREIGN KEY (`status`) REFERENCES `order_status_type` (`slug`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `orders_ibfk_4` FOREIGN KEY (`session_id`) REFERENCES `sessions` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`refferer`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `orders_ibfk_3` FOREIGN KEY (`status`) REFERENCES `order_status_type` (`slug`),
+  ADD CONSTRAINT `orders_ibfk_4` FOREIGN KEY (`session_id`) REFERENCES `sessions` (`id`);
 
 --
 -- Ограничения внешнего ключа таблицы `phones`
 --
 ALTER TABLE `phones`
-  ADD CONSTRAINT `phones_ibfk_1` FOREIGN KEY (`section`) REFERENCES `section_type` (`slug`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `phones_ibfk_1` FOREIGN KEY (`section`) REFERENCES `section_type` (`slug`);
 
 --
 -- Ограничения внешнего ключа таблицы `services`
 --
 ALTER TABLE `services`
-  ADD CONSTRAINT `services_ibfk_1` FOREIGN KEY (`slot_category_type`) REFERENCES `slot_category_type` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `services_ibfk_2` FOREIGN KEY (`image_id`) REFERENCES `images` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `services_ibfk_1` FOREIGN KEY (`slot_category_type`) REFERENCES `slot_category_type` (`id`),
+  ADD CONSTRAINT `services_ibfk_2` FOREIGN KEY (`image_id`) REFERENCES `images` (`id`);
 
 --
 -- Ограничения внешнего ключа таблицы `service_slot`
 --
 ALTER TABLE `service_slot`
-  ADD CONSTRAINT `service_slot_ibfk_1` FOREIGN KEY (`entity_type`) REFERENCES `entity_type` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `service_slot_ibfk_2` FOREIGN KEY (`slot_category_type`) REFERENCES `slot_category_type` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `service_slot_ibfk_3` FOREIGN KEY (`image_id`) REFERENCES `images` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `service_slot_ibfk_4` FOREIGN KEY (`section`) REFERENCES `section_type` (`slug`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `service_slot_ibfk_5` FOREIGN KEY (`contragent_id`) REFERENCES `contragents` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `service_slot_ibfk_1` FOREIGN KEY (`entity_type`) REFERENCES `entity_type` (`id`),
+  ADD CONSTRAINT `service_slot_ibfk_2` FOREIGN KEY (`slot_category_type`) REFERENCES `slot_category_type` (`id`),
+  ADD CONSTRAINT `service_slot_ibfk_3` FOREIGN KEY (`image_id`) REFERENCES `images` (`id`),
+  ADD CONSTRAINT `service_slot_ibfk_4` FOREIGN KEY (`section`) REFERENCES `section_type` (`slug`),
+  ADD CONSTRAINT `service_slot_ibfk_5` FOREIGN KEY (`contragent_id`) REFERENCES `contragents` (`id`);
 
 --
 -- Ограничения внешнего ключа таблицы `sessions`
 --
 ALTER TABLE `sessions`
-  ADD CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
 -- Ограничения внешнего ключа таблицы `users`
 --
 ALTER TABLE `users`
-  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role`) REFERENCES `roles` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  ADD CONSTRAINT `users_ibfk_2` FOREIGN KEY (`photo_id`) REFERENCES `images` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role`) REFERENCES `roles` (`id`),
+  ADD CONSTRAINT `users_ibfk_2` FOREIGN KEY (`photo_id`) REFERENCES `images` (`id`);
 
 --
 -- Ограничения внешнего ключа таблицы `votes`
 --
 ALTER TABLE `votes`
-  ADD CONSTRAINT `votes_ibfk_1` FOREIGN KEY (`feedback_id`) REFERENCES `feedback` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `votes_ibfk_1` FOREIGN KEY (`feedback_id`) REFERENCES `feedbacks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `votes_ibfk_2` FOREIGN KEY (`vote_slug`) REFERENCES `vote_type` (`slug`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
