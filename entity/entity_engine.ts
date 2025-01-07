@@ -20,12 +20,13 @@ import {
   of,
   throwError,
 } from "rxjs";
-import { map, mapTo, switchMap, take, tap } from "rxjs/operators";
+import { map, mapTo, skip, switchMap, take, tap } from "rxjs/operators";
 import {
   concatFn,
   generateQStr,
   getFiltersByRequest,
   getIdByRequest,
+  getQueryByRequest,
   restrictGenerator,
 } from "../db/sql.helper";
 import { EntityCalc, EntityField } from "../entity/entity_repo.model";
@@ -542,11 +543,18 @@ export class EntityEngine {
   }
 
   getEntityPortion<T extends Entity>(
-    key: EntityKeys,
-    filters?: FilterParams,
-    skip = 0,
-    limit = 20
+    cfg: {
+      key: EntityKeys,
+      searchString?: string,
+      filters?: FilterParams,
+      skip?: number,
+      limit?: number,
+    }
   ): Observable<T[]> {
+    const skip = cfg.skip ?? 0;
+    const limit = cfg.limit ?? 20;
+    const key = cfg.key;
+    let filters = cfg.filters;
     const config = entities[key];
     const isContragent = config.isContragent;
     const db = config.db_name;
@@ -567,12 +575,14 @@ export class EntityEngine {
           ]
         : []),
     ].join(" AND ");
+
     const whereStr = [
       ...generateQStr(key, filters, "id"),
       ...(isContragent
         ? [...generateQStr("ent_contragents", filters, "id")]
         : []),
     ].join(" AND ");
+
     const limStr = `${
       skip ? " LIMIT " + limit + " OFFSET " + skip : " LIMIT " + limit
     }`;
@@ -595,7 +605,7 @@ export class EntityEngine {
                 ${limStr}`;
     }
 
-    // console.log('getEntityPortion: ', q);
+    console.log('getEntityPortion: ', q);
 
     return this.context.dbe
       .queryList<T>(q)
@@ -608,15 +618,17 @@ export class EntityEngine {
       );
   }
 
-  getEntities<T extends Entity>(
+  getEntities<T extends Entity>(cfg: {
     key: EntityKeys,
-    hash: string,
-    filters: FilterParams,
-    eid: number = null,
+    query?: string,
+    hash?: string,
+    filters?: FilterParams,
+    eid?: number,
     config?: EntityConfig,
-  ): Observable<T[]> {
+  }): Observable<T[]> {
     // console.log('getEntities ', key, hash, filters, eid)
-    config = config ?? entities[key];
+    let {key, hash, filters, eid, config} = cfg;
+    config ??= entities[key];
 
     if (!config) {
       return throwError(`Сущность ${key} не найдена`);
@@ -648,7 +660,7 @@ export class EntityEngine {
       if (!provider) return null;
     }
 
-    provider = provider ?? this.getEntityPortion<T>(key, filters, skip, limit);
+    provider = provider ?? this.getEntityPortion<T>({key, filters, skip, limit});
 
     provider = this.attributeEnricher(provider, key);
 
@@ -674,41 +686,30 @@ export class EntityEngine {
       provider = this.slotEnreacher<T>(provider, slotConfig);
     }
 
-    return provider.pipe(
-      tap(
-        (list) =>
-          list.forEach &&
-          list.forEach((ent) =>
-            Object.keys(ent).forEach(
-              (fieldKey) =>
-                ((ent as Entity)[fieldKey] =
-                  ent[fieldKey] === "null" ? null : ent[fieldKey])
-            )
-          )
-      )
-    );
+    provider = this.nullFieldCleaner<T>(provider);
+
+    return provider;
   }
 
   queryEntityHandler(req, res) {
     // console.log('ent req search: ', req.query, ' url params: ', req.params, this);
-    const entKey = getIdByRequest(req) as EntityKeys;
+    const key = getIdByRequest(req) as EntityKeys;
     const filters = getFiltersByRequest(req);
+    const query = getQueryByRequest(req);
 
-    // console.log('queryEntityHandler filters:', filters);
-
-    if (entKey) {
+    if (key) {
       const hash = req.query.hash;
       const eid = parseInt(req.params.eid) || undefined;
       const userId = parseInt(res.locals.userId) || undefined;
 
-      /** @todo ReBAC validators */ 
-      const ownerByUser = entKey === 'ent_users' && userId === eid;
+      /** @todo ReBAC validators УБРАТЬ ЭТО ГОВНО */ 
+      const ownerByUser = key === 'ent_users' && userId === eid;
 
-      const config: EntityConfig = ownerByUser ? {...entities[entKey], hiddenFields: ['password']} : null;
+      const config: EntityConfig = ownerByUser ? {...entities[key], hiddenFields: ['password']} : null;
 
       // console.log('queryEntityHandler hash: ', req.params);
 
-      const provider = this.getEntities(entKey, hash, filters, eid, config);
+      const provider = this.getEntities({key, hash, filters, eid, config, query});
 
       if (!provider) {
         res.status(500);
@@ -807,15 +808,10 @@ export class EntityEngine {
     return pipeline.pipe(
       switchMap((entities) => {
         const contragentProviders = entities.map((ent) => {
-          const contragentID = ent?.[contragentIDKey];
+          const contragentID = Number(ent?.[contragentIDKey]);
           // console.log('contragentProviders', ent, contragentID);
           return contragentID
-            ? this.getEntities(
-                contragentEntity,
-                null,
-                null,
-                contragentID as number
-              ).pipe(map((data) => data[0]))
+            ? this.getEntities({key: contragentEntity, eid: contragentID}).pipe(map((data) => data[0]))
             : null;
         });
 
@@ -823,7 +819,7 @@ export class EntityEngine {
           const mode: slotMode = ent.entity_type === 1 ? "entity" : "container";
           const entityID = ent?.[entityIDKey];
           return mode === "entity" && entityID && entityKey
-            ? this.getEntities(entityKey, null, null, entityID as number).pipe(
+            ? this.getEntities({key: entityKey, eid: entityID}).pipe(
                 map((_) => _?.[0])
               )
             : null;
@@ -905,6 +901,24 @@ export class EntityEngine {
   ): Observable<T[]> {
     return pipeline.pipe(
       tap((list) => list.forEach((entity) => hideFields(entity, hidedFields)))
+    );
+  }
+
+  nullFieldCleaner<T extends Entity>(
+    pipeline: Observable<T[]>,
+  ): Observable<T[]> {
+    return pipeline.pipe(
+      tap(
+        (list) =>
+          list.forEach &&
+          list.forEach((ent) =>
+            Object.keys(ent).forEach(
+              (fieldKey) =>
+                ((ent as Entity)[fieldKey] =
+                  ent[fieldKey] === "null" ? null : ent[fieldKey])
+            )
+          )
+      )
     );
   }
 
@@ -1174,7 +1188,7 @@ export class EntityEngine {
     contragentId: number,
     contragentKey: EntityKeys
   ): Promise<Entity & { contragent?: number }> {
-    return this.getEntities(contragentKey, null, null, contragentId)
+    return this.getEntities({key: contragentKey, eid: contragentId})
       .pipe(map((list) => list[0]))
       .toPromise();
   }
@@ -1183,13 +1197,11 @@ export class EntityEngine {
     contragentId: number,
     section: SectionKeys
   ): Promise<Entity> {
-    const entKey: EntityKeys =
+    const key: EntityKeys =
       section === "clinic"
         ? "ent_clinic_contragents"
         : "ent_consultation_contragents";
-    return this.getEntities(entKey, null, {
-      contragent: contragentId.toString(),
-    })
+    return this.getEntities({key, filters: {contragent: contragentId.toString()}})
       .pipe(map((list) => list[0]))
       .toPromise();
   }

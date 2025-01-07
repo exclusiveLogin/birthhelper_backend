@@ -57,12 +57,12 @@ class Enricher {
 
     async enrich(userId: number, targetId: number, targetKey: EntityKeys = 'ent_users'): Promise<void> {
         this.user= await this.context.entityEngine
-            .getEntities<UserSrc>('ent_users', null, null, userId)
+            .getEntities<UserSrc>({key: 'ent_users', eid: userId}) 
             .toPromise()
             .then(usr => usr?.[0] ? new User(usr[0]) : null);
 
         this.target= await this.context.entityEngine
-            .getEntities<UserSrc>(targetKey, null, null, targetId)
+            .getEntities<UserSrc>({key: targetKey, eid: targetId})
             .toPromise()
             .then(usr => usr?.[0] ? targetKey === 'ent_users' ? new User(usr[0]) : usr[0] : null);
     }
@@ -132,12 +132,12 @@ export class Banned implements BannedModel {
 
     async #enreach(){
         this.user= await this.context.entityEngine
-            .getEntities<UserSrc>('ent_users', null, null, this.user_id)
+            .getEntities<UserSrc>({key: 'ent_users', eid: this.user_id})
             .toPromise()
             .then(usr => usr?.[0] ? new User(usr[0]) : null);
 
         this.target= await this.context.entityEngine
-            .getEntities<UserSrc>(this.target_key, null, null, this.target_id)
+            .getEntities<UserSrc>({key: this.target_key, eid: this.target_id})
             .toPromise()
             .then(usr => usr?.[0] ? this.target_key === 'ent_users' ? new User(usr[0]) : usr[0] : null);
     }

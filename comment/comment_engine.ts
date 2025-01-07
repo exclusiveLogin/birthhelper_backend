@@ -36,7 +36,7 @@ export class CommentEngine {
   ): Observable<Comment[]> {
     filters["feedback_id"] = id.toString();
     return this.context.entityEngine
-      .getEntities<Comment>("ent_comments", null, filters)
+      .getEntities<Comment>({key: "ent_comments", filters})
       .pipe(this.getReactionPipe(userId, 'comment'));
   }
 
@@ -57,7 +57,7 @@ export class CommentEngine {
 
   getCommentById(id: number): Observable<Comment> {
     return this.context.entityEngine
-      .getEntities<Comment>("ent_comments", null, null, id)
+      .getEntities<Comment>({ key: "ent_comments", eid: id})
       .pipe(map((ents) => ents?.[0]));
   }
 

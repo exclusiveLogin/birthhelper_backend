@@ -741,9 +741,7 @@ export class FeedbackEngine {
     }
 
     const permittionsByUser = await this.context.entityEngine
-      .getEntities<LKPermission>("ent_lk_permissions", null, {
-        user_id: userId.toString(),
-      })
+      .getEntities<LKPermission>({key: "ent_lk_permissions", filters: {user_id: userId.toString()}})
       .toPromise();
 
     return permittionsByUser

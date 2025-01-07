@@ -87,7 +87,7 @@ export class SlotEngine {
     // получение сущностей
     const providers = slotKeys.map((slotKey) =>
       this.context.entityEngine
-        .getEntities(slotKey, null, filters)
+        .getEntities({key: slotKey, filters})
         .pipe(tap((list) => (dataStorage[slotKey] = list)))
     );
 

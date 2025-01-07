@@ -55,7 +55,7 @@ export class PipelineEngine {
     clinic_active_pipeline(): Observable<StoredIds> {
         const filters: FilterParams = { active: '1' };
 
-        return this.context.entityEngine.getEntities('ent_clinic_contragents', null, filters).pipe(
+        return this.context.entityEngine.getEntities({key: 'ent_clinic_contragents', filters}).pipe(
             map(clinics => clinics.map(clinic => clinic.id)),
         );
     }
@@ -63,7 +63,7 @@ export class PipelineEngine {
     consultation_active_pipeline(): Observable<StoredIds> {
         const filters: FilterParams = { active: '1' };
 
-        return this.context.entityEngine.getEntities('ent_consultation_contragents', null, filters).pipe(
+        return this.context.entityEngine.getEntities({key: 'ent_consultation_contragents', filters}).pipe(
             map(clinics => clinics.map(clinic => clinic.id)),
         );
     }
@@ -176,7 +176,7 @@ export class PipelineEngine {
         const prop = ConsultationPropertyMap[propIdx];
         if (!prop) return of(null);
         const filters: FilterParams = { [prop]: '1' };
-        return this.context.entityEngine.getEntities('ent_consultation_contragents', null, filters);
+        return this.context.entityEngine.getEntities({key: 'ent_consultation_contragents', filters});
     }
 
     consultation_services(type: number): Observable<Summary[]> {

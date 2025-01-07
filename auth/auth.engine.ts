@@ -127,7 +127,7 @@ export class AuthorizationEngine {
   }
 
   async getUserById(id: number): Promise<User> {
-    return this.context.entityEngine.getEntities('ent_users', null, null, id).pipe(
+    return this.context.entityEngine.getEntities({key: 'ent_users', eid: id}).pipe(
       tap(data => console.log(JSON.stringify(data, null, 4))),
       map((result) => result?.[0] as UserSrc),
       map((userSrc) => new User(userSrc))
@@ -136,7 +136,7 @@ export class AuthorizationEngine {
 
   async getUserByIdSafetly(id: number): Promise<User> {
     return this.context.entityEngine
-      .getEntities("ent_users", null, null, id)
+      .getEntities({key: 'ent_users', eid: id})
       .pipe(map(([user]) => new User(user as UserSrc)))
       .toPromise();
   }

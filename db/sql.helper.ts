@@ -5,6 +5,7 @@ import { FilterParams } from "../entity/entity_engine";
 import { Entity } from "../entity/entity_repo.model";
 import { Request } from "express";
 import {Restrictor} from "../slot/slot_repo";
+import exp from "constants";
 const entities = entityRepo;
 
 export type reqType = 'string' | 'id' | 'flag';
@@ -70,6 +71,10 @@ export function generateFilterQStr(filters: IDictionaryFilters[], type: reqType)
 
 export function getFiltersByRequest(req: Request): FilterParams {
     return req.query as unknown as FilterParams || {}
+}
+
+export function getQueryByRequest(req: Request): string | undefined {
+    return req.query?.q?.length ? req.query.q.toString() : undefined;
 }
 
 export function getIdByRequest(req: Request): string {
