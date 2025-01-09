@@ -3,6 +3,11 @@ import { EntityRepo } from "../entity/entity_repo.model";
 export const entityRepo: EntityRepo = {
   ent_users: {
     db_name: "users",
+    searchFields: [
+      'login',
+      'first_name',
+      'last_name'
+    ],
     filters: [
       {
         name: "login",

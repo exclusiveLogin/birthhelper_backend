@@ -553,9 +553,11 @@ export class EntityEngine {
   ): Observable<T[]> {
     const skip = cfg.skip ?? 0;
     const limit = cfg.limit ?? 20;
+    const searchString = cfg.searchString;
     const key = cfg.key;
     let filters = cfg.filters;
     const config = entities[key];
+    const searchFields = config.searchFields ?? [];
     const isContragent = config.isContragent;
     const db = config.db_name;
     const slotKey = config.slot;
@@ -583,6 +585,13 @@ export class EntityEngine {
         : []),
     ].join(" AND ");
 
+    const searchFilters: FilterParams = {};
+    searchFields.forEach(f => searchFilters[f] = searchString);
+
+    const searchStr = searchString && searchFields?.length
+    ? [...generateQStr(key, searchFilters, "string")].join(' OR ') 
+    : undefined;
+
     const limStr = `${
       skip ? " LIMIT " + limit + " OFFSET " + skip : " LIMIT " + limit
     }`;
@@ -593,6 +602,7 @@ export class EntityEngine {
                 FROM \`${db}\` 
                 ${whereStr ? "WHERE " + whereStr : ""} 
                 ${likeStr ? (whereStr ? " AND " : " WHERE ") + likeStr : ""} 
+                ${searchStr ? (whereStr ? " AND " : " WHERE ") + " (" + searchStr + ")" : ""}
                 ${limStr}`;
 
     if (isContragent) {
@@ -620,7 +630,7 @@ export class EntityEngine {
 
   getEntities<T extends Entity>(cfg: {
     key: EntityKeys,
-    query?: string,
+    searchString?: string,
     hash?: string,
     filters?: FilterParams,
     eid?: number,
@@ -635,6 +645,7 @@ export class EntityEngine {
     }
 
     const searchKey: SectionKeys = config?.searchKey;
+    const searchString = cfg.searchString;
     const generateSummary = searchKey && config?.generateSummariesEnabled;
     const skip = Number(filters?.skip ?? "0");
     const limit = Number(filters?.limit ?? "20");
@@ -660,7 +671,7 @@ export class EntityEngine {
       if (!provider) return null;
     }
 
-    provider = provider ?? this.getEntityPortion<T>({key, filters, skip, limit});
+    provider = provider ?? this.getEntityPortion<T>({key, filters, skip, limit, searchString});
 
     provider = this.attributeEnricher(provider, key);
 
@@ -695,7 +706,7 @@ export class EntityEngine {
     // console.log('ent req search: ', req.query, ' url params: ', req.params, this);
     const key = getIdByRequest(req) as EntityKeys;
     const filters = getFiltersByRequest(req);
-    const query = getQueryByRequest(req);
+    const searchString = getQueryByRequest(req);
 
     if (key) {
       const hash = req.query.hash;
@@ -709,7 +720,7 @@ export class EntityEngine {
 
       // console.log('queryEntityHandler hash: ', req.params);
 
-      const provider = this.getEntities({key, hash, filters, eid, config, query});
+      const provider = this.getEntities({key, hash, filters, eid, config, searchString});
 
       if (!provider) {
         res.status(500);
