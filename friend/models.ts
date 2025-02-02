@@ -47,6 +47,8 @@ export interface FriendStateDTO {
     isBlocked: boolean;
     isYourBanned: boolean;
     canFriendOffer: boolean;
+    blockList: BannedModel[];
+    friendshipList: FriendModel[];
 }
 
 class Enricher {

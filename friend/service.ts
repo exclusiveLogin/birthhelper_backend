@@ -7,11 +7,12 @@ import {
     EditFriendRequest,
     Friend,
     FriendModel,
-    FriendsRequestDTO, FriendStateDTO,
+    FriendsRequestDTO,
+    FriendStateDTO,
     FriendStatus
 } from "./models";
-import { escape } from "mysql";
-import {userCatcher, } from "../common/user-catcher";
+import {escape} from "mysql";
+import {userCatcher,} from "../common/user-catcher";
 import {EntityKeys} from "../entity/entity_repo.model";
 import {json} from "body-parser";
 
@@ -48,7 +49,7 @@ export class FriendEngine {
     }
 
     async checkBlackListRecordOwnership(id: number, userId: number) {
-        const record = await this.#getBlackRecordById(id).then(result => result?.[0]);
+        const record = await this.#getBlackRecordById(id);
         if(!record) throw 'Record is not exist';
 
         const valid = record.user_id === userId;
@@ -57,13 +58,17 @@ export class FriendEngine {
     }
 
     async #checkIsFriend(userId: number, targetId: number): Promise<boolean> {
+        const list = await this.#getFriendshipList(userId, targetId)
+        return Boolean(list?.filter(record => record.status === 'approved')?.length);
+    }
+
+    async #getFriendshipList(userId: number, targetId: number): Promise<FriendModel[]> {
         const list = await Promise.all([
             this.#getFriendRecordByUserIdAndTargetId(userId, targetId),
             this.#getFriendRecordByUserIdAndTargetId(targetId, userId),
         ]);
         const list_1 = list.flat();
-        const list_2 = list_1.filter(record => record.status === 'approved');
-        return Boolean(list_2.length);
+        return list_1.filter(record => record.status === 'approved' || record.status === 'pending');
     }
 
     async #checkIsOffered(userId: number, targetId: number): Promise<boolean> {
@@ -86,13 +91,8 @@ export class FriendEngine {
         return !(blackRecords?.length || isFriend_1);
     }
 
-    async #checkIsBanned(userId: number, targetId: number): Promise<boolean> {
+    async #checkBlackList(userId: number, targetId: number): Promise<boolean> {
         const result = await this.#getBlackRecordsById(userId, targetId);
-        return Boolean(result.length);
-    }
-
-    async #checkYourIsBanned(userId: number, targetId: number): Promise<boolean> {
-        const result = await this.#getBlackRecordsById(targetId, userId);
         return Boolean(result.length);
     }
 
@@ -295,12 +295,16 @@ export class FriendEngine {
 
             if(isNaN(friendId)) throw 'user ID is not valid';
 
+            const blockList = await this.#getBlackRecordsById(userId, friendId);
+            const friendshipList = await this.#getFriendshipList(userId, friendId);
             const dto: FriendStateDTO = {
                 isFriend: await this.#checkIsFriend(userId, friendId),
                 canFriendOffer: await this.#checkCanFriendOffer(userId, friendId),
-                isBlocked: await this.#checkIsBanned(userId, friendId),
-                isYourBanned: await this.#checkYourIsBanned(userId, friendId),
+                isBlocked: !!blockList?.length ?? false,
+                isYourBanned: await this.#checkBlackList(friendId, userId),
                 isOffered: await this.#checkIsOffered(userId, friendId),
+                blockList,
+                friendshipList
             }
 
             res.send(dto);
