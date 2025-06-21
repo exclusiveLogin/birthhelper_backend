@@ -1,6 +1,6 @@
 import { PoolConfig } from "mysql";
 
-const host = process.env.HOST || 'localhost';
+const host = process.env.MYSQL_HOST || 'localhost';
 const user = process.env.DBUSER;
 const database = process.env.DB;
 const password = process.env.PASSWORD;
