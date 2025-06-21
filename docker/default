@@ -17,7 +17,7 @@ server {
 		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 		proxy_set_header X-Forwarded-Proto $scheme;
 		# return 200 'test';
-		proxy_pass http://185.178.46.248:8092/;
+		proxy_pass http://front:80/;
 	}
 
 	location /api/ {
@@ -32,7 +32,7 @@ server {
 		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 		proxy_set_header X-Forwarded-Proto $scheme;
 		# return 200 'test';
-		proxy_pass http://185.178.46.248:8091/;
+		proxy_pass http://back:3000/;
 	}
 
 	location /phpmyadmin {
