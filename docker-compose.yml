@@ -1,0 +1,71 @@
+version: "3.8"
+
+services:
+  front:
+    image: exclusivelogin/birthhelper-front
+    ports:
+      - "8092:80"
+    networks:
+      - bh_net
+
+  back:
+    image: exclusivelogin/birthhelper-back
+    stop_signal: SIGINT
+    ports:
+      - "8091:3000"
+    volumes:
+      - ./uploads/:/usr/src/app/uploads/
+    networks:
+      - bh_net
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backup:/docker-entrypoint-initdb.d
+    networks:
+      - bh_net
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: ${PMA_USER}
+      PMA_PASSWORD: ${PMA_PASSWORD}
+    ports:
+      - "8093:80"
+    depends_on:
+      - mysql
+    networks:
+      - bh_net
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/default:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - front
+      - back
+      - phpmyadmin
+    networks:
+      - bh_net
+
+volumes:
+  mysql_data:
+
+networks:
+  bh_net:
+    driver: bridge 
